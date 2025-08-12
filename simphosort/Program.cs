@@ -74,7 +74,7 @@ namespace Simphosort
         /// </summary>
         private static void DisplayUsage()
         {
-            Console.WriteLine("simhosort [working folder] [photo folder] [sort folder] [junk folder]");
+            Console.WriteLine("simphosort [working folder] [photo folder] [sort folder] [junk folder]");
             Console.WriteLine();
             Console.WriteLine("[working folder] put the unsorted photos here");
             Console.WriteLine("[photo folder]   where your existing photos are saved");
