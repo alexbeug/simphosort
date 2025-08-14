@@ -1,0 +1,9 @@
+Activate nuget StyleCop extension for new project!
+
+Add to each .csproj!
+
+  <ItemGroup>
+    <AdditionalFiles Include="..\stylecop.json" Link="Properties\stylecop.json" />
+  </ItemGroup>
+
+  
