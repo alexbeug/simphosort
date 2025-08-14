@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.14.36310.24
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "simphosort", "simphosort\simphosort.csproj", "{581988AD-AB56-48F2-A5F0-09A874D69275}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Simphosort.Core", "Simphosort.Core\Simphosort.Core.csproj", "{3253F6A7-2825-47CD-B8C5-D54DF670FBD8}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{581988AD-AB56-48F2-A5F0-09A874D69275}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{581988AD-AB56-48F2-A5F0-09A874D69275}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{581988AD-AB56-48F2-A5F0-09A874D69275}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{581988AD-AB56-48F2-A5F0-09A874D69275}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3253F6A7-2825-47CD-B8C5-D54DF670FBD8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3253F6A7-2825-47CD-B8C5-D54DF670FBD8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3253F6A7-2825-47CD-B8C5-D54DF670FBD8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3253F6A7-2825-47CD-B8C5-D54DF670FBD8}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {04EBA2FD-987F-4BBF-B067-7CF5C3974613}
+	EndGlobalSection
+EndGlobal
