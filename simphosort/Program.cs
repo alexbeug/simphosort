@@ -6,23 +6,25 @@
 using Microsoft.Extensions.DependencyInjection;
 
 using Simphosort.Core.Services;
+using Simphosort.Core.Utilities;
 
 namespace Simphosort
 {
     /// <summary>
     /// Program class
     /// </summary>
-    internal class Program
+    internal static class Program
     {
         /// <summary>
         /// Program main function
         /// </summary>
         /// <param name="args">Command line arguments</param>
-        private static void Main(string[] args)
+        /// <returns><see cref="ErrorLevel"/> as int value</returns>
+        private static int Main(string[] args)
         {
             // Register services and get the 2 needed services for Main function
             IServiceProvider provider = RegisterServices();
-            ISortService mainService = provider.GetRequiredService<ISortService>();
+            IMainService mainService = provider.GetRequiredService<IMainService>();
 
             // Display program title
             DisplayTitle();
@@ -30,7 +32,7 @@ namespace Simphosort
             if (args.Length > 2 && args.Length < 5)
             {
                 // Call sorting with arguments (3 or 4)
-                mainService.SortPhotos(args[0], args[1], args[2], args.Length > 3 ? args[3] : string.Empty, DisplayCallbackError);
+                return mainService.SortPhotos(args[0], args[1], args[2], args.Length > 3 ? args[3] : string.Empty, DisplayCallbackError).ToInt();
             }
             else
             {
@@ -38,10 +40,19 @@ namespace Simphosort
                 {
                     // Invalid number of arguments (fewer than 3 or more than 4)
                     DisplayArgsError();
+
+                    // Display usage for information
+                    DisplayUsage();
+
+                    // Return error
+                    return ErrorLevel.ArgumentsIncorrent.ToInt();
                 }
 
                 // Usage without arguments or when called incorrectly
                 DisplayUsage();
+
+                // Return error
+                return ErrorLevel.ArgumentsUsage.ToInt();
             }
         }
 
@@ -74,9 +85,9 @@ namespace Simphosort
         /// </summary>
         private static void DisplayUsage()
         {
-            Console.WriteLine("simphosort [working folder] [photo folder] [sort folder] [junk folder]");
+            Console.WriteLine("simphosort [work folder] [photo folder] [sort folder] [junk folder]");
             Console.WriteLine();
-            Console.WriteLine("[working folder] put the unsorted photos here");
+            Console.WriteLine("[work folder]    put the unsorted photos here");
             Console.WriteLine("[photo folder]   where your existing photos are saved");
             Console.WriteLine("[sort folder]    new photos are moved here after check");
             Console.WriteLine("[junk folder]    put junk photos here to ignore then in the next sort (optional)");

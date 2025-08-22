@@ -1,0 +1,15 @@
+{
+  "profiles": {
+    "Test - j:\\_simphosort": {
+      "commandName": "Project",
+      "commandLineArgs": "j:\\_simphosort\\work j:\\_simphosort\\photo j:\\_simphosort\\sort j:\\_simphosort\\junk"
+    },
+    "Test - Usage": {
+      "commandName": "Project"
+    },
+    "Test - ERROR: Uniqueness": {
+      "commandName": "Project",
+      "commandLineArgs": "j:\\_simphosort\\work j:\\_simphosort\\photo j:\\_simphosort\\sort j:\\_simphosort\\work"
+    }
+  }
+}
