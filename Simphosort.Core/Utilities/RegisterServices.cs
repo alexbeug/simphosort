@@ -12,7 +12,7 @@ namespace Simphosort.Core.Utilities
     /// <summary>
     /// Register Services for DI
     /// </summary>
-    public class RegisterServices
+    public static class RegisterServices
     {
         /// <summary>
         /// Registration of UsbImageTool.Misc.Logging services added to service collection.
@@ -22,7 +22,8 @@ namespace Simphosort.Core.Utilities
         public static IServiceCollection Register(IServiceCollection services)
         {
             // Add singleton services (stateless)
-            services.AddSingleton<ISortService, SortService>();
+            services.AddSingleton<IMainService, MainService>();
+            services.AddSingleton<IFolderService, FolderService>();
 
             return services;
         }
