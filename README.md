@@ -3,9 +3,6 @@
 
 [comment]: # (https://img.shields.io/github/license/alexbeug/simphosort later when repo is public)
 
-[comment]: # (![GitHub top language](https://img.shields.io/github/languages/top/alexbeug/simphosort)
-
-
 simphosort is a tool for sorting photos, intended for periodic backup of folders with large numbers of unsorted images (such as smartphone/camera DCIM folders or messenger image folders).
 It compares all photo files in the \[work folder\] against existing photos in the \[photo folder\] structure and moves any new files to the \[sort folder\].
 Users can then manually copy these files to either the \[photo folder\] structure or a [junk folder], where they will be excluded from future sorts (optional).
