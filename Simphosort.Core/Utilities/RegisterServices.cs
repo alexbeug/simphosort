@@ -23,7 +23,10 @@ namespace Simphosort.Core.Utilities
         {
             // Add singleton services (stateless)
             services.AddSingleton<IMainService, MainService>();
+
+            services.AddSingleton<IFileInfoComparer, FileInfoComparer>();
             services.AddSingleton<IFolderService, FolderService>();
+            services.AddSingleton<ISearchService, SearchService>();
 
             return services;
         }
