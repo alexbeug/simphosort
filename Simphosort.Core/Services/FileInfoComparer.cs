@@ -22,7 +22,7 @@ namespace Simphosort.Core.Services
         /// <inheritdoc/>
         public int GetHashCode([DisallowNull] FileInfo obj)
         {
-            return obj.Name.GetHashCode();
+            return obj.GetHashCode();
         }
     }
 }
