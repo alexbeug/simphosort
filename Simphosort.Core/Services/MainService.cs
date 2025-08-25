@@ -15,10 +15,12 @@ namespace Simphosort.Core.Services
         /// <summary>
         /// Initializes a new instance of the <see cref="MainService"/> class.
         /// </summary>
-        /// <param name="folderService">An <see cref="IFolderService"/>.</param>
-        public MainService(IFolderService folderService)
+        /// <param name="folderService">A <see cref="IFolderService"/>.</param>
+        /// <param name="searchService">A <see cref="ISearchService"/>.</param>
+        public MainService(IFolderService folderService, ISearchService searchService)
         {
             FolderService = folderService;
+            SearchService = searchService;
         }
 
         #endregion // Constructor
@@ -29,6 +31,11 @@ namespace Simphosort.Core.Services
         /// Gets folder service
         /// </summary>
         private IFolderService FolderService { get; }
+
+        /// <summary>
+        /// Gets search service
+        /// </summary>
+        private ISearchService SearchService { get; }
 
         #endregion // Properties
 
@@ -71,6 +78,16 @@ namespace Simphosort.Core.Services
                 // Stop when folders are not unique
                 return ErrorLevel.FoldersAreNotUnique;
             }
+
+            // Find files in work folder (non-recursive)
+            List<FileInfo> workFiles = SearchService.SearchFiles(workFolder, Constants.SupportedExtensions, false);
+
+            // Find files in photo & junk folder (recursive)
+            List<FileInfo> photoFiles = SearchService.SearchFiles(photoFolder, Constants.SupportedExtensions, true);
+            List<FileInfo> junkFiles = !string.IsNullOrEmpty(junkFolder) ? SearchService.SearchFiles(junkFolder, Constants.SupportedExtensions, true) : new List<FileInfo>();
+
+            // Reduce  workFiles with existing ones in photoFiles and junkFiles and give a list of files to sort
+            List<FileInfo> sortFiles = SearchService.ReduceFiles(workFiles, photoFiles.Concat(junkFiles));
 
             callbackError("ERROR: Nothing implemented yet!");
             return ErrorLevel.Ok;
