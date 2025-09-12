@@ -34,5 +34,10 @@ namespace Simphosort.Core.Utilities
         /// Given folders are not unique
         /// </summary>
         FoldersAreNotUnique = 101,
+
+        /// <summary>
+        /// Copy failed
+        /// </summary>
+        CopyFailed = 500,
     }
 }

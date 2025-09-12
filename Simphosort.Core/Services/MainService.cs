@@ -17,25 +17,26 @@ namespace Simphosort.Core.Services
         /// </summary>
         /// <param name="folderService">A <see cref="IFolderService"/>.</param>
         /// <param name="searchService">A <see cref="ISearchService"/>.</param>
-        public MainService(IFolderService folderService, ISearchService searchService)
+        /// <param name="copyService">A <see cref="ICopyService"/>.</param>
+        public MainService(IFolderService folderService, ISearchService searchService, ICopyService copyService)
         {
             FolderService = folderService;
             SearchService = searchService;
+            CopyService = copyService;
         }
 
         #endregion // Constructor
 
         #region Properties
 
-        /// <summary>
-        /// Gets folder service
-        /// </summary>
+        /// <inheritdoc cref="IFolderService"/>
         private IFolderService FolderService { get; }
 
-        /// <summary>
-        /// Gets search service
-        /// </summary>
+        /// <inheritdoc cref="ISearchService"/>
         private ISearchService SearchService { get; }
+
+        /// <inheritdoc cref="ICopyService"/>
+        private ICopyService CopyService { get; }
 
         #endregion // Properties
 
@@ -89,8 +90,8 @@ namespace Simphosort.Core.Services
             // Reduce  workFiles with existing ones in photoFiles and junkFiles and give a list of files to sort
             List<FileInfo> sortFiles = SearchService.ReduceFiles(workFiles, photoFiles.Concat(junkFiles));
 
-            callbackError("ERROR: Nothing implemented yet!");
-            return ErrorLevel.Ok;
+            // Copy reduced files to target folder
+            return CopyService.CopyFiles(sortFiles, sortFolder, callbackError) ? ErrorLevel.Ok : ErrorLevel.CopyFailed;
         }
 
         #endregion // Methods

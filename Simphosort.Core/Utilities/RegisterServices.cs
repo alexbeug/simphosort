@@ -27,6 +27,7 @@ namespace Simphosort.Core.Utilities
             services.AddSingleton<IFileInfoComparer, FileInfoComparer>();
             services.AddSingleton<IFolderService, FolderService>();
             services.AddSingleton<ISearchService, SearchService>();
+            services.AddSingleton<ICopyService, CopyService>();
 
             return services;
         }
