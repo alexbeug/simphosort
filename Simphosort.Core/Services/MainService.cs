@@ -103,7 +103,10 @@ namespace Simphosort.Core.Services
             callbackLog($"   ->  {sortFiles.Count} new files to sort\n");
 
             // Copy reduced files to target folder
-            return CopyService.CopyFiles(sortFiles, sortFolder, callbackLog, callbackError) ? ErrorLevel.Ok : ErrorLevel.CopyFailed;
+            int copied = CopyService.CopyFiles(sortFiles, sortFolder, callbackLog, callbackError);
+            callbackLog($"\n{copied} of {sortFiles.Count} files copied\n");
+
+            return copied == sortFiles.Count ? ErrorLevel.Ok : ErrorLevel.CopyFailed;
         }
 
         #endregion // Methods
