@@ -10,6 +10,10 @@
     "Test - ERROR: Uniqueness": {
       "commandName": "Project",
       "commandLineArgs": "j:\\_simphosort\\work j:\\_simphosort\\photo j:\\_simphosort\\sort j:\\_simphosort\\work"
+    },
+    "Test - Moto": {
+      "commandName": "Project",
+      "commandLineArgs": "m:\\DCIM\\Moto m:\\Fotos m:\\DCIM\\Sort M:\\DCIM\\Junk"
     }
   }
 }

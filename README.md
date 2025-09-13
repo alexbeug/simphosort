@@ -1,5 +1,6 @@
 # simphosort
-[![License](https://img.shields.io/badge/license-MIT-brightgreen.svg)](https://github.com/alexbeug/simphosort/blob/main/LICENSE)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/alexbeug/simphosort/blob/main/LICENSE)
+[![.NET](https://github.com/alexbeug/simphosort/actions/workflows/dotnet.yml/badge.svg)](https://github.com/alexbeug/simphosort/actions/workflows/dotnet.yml)
 
 [comment]: # (https://img.shields.io/github/license/alexbeug/simphosort later when repo is public)
 
@@ -11,7 +12,7 @@ Users can then manually copy these files to either the _photo folder_ structure 
 1. Copy photos to an empty _work folder_.
 2. Run simphosort
 	```
-    simphosort [work folder] [photo folder] [sort folder] [junk folder]
+    simphosort [work folder] [photo folder] [sort folder] [[junk folder]]
 	```
 3. Copy new files from _sort folder_ into either _photo folder_ sub folders or _junk folder_.
 4. Repeat next time...
