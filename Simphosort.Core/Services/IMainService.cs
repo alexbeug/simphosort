@@ -19,8 +19,9 @@ namespace Simphosort.Core.Services
         /// <param name="photoFolder">photo folder (compare)</param>
         /// <param name="sortFolder">sort folder (target)</param>
         /// <param name="junkFolder">junk folder (ignore)</param>
+        /// <param name="callbackLog">Log message callback</param>
         /// <param name="callbackError">Error message callback</param>
         /// <returns><see cref="ErrorLevel"/></returns>
-        ErrorLevel SortPhotos(string workFolder, string photoFolder, string sortFolder, string junkFolder, Action<string> callbackError);
+        ErrorLevel SortPhotos(string workFolder, string photoFolder, string sortFolder, string junkFolder, Action<string> callbackLog, Action<string> callbackError);
     }
 }

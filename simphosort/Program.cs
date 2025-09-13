@@ -32,7 +32,7 @@ namespace Simphosort
             if (args.Length > 2 && args.Length < 5)
             {
                 // Call sorting with arguments (3 or 4)
-                return mainService.SortPhotos(args[0], args[1], args[2], args.Length > 3 ? args[3] : string.Empty, DisplayCallbackError).ToInt();
+                return mainService.SortPhotos(args[0], args[1], args[2], args.Length > 3 ? args[3] : string.Empty, DisplayCallback, DisplayCallback).ToInt();
             }
             else
             {
@@ -104,10 +104,10 @@ namespace Simphosort
         }
 
         /// <summary>
-        /// Callback for displaying an error message
+        /// Callback for displaying an error or log message
         /// </summary>
-        /// <param name="errmsg">Error message to display</param>
-        private static void DisplayCallbackError(string errmsg)
+        /// <param name="errmsg">Error/log message to display</param>
+        private static void DisplayCallback(string errmsg)
         {
             Console.WriteLine(errmsg);
         }

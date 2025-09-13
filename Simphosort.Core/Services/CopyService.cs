@@ -9,19 +9,24 @@ namespace Simphosort.Core.Services
     internal class CopyService : ICopyService
     {
         /// <inheritdoc/>
-        public bool CopyFiles(IEnumerable<FileInfo> files, string sortFolder, Action<string> callbackError)
+        public bool CopyFiles(IEnumerable<FileInfo> files, string sortFolder, Action<string> callbackLog, Action<string> callbackError)
         {
             bool copyOk = true;
 
+            callbackLog($"\nCopying {files.Count()} new image files to {sortFolder}.\n");
+
             foreach (FileInfo file in files)
             {
+                callbackLog($"Copying {file.FullName}");
+
                 try
                 {
                     File.Copy(file.FullName, Path.Combine(sortFolder, file.Name));
+                    callbackLog($"   -> copied");
                 }
                 catch
                 {
-                    callbackError($"ERROR: Copying {file.FullName} to {sortFolder} failed!");
+                    callbackError($"   -> failed");
                     copyOk = false;
                 }
             }
