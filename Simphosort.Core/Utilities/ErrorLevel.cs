@@ -31,9 +31,14 @@ namespace Simphosort.Core.Utilities
         FolderDoesNotExist = 100,
 
         /// <summary>
+        /// Sort folder is not empty
+        /// </summary>
+        FolderNotEmpty = 101,
+
+        /// <summary>
         /// Given folders are not unique
         /// </summary>
-        FoldersAreNotUnique = 101,
+        FoldersAreNotUnique = 150,
 
         /// <summary>
         /// Copy failed

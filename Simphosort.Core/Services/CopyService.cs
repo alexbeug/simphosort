@@ -13,7 +13,7 @@ namespace Simphosort.Core.Services
         {
             bool copyOk = true;
 
-            callbackLog($"\nCopying {files.Count()} new image files to {sortFolder}.\n");
+            callbackLog($"\nCopying {files.Count()} new image files to {sortFolder}\n");
 
             foreach (FileInfo file in files)
             {

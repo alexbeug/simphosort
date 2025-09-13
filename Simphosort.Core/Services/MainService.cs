@@ -59,6 +59,12 @@ namespace Simphosort.Core.Services
                 return ErrorLevel.FolderDoesNotExist;
             }
 
+            // Sort folder has to be empty
+            if (!FolderService.Empty(sortFolder, callbackError))
+            {
+                return ErrorLevel.FolderNotEmpty;
+            }
+
             // Put the three mandantory folders into a list
             List<string> folders = new()
             {
@@ -81,20 +87,20 @@ namespace Simphosort.Core.Services
             }
 
             // Find files in work folder (non-recursive)
+            callbackLog($"Searching files in work folder...");
             List<FileInfo> workFiles = SearchService.SearchFiles(workFolder, Constants.SupportedExtensions, false);
-
-            // Log output working folder
-            callbackLog($"{workFiles.Count} image files found in work folder");
+            callbackLog($"   -> {workFiles.Count} files found in work folder\n");
 
             // Find files in photo & junk folder (recursive)
+            callbackLog($"Searching files in photo/junk folder...");
             List<FileInfo> photoFiles = SearchService.SearchFiles(photoFolder, Constants.SupportedExtensions, true);
             List<FileInfo> junkFiles = !string.IsNullOrEmpty(junkFolder) ? SearchService.SearchFiles(junkFolder, Constants.SupportedExtensions, true) : new List<FileInfo>();
+            callbackLog($"   -> {photoFiles.Count + junkFiles.Count} files found in photo/junk folder\n");
 
             // Reduce  workFiles with existing ones in photoFiles and junkFiles and give a list of files to sort
+            callbackLog($"Comparing files in work and photo/junk folder...");
             List<FileInfo> sortFiles = SearchService.ReduceFiles(workFiles, photoFiles.Concat(junkFiles));
-
-            // Log output after reduce
-            callbackLog($"{sortFiles.Count} image files new to sort");
+            callbackLog($"   ->  {sortFiles.Count} new files to sort\n");
 
             // Copy reduced files to target folder
             return CopyService.CopyFiles(sortFiles, sortFolder, callbackLog, callbackError) ? ErrorLevel.Ok : ErrorLevel.CopyFailed;

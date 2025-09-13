@@ -19,6 +19,14 @@ namespace Simphosort.Core.Services
         bool Exists(string folder, Action<string> callbackError);
 
         /// <summary>
+        /// Checks folder for emptiness
+        /// </summary>
+        /// <param name="folder">Folder path</param>
+        /// <param name="callbackError">Error callback function</param>
+        /// <returns>true when folder empty</returns>
+        bool Empty(string folder, Action<string> callbackError);
+
+        /// <summary>
         /// Checks folders for uniqueness
         /// </summary>
         /// <param name="folders">Source folder</param>
