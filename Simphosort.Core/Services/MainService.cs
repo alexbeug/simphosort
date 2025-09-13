@@ -43,7 +43,7 @@ namespace Simphosort.Core.Services
         #region Methods
 
         /// <inheritdoc/>
-        public ErrorLevel SortPhotos(string workFolder, string photoFolder, string sortFolder, string junkFolder, Action<string> callbackError)
+        public ErrorLevel SortPhotos(string workFolder, string photoFolder, string sortFolder, string junkFolder, Action<string> callbackLog, Action<string> callbackError)
         {
             // Check folders for existence
             bool folderOk = FolderService.Exists(workFolder, callbackError);
@@ -83,6 +83,9 @@ namespace Simphosort.Core.Services
             // Find files in work folder (non-recursive)
             List<FileInfo> workFiles = SearchService.SearchFiles(workFolder, Constants.SupportedExtensions, false);
 
+            // Log output working folder
+            callbackLog($"{workFiles.Count} image files found in work folder");
+
             // Find files in photo & junk folder (recursive)
             List<FileInfo> photoFiles = SearchService.SearchFiles(photoFolder, Constants.SupportedExtensions, true);
             List<FileInfo> junkFiles = !string.IsNullOrEmpty(junkFolder) ? SearchService.SearchFiles(junkFolder, Constants.SupportedExtensions, true) : new List<FileInfo>();
@@ -90,8 +93,11 @@ namespace Simphosort.Core.Services
             // Reduce  workFiles with existing ones in photoFiles and junkFiles and give a list of files to sort
             List<FileInfo> sortFiles = SearchService.ReduceFiles(workFiles, photoFiles.Concat(junkFiles));
 
+            // Log output after reduce
+            callbackLog($"{sortFiles.Count} image files new to sort");
+
             // Copy reduced files to target folder
-            return CopyService.CopyFiles(sortFiles, sortFolder, callbackError) ? ErrorLevel.Ok : ErrorLevel.CopyFailed;
+            return CopyService.CopyFiles(sortFiles, sortFolder, callbackLog, callbackError) ? ErrorLevel.Ok : ErrorLevel.CopyFailed;
         }
 
         #endregion // Methods
