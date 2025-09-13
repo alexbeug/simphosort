@@ -17,7 +17,7 @@ namespace Simphosort.Core.Services
         /// <param name="sortFolder">target folder</param>
         /// <param name="callbackLog">Log callback function</param>
         /// <param name="callbackError">Error callback function</param>
-        /// <returns>Copy result</returns>
-        bool CopyFiles(IEnumerable<FileInfo> files, string sortFolder, Action<string> callbackLog, Action<string> callbackError);
+        /// <returns>Files copied</returns>
+        int CopyFiles(IEnumerable<FileInfo> files, string sortFolder, Action<string> callbackLog, Action<string> callbackError);
     }
 }

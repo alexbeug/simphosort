@@ -3,12 +3,6 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 // </copyright>
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
 namespace Simphosort.Core.Services
 {
     /// <inheritdoc/>
@@ -20,6 +14,18 @@ namespace Simphosort.Core.Services
             if (!Directory.Exists(folder))
             {
                 callbackError($"ERROR: Folder {folder} does not exist!");
+                return false;
+            }
+
+            return true;
+        }
+
+        /// <inheritdoc/>
+        public bool Empty(string folder, Action<string> callbackError)
+        {
+            if (Directory.EnumerateFiles(folder).Any() || Directory.EnumerateDirectories(folder).Any())
+            {
+                callbackError($"ERROR: Folder {folder} is not empty!");
                 return false;
             }
 
