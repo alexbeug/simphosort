@@ -9,6 +9,18 @@ namespace Simphosort.Core.Services
     internal class FolderService : IFolderService
     {
         /// <inheritdoc/>
+        public bool Valid(string folder, Action<string> callbackError)
+        {
+            if (Path.GetInvalidPathChars().AsEnumerable().Any(c => folder.Contains(c)))
+            {
+                callbackError($"ERROR: Folder {folder} contains invalid characters!");
+                return false;
+            }
+
+            return true;
+        }
+
+        /// <inheritdoc/>
         public bool Exists(string folder, Action<string> callbackError)
         {
             if (!Directory.Exists(folder))

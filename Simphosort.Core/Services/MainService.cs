@@ -45,26 +45,6 @@ namespace Simphosort.Core.Services
         /// <inheritdoc/>
         public ErrorLevel SortPhotos(string workFolder, string photoFolder, string sortFolder, string junkFolder, Action<string> callbackLog, Action<string> callbackError)
         {
-            // Check folders for existence
-            bool folderOk = FolderService.Exists(workFolder, callbackError);
-            folderOk = FolderService.Exists(photoFolder, callbackError) && folderOk;
-            folderOk = FolderService.Exists(sortFolder, callbackError) && folderOk;
-
-            // Junk folder is optional but has to exist when given as parameter
-            folderOk = (string.IsNullOrEmpty(junkFolder) || FolderService.Exists(junkFolder, callbackError)) && folderOk;
-
-            if (!folderOk)
-            {
-                // Stop when a folder does not exist
-                return ErrorLevel.FolderDoesNotExist;
-            }
-
-            // Sort folder has to be empty
-            if (!FolderService.Empty(sortFolder, callbackError))
-            {
-                return ErrorLevel.FolderNotEmpty;
-            }
-
             // Put the three mandantory folders into a list
             List<string> folders = new()
             {
@@ -77,10 +57,29 @@ namespace Simphosort.Core.Services
                 folders.Add(junkFolder);
             }
 
-            // Check folders in list for uniqueness
-            folderOk = FolderService.Unique(folders, callbackError) && folderOk;
+            // Check folders for validity
+            if (!folders.All(x => FolderService.Valid(x, callbackError)))
+            {
+                 // Stop when a folder is not valid
+                return ErrorLevel.FolderNotValid;
+            }
 
-            if (!folderOk)
+            // Check folders for existence
+            if (!folders.All(x => FolderService.Exists(x, callbackError)))
+            {
+                 // Stop when a folder does not exist
+                return ErrorLevel.FolderDoesNotExist;
+            }
+
+            // Sort folder has to be empty
+            if (!FolderService.Empty(sortFolder, callbackError))
+            {
+                // Stop when sort folder is not empty
+                return ErrorLevel.FolderNotEmpty;
+            }
+
+            // Check folders in list for uniqueness
+            if (!FolderService.Unique(folders, callbackError))
             {
                 // Stop when folders are not unique
                 return ErrorLevel.FoldersAreNotUnique;
