@@ -2,7 +2,7 @@
   "profiles": {
     "Test - j:\\_simphosort": {
       "commandName": "Project",
-      "commandLineArgs": "sort j:\\_simphosort\\work j:\\_simphosort\\photo j:\\_simphosort\\sort j:\\_simphosort\\junk"
+      "commandLineArgs": "sort j:\\_simphosort\\work j:\\_simphosort\\photo j:\\_simphosort\\sort -j j:\\_simphosort\\junk"
     },
     "Test - Usage": {
       "commandName": "Project"

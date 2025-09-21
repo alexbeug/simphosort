@@ -9,6 +9,10 @@
     <InvariantGlobalization>true</InvariantGlobalization>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <VersionPrefix>0.1.0</VersionPrefix>
+  </PropertyGroup>
+
   <ItemGroup>
     <PackageReference Include="CommandDotNet" Version="8.1.1" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.8" />

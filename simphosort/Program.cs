@@ -58,7 +58,9 @@ namespace Simphosort
         {
             // AppRunner<T> where T is the class defining your commands
             // You can use Program or create commands in another class
-            return new AppRunner<Program>().Run(args);
+            return new AppRunner<Program>()
+                .UseVersionMiddleware() // Adds a version option and command
+                .Run(args);
         }
 
         /// <summary>
