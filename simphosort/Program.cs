@@ -60,6 +60,7 @@ namespace Simphosort
             // You can use Program or create commands in another class
             return new AppRunner<Program>()
                 .UseVersionMiddleware() // Adds a version option and command
+                .UseTypoSuggestions() // Suggests correct command names if user makes a typo
                 .Run(args);
         }
 
