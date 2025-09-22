@@ -13,7 +13,7 @@ Note: simphosort is a command line utility (for now).
 simphosort supports sorting new photos by filtering for existing duplicates and pre-grouping them for you manually doing the final sort. The main purpose is to **copy** and **group**
 new photos based on an existing photo collection. This collection is typically organized in folders and sub folders with a given structure, e.g. by year and month or year and topic. 
 The **copy** command copies new photos from a _source_ folder to a _target_ folder, while checking for existing photos in one or more _check_ folders. Duplicate photos in _source_ 
-and _check_ folders are not copied to the target folder. The new files in _target_ folder can then be pre-grouped to sub folders and then moved their final location in the existing 
+and _check_ folders are not copied to the _target_ folder. The new files in _target_ folder can then be pre-grouped to sub folders and then moved their final location in the existing 
 photo collection folder structure.
 
 ### Short step by step description of a typical workflow:
@@ -34,10 +34,10 @@ Usage: simphosort.exe copy [options] <source> <target>
 Arguments:
 
   source  <PATH>
-  Source folder containing the photo files to copy
+  Source folder (containing the photo files to copy)
 
   target  <PATH>
-  Target folder (has to be empty)
+  Target folder (work folder, has to be empty)
 
 Options:
 

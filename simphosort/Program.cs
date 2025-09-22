@@ -40,8 +40,8 @@ namespace Simphosort
         /// <returns>An <see cref="ErrorLevel"/> value as int.</returns>
         [Command("copy", Description = "Copy new photos from source folder to target folder with optional checks")]
         public int Copy(
-            [Operand("source", Description = "Source folder containing the photo files to copy"), PathReference] DirectoryInfo sourceFolder,
-            [Operand("target", Description = "Target folder (has to be empty)"), PathReference] DirectoryInfo targetFolder,
+            [Operand("source", Description = "Source folder (containing the photo files to copy)"), PathReference] DirectoryInfo sourceFolder,
+            [Operand("target", Description = "Target folder (work folder, has to be empty)"), PathReference] DirectoryInfo targetFolder,
             [Option('c', "check", Description = "Check for duplicate photos at these folders. Duplicate files will not be copied to target."), PathReference] DirectoryInfo[]? checkFolders)
             => _provider.GetRequiredService<IMainService>().CopyPhotos(sourceFolder.FullName, targetFolder.FullName, checkFolders?.Select(c => c.FullName), DisplayCallback, DisplayCallback).ToInt();
 
