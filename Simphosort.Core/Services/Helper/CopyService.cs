@@ -3,17 +3,17 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 // </copyright>
 
-namespace Simphosort.Core.Services
+namespace Simphosort.Core.Services.Helper
 {
     /// <inheritdoc/>
     internal class CopyService : ICopyService
     {
         /// <inheritdoc/>
-        public int CopyFiles(IEnumerable<FileInfo> files, string sortFolder, Action<string> callbackLog, Action<string> callbackError)
+        public int CopyFiles(IEnumerable<FileInfo> files, string targetFolder, Action<string> callbackLog, Action<string> callbackError)
         {
             int copied = 0;
 
-            callbackLog($"\nCopying {files.Count()} new image files to {sortFolder}\n");
+            callbackLog($"\nCopying {files.Count()} new image files to {targetFolder}\n");
 
             foreach (FileInfo file in files)
             {
@@ -21,7 +21,7 @@ namespace Simphosort.Core.Services
 
                 try
                 {
-                    File.Copy(file.FullName, Path.Combine(sortFolder, file.Name));
+                    File.Copy(file.FullName, Path.Combine(targetFolder, file.Name));
                     callbackLog($"   -> copied");
                     copied++;
                 }

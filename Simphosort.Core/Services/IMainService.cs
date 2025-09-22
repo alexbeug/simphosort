@@ -13,15 +13,14 @@ namespace Simphosort.Core.Services
     public interface IMainService
     {
         /// <summary>
-        ///  Sort all photos
+        ///  Copy photos
         /// </summary>
-        /// <param name="workFolder">working folder (source)</param>
-        /// <param name="photoFolder">photo folder (compare)</param>
-        /// <param name="sortFolder">sort folder (target)</param>
-        /// <param name="junkFolder">junk folder (ignore)</param>
+        /// <param name="sourceFolder">source folder</param>
+        /// <param name="targetFolder">target folder</param>
+        /// <param name="checkFolders">check folders (exclude duplicates)</param>
         /// <param name="callbackLog">Log message callback</param>
         /// <param name="callbackError">Error message callback</param>
         /// <returns><see cref="ErrorLevel"/></returns>
-        ErrorLevel SortPhotos(string workFolder, string photoFolder, string sortFolder, string junkFolder, Action<string> callbackLog, Action<string> callbackError);
+        ErrorLevel CopyPhotos(string sourceFolder, string targetFolder, IEnumerable<string>? checkFolders, Action<string> callbackLog, Action<string> callbackError);
     }
 }

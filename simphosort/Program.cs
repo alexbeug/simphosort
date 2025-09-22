@@ -3,8 +3,6 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 // </copyright>
 
-using System.ComponentModel.DataAnnotations;
-
 using CommandDotNet;
 using JetBrains.Annotations;
 
@@ -34,20 +32,18 @@ namespace Simphosort
         }
 
         /// <summary>
-        /// Sort command
+        /// Copy command
         /// </summary>
-        /// <param name="workFolder">working folder (source)</param>
-        /// <param name="photoFolder">photo folder (compare)</param>
-        /// <param name="sortFolder">sort folder (target)</param>
-        /// <param name="junkFolder">junk folder (ignore)</param>
+        /// <param name="sourceFolder">source folder</param>
+        /// <param name="targetFolder">target folder</param>
+        /// <param name="checkFolders">check folders</param>
         /// <returns>An <see cref="ErrorLevel"/> value as int.</returns>
-        [Command("sort", Description = "Sort new photos from work folder that to not exist in photo or junk folder to sort folder")]
-        public int Sort(
-            [Operand("work", Description = "Put the unsorted photos here"), PathReference] DirectoryInfo workFolder,
-            [Operand("photo", Description = "Where your existing photos are saved"), PathReference] DirectoryInfo photoFolder,
-            [Operand("sort", Description = "New photos are copied here"), PathReference] DirectoryInfo sortFolder,
-            [Option('j', "junk", Description = "Treat photos from here as existing"), PathReference] DirectoryInfo? junkFolder)
-            => _provider.GetRequiredService<IMainService>().SortPhotos(workFolder.FullName, photoFolder.FullName, sortFolder.FullName, junkFolder?.FullName ?? string.Empty, DisplayCallback, DisplayCallback).ToInt();
+        [Command("copy", Description = "Copy new photos from source folder to target folder with optional checks")]
+        public int Copy(
+            [Operand("source", Description = "Source folder containing the photo files to copy"), PathReference] DirectoryInfo sourceFolder,
+            [Operand("target", Description = "Target folder (has to be empty)"), PathReference] DirectoryInfo targetFolder,
+            [Option('c', "check", Description = "Check for duplicate photos at these folders. Duplicate files will not be copied to target."), PathReference] DirectoryInfo[]? checkFolders)
+            => _provider.GetRequiredService<IMainService>().CopyPhotos(sourceFolder.FullName, targetFolder.FullName, checkFolders?.Select(c => c.FullName), DisplayCallback, DisplayCallback).ToInt();
 
         /// <summary>
         /// Program main function

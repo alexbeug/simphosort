@@ -3,7 +3,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 // </copyright>
 
-namespace Simphosort.Core.Services
+namespace Simphosort.Core.Services.Helper
 {
     /// <summary>
     /// Service to copy files
@@ -14,10 +14,10 @@ namespace Simphosort.Core.Services
         /// Copy files to target folder
         /// </summary>
         /// <param name="files">Files to copy</param>
-        /// <param name="sortFolder">target folder</param>
+        /// <param name="targetFolder">target folder</param>
         /// <param name="callbackLog">Log callback function</param>
         /// <param name="callbackError">Error callback function</param>
         /// <returns>Files copied</returns>
-        int CopyFiles(IEnumerable<FileInfo> files, string sortFolder, Action<string> callbackLog, Action<string> callbackError);
+        int CopyFiles(IEnumerable<FileInfo> files, string targetFolder, Action<string> callbackLog, Action<string> callbackError);
     }
 }

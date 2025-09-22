@@ -4,39 +4,44 @@
 
 [comment]: # (https://img.shields.io/github/license/alexbeug/simphosort later when repo is public)
 
-simphosort is a tool for sorting photos, intended for periodic backup of folders with large numbers of unsorted images (such as smartphone/camera DCIM folders or messenger image folders).
-It compares all photo files (currently *.jpg and *.jpeg) in the _work_ folder against existing photos in a _photo_ folder (including sub folders) and copies any new files to a _sort_ folder.
-Users can then manually move these files to either the _photo_ folder sub folders or a _junk_ folder (optional), where they will be excluded from future sorts.
+simphosort is a tool for copying & sorting photos, intended for periodic backup of folders with large numbers of unsorted images (such as smartphone/camera DCIM folders or messenger image folders).
 
-## Usage
-Note: simphosort is a command line utility.
+Note: simphosort is a command line utility (for now).
 
-1. Copy photos to an empty _work_ folder.
-2. Clean _sort_ folder when not empty.
-3. Run simphosort
+## Workflow
+
+simphosort provides multiple commands to work with photos. The main purpose is to **copy** and **group** new photos based on an existing photo collection. This collection is typically organized 
+in folders and sub folders with a given structure, e.g. by year and month or year and topic. The **copy** command copies new photos from a _source_ folder to a _target_ folder, while 
+checking for existing photos in one or more _check_ folders. Duplicate photos in _source_ and _check_ folders are not copied to the target folder. The new files in _target_ folder can 
+then be moved their final location in the existing photo collection folder structure.
+
+Short step by step description of a typical workflow:
+1. Choose existing _source_ folder (e.g. DCIM) or copy pre-selected photos to an empty _source_ folder.
+2. Clean _target_ folder when not empty.
+3. Run simphosort copy command with optional _check_ folders. First check folder is typically the exisiting photo collection root folder.
+4. Copy new files from _target_ folder to their final storage location.
+5. Repeat next time...
+
+## Commands
+
+### copy
+Copy all photo files (currently *.jpg and *.jpeg) from a _source_ folder (including sub folders) to a _target_ folder with optional checks.
 ```
-Usage: simphosort.exe sort [options] <work> <photo> <sort>
+Usage: simphosort.exe copy [options] <source> <target>
 
 Arguments:
 
-  work   <PATH>
-  Put the unsorted photos here
+  source  <PATH>
+  Source folder containing the photo files to copy
 
-  photo  <PATH>
-  Where your existing photos are saved
-
-  sort   <PATH>
-  New photos are copied here
+  target  <PATH>
+  Target folder (has to be empty)
 
 Options:
 
-  -j | --junk  <PATH>
-  Treat photos from here as existing
+  -c | --check (Multiple)  <PATH>
+  Check for duplicate photos at these folders. Duplicate files will not be copied to target.
 ```
-
-	
-4. Copy new files from _sort_ folder into either _photo_ folder sub folders or _junk_ folder.
-5. Repeat next time...
 
 ## License
 simphosort is using the MIT license. See [LICENSE](LICENSE).
