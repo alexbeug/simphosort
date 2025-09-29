@@ -6,7 +6,7 @@
 namespace Simphosort.Core.Services.Helper
 {
     /// <summary>
-    /// Folderservices
+    /// Folder services
     /// </summary>
     internal interface IFolderService
     {

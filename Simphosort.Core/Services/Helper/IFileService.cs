@@ -1,4 +1,4 @@
-﻿// <copyright file="ICopyService.cs" company="Alexander Beug">
+﻿// <copyright file="IFileService.cs" company="Alexander Beug">
 // Copyright (c) Alexander Beug. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 // </copyright>
@@ -6,9 +6,9 @@
 namespace Simphosort.Core.Services.Helper
 {
     /// <summary>
-    /// Service to copy files
+    /// File services
     /// </summary>
-    internal interface ICopyService
+    internal interface IFileService
     {
         /// <summary>
         /// Copy files to target folder

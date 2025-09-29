@@ -1,4 +1,4 @@
-﻿// <copyright file="MainService.cs" company="Alexander Beug">
+﻿// <copyright file="CopyService.cs" company="Alexander Beug">
 // Copyright (c) Alexander Beug. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 // </copyright>
@@ -9,21 +9,21 @@ using Simphosort.Core.Utilities;
 namespace Simphosort.Core.Services
 {
     /// <inheritdoc/>
-    internal class MainService : IMainService
+    internal class CopyService : ICopyService
     {
         #region Constructor
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="MainService"/> class.
+        /// Initializes a new instance of the <see cref="Services.CopyService"/> class.
         /// </summary>
         /// <param name="folderService">A <see cref="IFolderService"/>.</param>
         /// <param name="searchService">A <see cref="ISearchService"/>.</param>
-        /// <param name="copyService">A <see cref="ICopyService"/>.</param>
-        public MainService(IFolderService folderService, ISearchService searchService, ICopyService copyService)
+        /// <param name="fileService">A <see cref="IFileService"/>.</param>
+        public CopyService(IFolderService folderService, ISearchService searchService, IFileService fileService)
         {
             FolderService = folderService;
             SearchService = searchService;
-            CopyService = copyService;
+            FileService = fileService;
         }
 
         #endregion // Constructor
@@ -36,15 +36,15 @@ namespace Simphosort.Core.Services
         /// <inheritdoc cref="ISearchService"/>
         private ISearchService SearchService { get; }
 
-        /// <inheritdoc cref="ICopyService"/>
-        private ICopyService CopyService { get; }
+        /// <inheritdoc cref="IFileService"/>
+        private IFileService FileService { get; }
 
         #endregion // Properties
 
         #region Methods
 
         /// <inheritdoc/>
-        public ErrorLevel CopyPhotos(string sourceFolder, string targetFolder, IEnumerable<string>? checkFolders, Action<string> callbackLog, Action<string> callbackError)
+        public ErrorLevel Copy(string sourceFolder, string targetFolder, IEnumerable<string>? checkFolders, Action<string> callbackLog, Action<string> callbackError)
         {
             // Put the mandatory folders into a list
             List<string> folders = new()
@@ -115,7 +115,7 @@ namespace Simphosort.Core.Services
             }
 
             // Copy files to target folder
-            int copied = CopyService.CopyFiles(copyFiles, targetFolder, callbackLog, callbackError);
+            int copied = FileService.CopyFiles(copyFiles, targetFolder, callbackLog, callbackError);
             callbackLog($"\n{copied} of {copyFiles.Count} files copied\n");
 
             return copied == copyFiles.Count ? ErrorLevel.Ok : ErrorLevel.CopyFailed;

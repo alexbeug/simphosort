@@ -23,12 +23,12 @@ namespace Simphosort.Core.Utilities
         public static IServiceCollection Register(IServiceCollection services)
         {
             // Add singleton services (stateless)
-            services.AddSingleton<IMainService, MainService>();
+            services.AddSingleton<ICopyService, CopyService>();
 
             services.AddSingleton<IFileInfoComparer, FileInfoComparer>();
             services.AddSingleton<IFolderService, FolderService>();
             services.AddSingleton<ISearchService, SearchService>();
-            services.AddSingleton<ICopyService, CopyService>();
+            services.AddSingleton<IFileService, FileService>();
 
             return services;
         }
