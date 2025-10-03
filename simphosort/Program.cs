@@ -16,7 +16,7 @@ namespace Simphosort
     /// <summary>
     /// Program class
     /// </summary>
-    [Command(Description = $"simphosort - Simple Photo Sorter - COPYRIGHT 2025 Alexander Beug - https://www.alexpage.de")]
+    [Command(Description = $"simphosort - Simple Photo Sorter - Copyright (c) 2025 Alexander Beug - https://www.alexpage.de")]
     internal class Program
     {
         /// <inheritdoc cref="IServiceProvider"/>

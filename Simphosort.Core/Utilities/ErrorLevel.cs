@@ -21,12 +21,12 @@ namespace Simphosort.Core.Utilities
         Canceled = 1,
 
         /// <summary>
-        /// One of the folders from operands is not valid
+        /// One of the folders is not valid
         /// </summary>
         FolderNotValid = 100,
 
         /// <summary>
-        /// One of the folders from operands did not exist
+        /// One of the folders did not exist
         /// </summary>
         FolderDoesNotExist = 101,
 
