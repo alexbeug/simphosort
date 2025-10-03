@@ -15,7 +15,7 @@ namespace Simphosort.Core.Services.Helper
 
             if (cancellationToken.IsCancellationRequested)
             {
-                // Return directly if cancelled
+                // Return directly if canceled
                 return copied;
             }
 

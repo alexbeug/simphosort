@@ -15,10 +15,10 @@ namespace Simphosort.Core.Utilities
         /// <summary>
         /// URL to author's page
         /// </summary>
-        private const string AuthorUrl = "www.alexpage.de";
+        private const string AuthorUrl = $"https://www.alexpage.de";
 
         /// <summary>
-        /// Return version  and copyright information
+        /// Return version and copyright information
         /// </summary>
         /// <returns>version and copyright information</returns>
         public static string GetVersionString()
