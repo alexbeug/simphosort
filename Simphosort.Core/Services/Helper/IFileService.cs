@@ -17,7 +17,8 @@ namespace Simphosort.Core.Services.Helper
         /// <param name="targetFolder">target folder</param>
         /// <param name="callbackLog">Log callback function</param>
         /// <param name="callbackError">Error callback function</param>
+        /// <param name="cancellationToken">A <see cref="CancellationToken"/></param>
         /// <returns>Files copied</returns>
-        int CopyFiles(IEnumerable<FileInfo> files, string targetFolder, Action<string> callbackLog, Action<string> callbackError);
+        int CopyFiles(IEnumerable<FileInfo> files, string targetFolder, Action<string> callbackLog, Action<string> callbackError, CancellationToken cancellationToken);
     }
 }

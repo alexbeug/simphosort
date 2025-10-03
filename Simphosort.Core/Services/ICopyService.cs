@@ -15,12 +15,13 @@ namespace Simphosort.Core.Services
         /// <summary>
         ///  Copy
         /// </summary>
-        /// <param name="sourceFolder">source folder</param>
-        /// <param name="targetFolder">target folder</param>
-        /// <param name="checkFolders">check folders (exclude duplicates)</param>
+        /// <param name="sourceFolder">Source folder</param>
+        /// <param name="targetFolder">Target folder</param>
+        /// <param name="checkFolders">Check folders (exclude duplicates)</param>
         /// <param name="callbackLog">Log message callback</param>
         /// <param name="callbackError">Error message callback</param>
+        /// <param name="cancellationToken">A <see cref="CancellationToken"/></param>
         /// <returns><see cref="ErrorLevel"/></returns>
-        ErrorLevel Copy(string sourceFolder, string targetFolder, IEnumerable<string>? checkFolders, Action<string> callbackLog, Action<string> callbackError);
+        ErrorLevel Copy(string sourceFolder, string targetFolder, IEnumerable<string>? checkFolders, Action<string> callbackLog, Action<string> callbackError, CancellationToken cancellationToken);
     }
 }

@@ -16,6 +16,11 @@ namespace Simphosort.Core.Utilities
         Ok = 0,
 
         /// <summary>
+        /// Canceled
+        /// </summary>
+        Canceled = 1,
+
+        /// <summary>
         /// One of the folders from operands is not valid
         /// </summary>
         FolderNotValid = 100,

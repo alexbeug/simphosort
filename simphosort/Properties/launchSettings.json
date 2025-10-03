@@ -14,6 +14,10 @@
     "TestCopyCheck - j:\\": {
       "commandName": "Project",
       "commandLineArgs": "copy j:\\_simphosort\\work j:\\_simphosort\\sort -c j:\\_simphosort\\photo"
+    },
+    "TestCopyMoto": {
+      "commandName": "Project",
+      "commandLineArgs": "copy m:\\DCIM\\Moto m:\\DCIM\\Sort -c m:\\Fotos"
     }
   }
 }

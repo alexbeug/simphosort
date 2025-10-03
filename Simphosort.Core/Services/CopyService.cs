@@ -44,8 +44,19 @@ namespace Simphosort.Core.Services
         #region Methods
 
         /// <inheritdoc/>
-        public ErrorLevel Copy(string sourceFolder, string targetFolder, IEnumerable<string>? checkFolders, Action<string> callbackLog, Action<string> callbackError)
+        public ErrorLevel Copy(string sourceFolder, string targetFolder, IEnumerable<string>? checkFolders, Action<string> callbackLog, Action<string> callbackError, CancellationToken cancellationToken)
         {
+            // Log operation start
+            callbackLog($"{VersionInfo.GetVersionString()}\n");
+            callbackLog($"Copy files");
+            callbackLog($"   source : {sourceFolder}");
+            callbackLog($"   target : {targetFolder}");
+            checkFolders?.ToList().ForEach(f => callbackLog($"   check  : {f}"));
+            callbackLog(string.Empty);
+
+            // Start time
+            DateTime start = DateTime.UtcNow;
+
             // Put the mandatory folders into a list
             List<string> folders = new()
             {
@@ -86,10 +97,24 @@ namespace Simphosort.Core.Services
                 return ErrorLevel.FoldersAreNotUnique;
             }
 
+            // Break operation when cancellation requested
+            if (cancellationToken.IsCancellationRequested)
+            {
+                callbackLog($"Copy canceled before copying files\n");
+                return ErrorLevel.Canceled;
+            }
+
             // Find files in source folder (non-recursive)
             callbackLog($"Searching files in source folder...");
-            List<FileInfo> sourceFiles = SearchService.SearchFiles(sourceFolder, Constants.SupportedExtensions, false);
+            List<FileInfo> sourceFiles = SearchService.SearchFiles(sourceFolder, Constants.SupportedExtensions, false, cancellationToken);
             callbackLog($"   -> {sourceFiles.Count} files found in source folder\n");
+
+            // Break operation when cancellation requested
+            if (cancellationToken.IsCancellationRequested)
+            {
+                callbackLog($"Copy canceled before copying files\n");
+                return ErrorLevel.Canceled;
+            }
 
             // Prepare list for files to copy
             List<FileInfo> copyFiles;
@@ -99,13 +124,20 @@ namespace Simphosort.Core.Services
                 // Find files in check folders (recursive)
                 callbackLog($"Searching files in check folders...");
                 List<FileInfo> checkFiles = new();
-                checkFolders.ToList().ForEach(folder => checkFiles.AddRange(SearchService.SearchFiles(folder, Constants.SupportedExtensions, true)));
+                checkFolders.TakeWhile(c => !cancellationToken.IsCancellationRequested).ToList().ForEach(folder => checkFiles.AddRange(SearchService.SearchFiles(folder, Constants.SupportedExtensions, true, cancellationToken).TakeWhile(s => !cancellationToken.IsCancellationRequested)));
                 callbackLog($"   -> {checkFiles.Count} files found in check folders\n");
+
+                // Break operation when cancellation requested
+                if (cancellationToken.IsCancellationRequested)
+                {
+                    callbackLog($"Copy canceled before copying files\n");
+                    return ErrorLevel.Canceled;
+                }
 
                 // Compare sourceFiles with existing ones in checkFolders and give a list of files to copy
                 callbackLog($"Comparing files in source and check folders...");
-                copyFiles = SearchService.ReduceFiles(sourceFiles, checkFiles);
-                callbackLog($"   ->  {copyFiles.Count} new files to copy\n");
+                copyFiles = SearchService.ReduceFiles(sourceFiles, checkFiles, cancellationToken);
+                callbackLog($"   -> {copyFiles.Count} new files to copy\n");
             }
             else
             {
@@ -114,11 +146,38 @@ namespace Simphosort.Core.Services
                 callbackLog($"   -> {copyFiles.Count} source files to copy\n");
             }
 
+            // Break operation when cancellation requested
+            if (cancellationToken.IsCancellationRequested)
+            {
+                callbackLog($"Copy canceled before copying files\n");
+                return ErrorLevel.Canceled;
+            }
+
             // Copy files to target folder
-            int copied = FileService.CopyFiles(copyFiles, targetFolder, callbackLog, callbackError);
+            int copied = FileService.CopyFiles(copyFiles, targetFolder, callbackLog, callbackError, cancellationToken);
             callbackLog($"\n{copied} of {copyFiles.Count} files copied\n");
 
-            return copied == copyFiles.Count ? ErrorLevel.Ok : ErrorLevel.CopyFailed;
+            // Log operation duration and remove milliseconds and microseconds for better readability
+            TimeSpan duration = DateTime.UtcNow - start;
+            duration = duration.Subtract(new TimeSpan(0, 0, 0, 0, duration.Milliseconds, duration.Microseconds));
+
+            // Break operation when cancellation requested
+            if (cancellationToken.IsCancellationRequested)
+            {
+                callbackLog($"Copy canceled while copying files (Duration: {duration:g})\n");
+                return ErrorLevel.Canceled;
+            }
+
+            if (copied == copyFiles.Count)
+            {
+                callbackLog($"Copy completed successfully after (Duration: {duration:g})\n");
+                return ErrorLevel.Ok;
+            }
+            else
+            {
+                callbackError($"Copy completed with errors after (Duration: {duration:g})\n");
+                return ErrorLevel.CopyFailed;
+            }
         }
 
         #endregion // Methods

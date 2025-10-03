@@ -9,13 +9,19 @@ namespace Simphosort.Core.Services.Helper
     internal class FileService : IFileService
     {
         /// <inheritdoc/>
-        public int CopyFiles(IEnumerable<FileInfo> files, string targetFolder, Action<string> callbackLog, Action<string> callbackError)
+        public int CopyFiles(IEnumerable<FileInfo> files, string targetFolder, Action<string> callbackLog, Action<string> callbackError, CancellationToken cancellationToken)
         {
             int copied = 0;
 
+            if (cancellationToken.IsCancellationRequested)
+            {
+                // Return directly if cancelled
+                return copied;
+            }
+
             callbackLog($"\nCopying {files.Count()} new image files to {targetFolder}\n");
 
-            foreach (FileInfo file in files)
+            foreach (FileInfo file in files.TakeWhile(f => !cancellationToken.IsCancellationRequested))
             {
                 callbackLog($"Copying {file.FullName}");
 

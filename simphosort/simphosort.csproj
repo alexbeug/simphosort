@@ -11,8 +11,10 @@
 
   <PropertyGroup>
     <VersionPrefix>0.1.0</VersionPrefix>
+    <VersionSuffix>$([System.DateTime]::UtcNow.ToString('yyMMddHHmmss'))</VersionSuffix>
+    <Copyright>Copyright (c) 2025 Alexander Beug</Copyright>
   </PropertyGroup>
-
+  
   <ItemGroup>
     <PackageReference Include="CommandDotNet" Version="8.1.1" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.8" />

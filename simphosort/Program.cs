@@ -37,13 +37,15 @@ namespace Simphosort
         /// <param name="sourceFolder">source folder</param>
         /// <param name="targetFolder">target folder</param>
         /// <param name="checkFolders">check folders</param>
+        /// <param name="ct">A <see cref="CancellationToken"/></param>
         /// <returns>An <see cref="ErrorLevel"/> value as int.</returns>
         [Command("copy", Description = "Copy new photos from source folder to target folder with optional checks")]
         public int Copy(
             [Operand("source", Description = "Source folder (containing the photo files to copy)"), PathReference] DirectoryInfo sourceFolder,
             [Operand("target", Description = "Target folder (work folder, has to be empty)"), PathReference] DirectoryInfo targetFolder,
-            [Option('c', "check", Description = "Check for duplicate photos at these folders. Duplicate files will not be copied to target."), PathReference] DirectoryInfo[]? checkFolders)
-            => _provider.GetRequiredService<ICopyService>().Copy(sourceFolder.FullName, targetFolder.FullName, checkFolders?.Select(c => c.FullName), DisplayCallback, DisplayCallback).ToInt();
+            [Option('c', "check", Description = "Check for duplicate photos at these folders. Duplicate files will not be copied to target."), PathReference] DirectoryInfo[]? checkFolders,
+            CancellationToken ct)
+            => _provider.GetRequiredService<ICopyService>().Copy(sourceFolder.FullName, targetFolder.FullName, checkFolders?.Select(c => c.FullName), DisplayCallback, DisplayCallback, ct).ToInt();
 
         /// <summary>
         /// Program main function
@@ -57,6 +59,7 @@ namespace Simphosort
             return new AppRunner<Program>()
                 .UseVersionMiddleware() // Adds a version option and command
                 .UseTypoSuggestions() // Suggests correct command names if user makes a typo
+                .UseCancellationHandlers() // Enables Ctrl+C cancellation
                 .Run(args);
         }
 
