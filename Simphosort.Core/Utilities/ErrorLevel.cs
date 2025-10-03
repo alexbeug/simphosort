@@ -16,24 +16,24 @@ namespace Simphosort.Core.Utilities
         Ok = 0,
 
         /// <summary>
-        /// Only usage shown
+        /// Canceled
         /// </summary>
-        ArgumentsUsage = 1,
+        Canceled = 1,
 
         /// <summary>
-        /// Arguments not correct
+        /// One of the folders from operands is not valid
         /// </summary>
-        ArgumentsIncorrent = 2,
+        FolderNotValid = 100,
 
         /// <summary>
-        /// One of the folders form parameters did not exist
+        /// One of the folders from operands did not exist
         /// </summary>
-        FolderDoesNotExist = 100,
+        FolderDoesNotExist = 101,
 
         /// <summary>
         /// Sort folder is not empty
         /// </summary>
-        FolderNotEmpty = 101,
+        FolderNotEmpty = 120,
 
         /// <summary>
         /// Given folders are not unique

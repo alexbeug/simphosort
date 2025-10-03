@@ -3,7 +3,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 // </copyright>
 
-namespace Simphosort.Core.Services
+namespace Simphosort.Core.Services.Helper
 {
     /// <inheritdoc/>
     internal class SearchService : ISearchService
@@ -33,17 +33,29 @@ namespace Simphosort.Core.Services
         #region Methods
 
         /// <inheritdoc/>
-        public List<FileInfo> SearchFiles(string folder, string[] extensions, bool subfolders)
+        public List<FileInfo> SearchFiles(string folder, string[] extensions, bool subfolders, CancellationToken cancellationToken)
         {
+            if (cancellationToken.IsCancellationRequested)
+            {
+                // Return directly if cancelled
+                return new List<FileInfo>();
+            }
+
             DirectoryInfo directoryInfo = new(folder);
-            return extensions.SelectMany(x => directoryInfo.GetFiles(x.ToLower(), subfolders ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly)).ToList();
+            return extensions.SelectMany(x => directoryInfo.GetFiles(x.ToLower(), subfolders ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly)).TakeWhile(s => !cancellationToken.IsCancellationRequested).ToList();
         }
 
         /// <inheritdoc/>
-        public List<FileInfo> ReduceFiles(IEnumerable<FileInfo> workFiles, IEnumerable<FileInfo> reduceFiles)
+        public List<FileInfo> ReduceFiles(IEnumerable<FileInfo> workFiles, IEnumerable<FileInfo> reduceFiles, CancellationToken cancellationToken)
         {
+            if (cancellationToken.IsCancellationRequested)
+            {
+                // Return directly if cancelled
+                return new List<FileInfo>();
+            }
+
             List<FileInfo> reducedFiles = new();
-            reducedFiles.AddRange(workFiles.Where(w => !reduceFiles.Contains(w, FileInfoComparer)));
+            reducedFiles.AddRange(workFiles.Where(w => !reduceFiles.Contains(w, FileInfoComparer)).TakeWhile(s => !cancellationToken.IsCancellationRequested));
             return reducedFiles;
         }
 

@@ -3,21 +3,25 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 // </copyright>
 
+using Simphosort.Core.Utilities;
+
 namespace Simphosort.Core.Services
 {
     /// <summary>
-    /// Service to copy files
+    /// Copy service
     /// </summary>
-    internal interface ICopyService
+    public interface ICopyService
     {
         /// <summary>
-        /// Copy files to target folder
+        ///  Copy
         /// </summary>
-        /// <param name="files">Files to copy</param>
-        /// <param name="sortFolder">target folder</param>
-        /// <param name="callbackLog">Log callback function</param>
-        /// <param name="callbackError">Error callback function</param>
-        /// <returns>Files copied</returns>
-        int CopyFiles(IEnumerable<FileInfo> files, string sortFolder, Action<string> callbackLog, Action<string> callbackError);
+        /// <param name="sourceFolder">Source folder</param>
+        /// <param name="targetFolder">Target folder</param>
+        /// <param name="checkFolders">Check folders (exclude duplicates)</param>
+        /// <param name="callbackLog">Log message callback</param>
+        /// <param name="callbackError">Error message callback</param>
+        /// <param name="cancellationToken">A <see cref="CancellationToken"/></param>
+        /// <returns><see cref="ErrorLevel"/></returns>
+        ErrorLevel Copy(string sourceFolder, string targetFolder, IEnumerable<string>? checkFolders, Action<string> callbackLog, Action<string> callbackError, CancellationToken cancellationToken);
     }
 }

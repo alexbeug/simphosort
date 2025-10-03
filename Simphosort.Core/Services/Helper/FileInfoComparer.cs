@@ -5,7 +5,7 @@
 
 using System.Diagnostics.CodeAnalysis;
 
-namespace Simphosort.Core.Services
+namespace Simphosort.Core.Services.Helper
 {
     /// <inheritdoc/>
     internal class FileInfoComparer : IFileInfoComparer

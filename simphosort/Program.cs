@@ -3,6 +3,9 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 // </copyright>
 
+using CommandDotNet;
+using JetBrains.Annotations;
+
 using Microsoft.Extensions.DependencyInjection;
 
 using Simphosort.Core.Services;
@@ -13,8 +16,37 @@ namespace Simphosort
     /// <summary>
     /// Program class
     /// </summary>
-    internal static class Program
+    [Command(Description = $"simphosort - Simple Photo Sorter - COPYRIGHT 2025 Alexander Beug - https://www.alexpage.de")]
+    internal class Program
     {
+        /// <inheritdoc cref="IServiceProvider"/>
+        private readonly IServiceProvider _provider;
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Program"/> class.
+        /// </summary>
+        public Program()
+        {
+            // Register services
+            _provider = RegisterServices();
+        }
+
+        /// <summary>
+        /// Copy command
+        /// </summary>
+        /// <param name="sourceFolder">source folder</param>
+        /// <param name="targetFolder">target folder</param>
+        /// <param name="checkFolders">check folders</param>
+        /// <param name="ct">A <see cref="CancellationToken"/></param>
+        /// <returns>An <see cref="ErrorLevel"/> value as int.</returns>
+        [Command("copy", Description = "Copy new photos from source folder to target folder with optional checks")]
+        public int Copy(
+            [Operand("source", Description = "Source folder (containing the photo files to copy)"), PathReference] DirectoryInfo sourceFolder,
+            [Operand("target", Description = "Target folder (work folder, has to be empty)"), PathReference] DirectoryInfo targetFolder,
+            [Option('c', "check", Description = "Check for duplicate photos at these folders. Duplicate files will not be copied to target."), PathReference] DirectoryInfo[]? checkFolders,
+            CancellationToken ct)
+            => _provider.GetRequiredService<ICopyService>().Copy(sourceFolder.FullName, targetFolder.FullName, checkFolders?.Select(c => c.FullName), DisplayCallback, DisplayCallback, ct).ToInt();
+
         /// <summary>
         /// Program main function
         /// </summary>
@@ -22,38 +54,13 @@ namespace Simphosort
         /// <returns><see cref="ErrorLevel"/> as int value</returns>
         private static int Main(string[] args)
         {
-            // Register services and get the 2 needed services for Main function
-            IServiceProvider provider = RegisterServices();
-            IMainService mainService = provider.GetRequiredService<IMainService>();
-
-            // Display program title
-            DisplayTitle();
-
-            if (args.Length > 2 && args.Length < 5)
-            {
-                // Call sorting with arguments (3 or 4)
-                return mainService.SortPhotos(args[0], args[1], args[2], args.Length > 3 ? args[3] : string.Empty, DisplayCallback, DisplayCallback).ToInt();
-            }
-            else
-            {
-                if (args.Length > 0)
-                {
-                    // Invalid number of arguments (fewer than 3 or more than 4)
-                    DisplayArgsError();
-
-                    // Display usage for information
-                    DisplayUsage();
-
-                    // Return error
-                    return ErrorLevel.ArgumentsIncorrent.ToInt();
-                }
-
-                // Usage without arguments or when called incorrectly
-                DisplayUsage();
-
-                // Return error
-                return ErrorLevel.ArgumentsUsage.ToInt();
-            }
+            // AppRunner<T> where T is the class defining your commands
+            // You can use Program or create commands in another class
+            return new AppRunner<Program>()
+                .UseVersionMiddleware() // Adds a version option and command
+                .UseTypoSuggestions() // Suggests correct command names if user makes a typo
+                .UseCancellationHandlers() // Enables Ctrl+C cancellation
+                .Run(args);
         }
 
         /// <summary>
@@ -67,40 +74,6 @@ namespace Simphosort
 
             IServiceProvider provider = container.BuildServiceProvider();
             return provider;
-        }
-
-        /// <summary>
-        /// Display title and copyright
-        /// </summary>
-        private static void DisplayTitle()
-        {
-            Console.WriteLine("simphosort - Simple Photo Sorter");
-            Console.WriteLine("COPYRIGHT 2025 Alexander Beug");
-            Console.WriteLine("https://www.alexpage.de");
-            Console.WriteLine();
-        }
-
-        /// <summary>
-        /// Display program usage
-        /// </summary>
-        private static void DisplayUsage()
-        {
-            Console.WriteLine("simphosort [work folder] [photo folder] [sort folder] [junk folder]");
-            Console.WriteLine();
-            Console.WriteLine("[work folder]    put the unsorted photos here");
-            Console.WriteLine("[photo folder]   where your existing photos are saved");
-            Console.WriteLine("[sort folder]    new photos are moved here after check");
-            Console.WriteLine("[junk folder]    put junk photos here to ignore then in the next sort (optional)");
-            Console.WriteLine();
-        }
-
-        /// <summary>
-        /// Display args error
-        /// </summary>
-        private static void DisplayArgsError()
-        {
-            Console.WriteLine("ERROR: Invalid number of arguments!");
-            Console.WriteLine();
         }
 
         /// <summary>

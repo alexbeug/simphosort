@@ -3,35 +3,183 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 // </copyright>
 
+using Simphosort.Core.Services.Helper;
+using Simphosort.Core.Utilities;
+
 namespace Simphosort.Core.Services
 {
     /// <inheritdoc/>
     internal class CopyService : ICopyService
     {
-        /// <inheritdoc/>
-        public int CopyFiles(IEnumerable<FileInfo> files, string sortFolder, Action<string> callbackLog, Action<string> callbackError)
+        #region Constructor
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Services.CopyService"/> class.
+        /// </summary>
+        /// <param name="folderService">A <see cref="IFolderService"/>.</param>
+        /// <param name="searchService">A <see cref="ISearchService"/>.</param>
+        /// <param name="fileService">A <see cref="IFileService"/>.</param>
+        public CopyService(IFolderService folderService, ISearchService searchService, IFileService fileService)
         {
-            int copied = 0;
+            FolderService = folderService;
+            SearchService = searchService;
+            FileService = fileService;
+        }
 
-            callbackLog($"\nCopying {files.Count()} new image files to {sortFolder}\n");
+        #endregion // Constructor
 
-            foreach (FileInfo file in files)
+        #region Properties
+
+        /// <inheritdoc cref="IFolderService"/>
+        private IFolderService FolderService { get; }
+
+        /// <inheritdoc cref="ISearchService"/>
+        private ISearchService SearchService { get; }
+
+        /// <inheritdoc cref="IFileService"/>
+        private IFileService FileService { get; }
+
+        #endregion // Properties
+
+        #region Methods
+
+        /// <inheritdoc/>
+        public ErrorLevel Copy(string sourceFolder, string targetFolder, IEnumerable<string>? checkFolders, Action<string> callbackLog, Action<string> callbackError, CancellationToken cancellationToken)
+        {
+            // Log operation start
+            callbackLog($"{VersionInfo.GetVersionString()}\n");
+            callbackLog($"Copy files");
+            callbackLog($"   source : {sourceFolder}");
+            callbackLog($"   target : {targetFolder}");
+            checkFolders?.ToList().ForEach(f => callbackLog($"   check  : {f}"));
+            callbackLog(string.Empty);
+
+            // Start time
+            DateTime start = DateTime.UtcNow;
+
+            // Put the mandatory folders into a list
+            List<string> folders = new()
             {
-                callbackLog($"Copying {file.FullName}");
+                sourceFolder, targetFolder,
+            };
 
-                try
-                {
-                    File.Copy(file.FullName, Path.Combine(sortFolder, file.Name));
-                    callbackLog($"   -> copied");
-                    copied++;
-                }
-                catch
-                {
-                    callbackError($"   -> failed");
-                }
+            // Add optional check folders when given
+            if (checkFolders != null)
+            {
+                folders.AddRange(checkFolders.Where(x => !string.IsNullOrEmpty(x)));
             }
 
-            return copied;
+            // Check folders for validity
+            if (!folders.All(x => FolderService.Valid(x, callbackError)))
+            {
+                 // Stop when a folder is not valid
+                return ErrorLevel.FolderNotValid;
+            }
+
+            // Check folders for existence
+            if (!folders.All(x => FolderService.Exists(x, callbackError)))
+            {
+                 // Stop when a folder does not exist
+                return ErrorLevel.FolderDoesNotExist;
+            }
+
+            // Target folder has to be empty
+            if (!FolderService.Empty(targetFolder, callbackError))
+            {
+                // Stop when target folder is not empty
+                return ErrorLevel.FolderNotEmpty;
+            }
+
+            // Check folders in list for uniqueness
+            if (!FolderService.Unique(folders, callbackError))
+            {
+                // Stop when folders are not unique
+                return ErrorLevel.FoldersAreNotUnique;
+            }
+
+            // Break operation when cancellation requested
+            if (cancellationToken.IsCancellationRequested)
+            {
+                callbackLog($"Copy canceled before copying files\n");
+                return ErrorLevel.Canceled;
+            }
+
+            // Find files in source folder (non-recursive)
+            callbackLog($"Searching files in source folder...");
+            List<FileInfo> sourceFiles = SearchService.SearchFiles(sourceFolder, Constants.SupportedExtensions, false, cancellationToken);
+            callbackLog($"   -> {sourceFiles.Count} files found in source folder\n");
+
+            // Break operation when cancellation requested
+            if (cancellationToken.IsCancellationRequested)
+            {
+                callbackLog($"Copy canceled before copying files\n");
+                return ErrorLevel.Canceled;
+            }
+
+            // Prepare list for files to copy
+            List<FileInfo> copyFiles;
+
+            if (checkFolders != null && checkFolders.Any())
+            {
+                // Find files in check folders (recursive)
+                callbackLog($"Searching files in check folders...");
+                List<FileInfo> checkFiles = new();
+                checkFolders.TakeWhile(c => !cancellationToken.IsCancellationRequested).ToList().ForEach(folder => checkFiles.AddRange(SearchService.SearchFiles(folder, Constants.SupportedExtensions, true, cancellationToken).TakeWhile(s => !cancellationToken.IsCancellationRequested)));
+                callbackLog($"   -> {checkFiles.Count} files found in check folders\n");
+
+                // Break operation when cancellation requested
+                if (cancellationToken.IsCancellationRequested)
+                {
+                    callbackLog($"Copy canceled before copying files\n");
+                    return ErrorLevel.Canceled;
+                }
+
+                // Compare sourceFiles with existing ones in checkFolders and give a list of files to copy
+                callbackLog($"Comparing files in source and check folders...");
+                copyFiles = SearchService.ReduceFiles(sourceFiles, checkFiles, cancellationToken);
+                callbackLog($"   -> {copyFiles.Count} new files to copy\n");
+            }
+            else
+            {
+                // No check folders given, so all files from source folder are new
+                copyFiles = sourceFiles;
+                callbackLog($"   -> {copyFiles.Count} source files to copy\n");
+            }
+
+            // Break operation when cancellation requested
+            if (cancellationToken.IsCancellationRequested)
+            {
+                callbackLog($"Copy canceled before copying files\n");
+                return ErrorLevel.Canceled;
+            }
+
+            // Copy files to target folder
+            int copied = FileService.CopyFiles(copyFiles, targetFolder, callbackLog, callbackError, cancellationToken);
+            callbackLog($"\n{copied} of {copyFiles.Count} files copied\n");
+
+            // Log operation duration and remove milliseconds and microseconds for better readability
+            TimeSpan duration = DateTime.UtcNow - start;
+            duration = duration.Subtract(new TimeSpan(0, 0, 0, 0, duration.Milliseconds, duration.Microseconds));
+
+            // Break operation when cancellation requested
+            if (cancellationToken.IsCancellationRequested)
+            {
+                callbackLog($"Copy canceled while copying files (Duration: {duration:g})\n");
+                return ErrorLevel.Canceled;
+            }
+
+            if (copied == copyFiles.Count)
+            {
+                callbackLog($"Copy completed successfully after (Duration: {duration:g})\n");
+                return ErrorLevel.Ok;
+            }
+            else
+            {
+                callbackError($"Copy completed with errors after (Duration: {duration:g})\n");
+                return ErrorLevel.CopyFailed;
+            }
         }
+
+        #endregion // Methods
     }
 }

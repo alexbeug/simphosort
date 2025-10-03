@@ -3,11 +3,23 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 // </copyright>
 
-namespace Simphosort.Core.Services
+namespace Simphosort.Core.Services.Helper
 {
     /// <inheritdoc/>
     internal class FolderService : IFolderService
     {
+        /// <inheritdoc/>
+        public bool Valid(string folder, Action<string> callbackError)
+        {
+            if (Path.GetInvalidPathChars().AsEnumerable().Any(c => folder.Contains(c)))
+            {
+                callbackError($"ERROR: Folder {folder} contains invalid characters!");
+                return false;
+            }
+
+            return true;
+        }
+
         /// <inheritdoc/>
         public bool Exists(string folder, Action<string> callbackError)
         {

@@ -1,19 +1,23 @@
 {
   "profiles": {
-    "Test - j:\\_simphosort": {
-      "commandName": "Project",
-      "commandLineArgs": "j:\\_simphosort\\work j:\\_simphosort\\photo j:\\_simphosort\\sort j:\\_simphosort\\junk"
-    },
     "Test - Usage": {
       "commandName": "Project"
-    },
-    "Test - ERROR: Uniqueness": {
-      "commandName": "Project",
-      "commandLineArgs": "j:\\_simphosort\\work j:\\_simphosort\\photo j:\\_simphosort\\sort j:\\_simphosort\\work"
     },
     "Test - Moto": {
       "commandName": "Project",
       "commandLineArgs": "m:\\DCIM\\Moto m:\\Fotos m:\\DCIM\\Sort M:\\DCIM\\Junk"
+    },
+    "TestSimpleCopy - j:\\": {
+      "commandName": "Project",
+      "commandLineArgs": "copy j:\\_simphosort\\work j:\\_simphosort\\sort"
+    },
+    "TestCopyCheck - j:\\": {
+      "commandName": "Project",
+      "commandLineArgs": "copy j:\\_simphosort\\work j:\\_simphosort\\sort -c j:\\_simphosort\\photo"
+    },
+    "TestCopyMoto": {
+      "commandName": "Project",
+      "commandLineArgs": "copy m:\\DCIM\\Moto m:\\DCIM\\Sort -c m:\\Fotos"
     }
   }
 }
