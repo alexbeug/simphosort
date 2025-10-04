@@ -3,12 +3,11 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 // </copyright>
 
-using CommandDotNet;
-using JetBrains.Annotations;
+using System.Diagnostics.CodeAnalysis;
+using CliFx;
 
 using Microsoft.Extensions.DependencyInjection;
 
-using Simphosort.Core.Services;
 using Simphosort.Core.Utilities;
 
 namespace Simphosort
@@ -16,73 +15,33 @@ namespace Simphosort
     /// <summary>
     /// Program class
     /// </summary>
-    [Command(Description = $"simphosort - Simple Photo Sorter - Copyright (c) 2025 Alexander Beug - https://www.alexpage.de")]
-    internal class Program
+    // [Command(Description = $"simphosort - Simple Photo Sorter - Copyright (c) 2025 Alexander Beug - https://www.alexpage.de")]
+    internal static class Program
     {
-        /// <inheritdoc cref="IServiceProvider"/>
-        private readonly IServiceProvider _provider;
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="Program"/> class.
-        /// </summary>
-        public Program()
-        {
-            // Register services
-            _provider = RegisterServices();
-        }
-
-        /// <summary>
-        /// Copy command
-        /// </summary>
-        /// <param name="sourceFolder">source folder</param>
-        /// <param name="targetFolder">target folder</param>
-        /// <param name="checkFolders">check folders</param>
-        /// <param name="ct">A <see cref="CancellationToken"/></param>
-        /// <returns>An <see cref="ErrorLevel"/> value as int.</returns>
-        [Command("copy", Description = "Copy new photos from source folder to target folder with optional checks")]
-        public int Copy(
-            [Operand("source", Description = "Source folder (containing the photo files to copy)"), PathReference] DirectoryInfo sourceFolder,
-            [Operand("target", Description = "Target folder (work folder, has to be empty)"), PathReference] DirectoryInfo targetFolder,
-            [Option('c', "check", Description = "Check for duplicate photos at these folders. Duplicate files will not be copied to target."), PathReference] DirectoryInfo[]? checkFolders,
-            CancellationToken ct)
-            => _provider.GetRequiredService<ICopyService>().Copy(sourceFolder.FullName, targetFolder.FullName, checkFolders?.Select(c => c.FullName), DisplayCallback, DisplayCallback, ct).ToInt();
-
         /// <summary>
         /// Program main function
         /// </summary>
         /// <param name="args">Command line arguments</param>
         /// <returns><see cref="ErrorLevel"/> as int value</returns>
-        private static int Main(string[] args)
-        {
-            // AppRunner<T> where T is the class defining your commands
-            // You can use Program or create commands in another class
-            return new AppRunner<Program>()
-                .UseVersionMiddleware() // Adds a version option and command
-                .UseTypoSuggestions() // Suggests correct command names if user makes a typo
-                .UseCancellationHandlers() // Enables Ctrl+C cancellation
-                .Run(args);
-        }
+        [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(CopyCommand))]
+        public static async Task<int> Main() =>
+            await new CliApplicationBuilder()
+                .AddCommandsFromThisAssembly()
+                .SetExecutableName("simphosort")
+                .UseTypeActivator(commandTypes =>
+                {
+                    IServiceCollection container = new ServiceCollection();
+                    container = Simphosort.Core.Utilities.RegisterServices.Register(container);
 
-        /// <summary>
-        /// Registers all services for DI
-        /// </summary>
-        /// <returns>Service provider</returns>
-        private static IServiceProvider RegisterServices()
-        {
-            IServiceCollection container = new ServiceCollection();
-            container = Simphosort.Core.Utilities.RegisterServices.Register(container);
+                    // Register commands
+                    foreach (Type commandType in commandTypes)
+                    {
+                        container.AddTransient(commandType);
+                    }
 
-            IServiceProvider provider = container.BuildServiceProvider();
-            return provider;
-        }
-
-        /// <summary>
-        /// Callback for displaying an error or log message
-        /// </summary>
-        /// <param name="errmsg">Error/log message to display</param>
-        private static void DisplayCallback(string errmsg)
-        {
-            Console.WriteLine(errmsg);
-        }
+                    return container.BuildServiceProvider();
+                })                
+                .Build()
+                .RunAsync();
     }
 }
