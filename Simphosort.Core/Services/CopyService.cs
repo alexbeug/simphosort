@@ -47,7 +47,6 @@ namespace Simphosort.Core.Services
         public ErrorLevel Copy(string sourceFolder, string targetFolder, IEnumerable<string>? checkFolders, Action<string> callbackLog, Action<string> callbackError, CancellationToken cancellationToken)
         {
             // Log operation start
-            callbackLog($"{VersionInfo.GetVersionString()}\n");
             callbackLog($"Copy files");
             callbackLog($"   source : {sourceFolder}");
             callbackLog($"   target : {targetFolder}");
