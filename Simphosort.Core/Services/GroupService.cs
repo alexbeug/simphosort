@@ -11,7 +11,7 @@ namespace Simphosort.Core.Services
     internal class GroupService : IGroupService
     {
         /// <inheritdoc/>
-        public ErrorLevel GroupFileDate(string folder, string formatString, Action<string> callbackLog, Action<string> callbackError, CancellationToken cancellationToken)
+        public ErrorLevel GroupFixed(string folder, string formatString, Action<string> callbackLog, Action<string> callbackError, CancellationToken cancellationToken)
         {
             return ErrorLevel.Ok;
         }

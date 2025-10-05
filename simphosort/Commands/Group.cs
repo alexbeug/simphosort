@@ -18,7 +18,7 @@ namespace Simphosort.Commands
     public class Group
     {
         /// <summary>
-        /// Group files by formatted file date
+        /// Group files by formatted fixed date
         /// </summary>
         /// <param name="folder">Folder to group to sub folders</param>
         /// <param name="formatString">Format string</param>
@@ -26,7 +26,7 @@ namespace Simphosort.Commands
         /// <param name="groupService">A <see cref="IGroupService"/></param>
         /// <param name="ct"><see cref="CancellationToken"/></param>
         /// <returns><see cref="ErrorLevel"/></returns>
-        [Command("filedate", Description = "Group files by formatted file date", Usage = "simphosort group filedate [options] <folder>")]
+        [Command("fixed", Description = "Group files by fixed date", Usage = "simphosort group fixed [options] <folder>")]
         public int FileDateMethod(
             [Operand("folder", Description = "Folder (containing the photo files to group)"), PathReference] DirectoryInfo folder,
             [Option('f', "format", Description = "Format string (e.g. yyyy-MM-dd for daily sub folders)")] string formatString,
@@ -34,7 +34,7 @@ namespace Simphosort.Commands
             IGroupService groupService,
             CancellationToken ct)
         {
-            return groupService.GroupFileDate(folder.FullName, formatString, console.WriteLine, console.WriteLine, ct).ToInt();
+            return groupService.GroupFixed(folder.FullName, formatString, console.WriteLine, console.WriteLine, ct).ToInt();
         }
     }
 }

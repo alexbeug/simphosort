@@ -13,7 +13,7 @@ namespace Simphosort.Core.Services
     public interface IGroupService
     {
         /// <summary>
-        /// Group files in a folder by formatted file date
+        /// Group files in a folder by formatted fixed file date
         /// </summary>
         /// <param name="folder">Folder containing the files to group</param>
         /// <param name="formatString">Format string</param>
@@ -21,6 +21,6 @@ namespace Simphosort.Core.Services
         /// <param name="callbackError">Error message callback</param>
         /// <param name="cancellationToken">A <see cref="CancellationToken"/></param>
         /// <returns><see cref="ErrorLevel"/></returns>
-        ErrorLevel GroupFileDate(string folder, string formatString, Action<string> callbackLog, Action<string> callbackError, CancellationToken cancellationToken);
+        ErrorLevel GroupFixed(string folder, string formatString, Action<string> callbackLog, Action<string> callbackError, CancellationToken cancellationToken);
     }
 }
