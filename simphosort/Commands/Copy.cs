@@ -13,7 +13,7 @@ namespace Simphosort.Commands
     /// <summary>
     /// Copy command
     /// </summary>
-    [Command("copy", Description = "Copy new photos from source folder to target folder with optional checks")]
+    [Command("copy", Description = "Copy new photos from source folder to target folder with optional checks", Usage = "simphosort copy [options] <source> <target>")]
     [Subcommand]
     public class Copy
     {
