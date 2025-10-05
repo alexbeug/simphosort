@@ -3,7 +3,10 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 // </copyright>
 
+using System.Diagnostics.CodeAnalysis;
+
 using CommandDotNet;
+
 using JetBrains.Annotations;
 
 using Microsoft.Extensions.DependencyInjection;
@@ -16,7 +19,7 @@ namespace Simphosort
     /// <summary>
     /// Program class
     /// </summary>
-    [Command(Description = $"simphosort - Simple Photo Sorter - Copyright (c) 2025 Alexander Beug - https://www.alexpage.de")]
+    [Command(Description = $"simphosort - Simple Photo Sorter - Copyright (c) 2025 Alexander Beug - https://www.alexpage.de", Usage = "simphosort [command] [options]")]
     internal class Program
     {
         /// <inheritdoc cref="IServiceProvider"/>
@@ -52,6 +55,8 @@ namespace Simphosort
         /// </summary>
         /// <param name="args">Command line arguments</param>
         /// <returns><see cref="ErrorLevel"/> as int value</returns>
+        [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(Program))]
+        [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(DirectoryInfo))]
         private static int Main(string[] args)
         {
             // AppRunner<T> where T is the class defining your commands
