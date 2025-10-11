@@ -69,7 +69,7 @@ namespace Simphosort.Core.Services
             }
 
             // Check folders for validity
-            if (!folders.All(x => FolderService.Valid(x, callbackError)))
+            if (!folders.All(x => FolderService.IsValid(x, callbackError)))
             {
                  // Stop when a folder is not valid
                 return ErrorLevel.FolderNotValid;
@@ -83,14 +83,14 @@ namespace Simphosort.Core.Services
             }
 
             // Target folder has to be empty
-            if (!FolderService.Empty(targetFolder, callbackError))
+            if (!FolderService.IsEmpty(targetFolder, callbackError))
             {
                 // Stop when target folder is not empty
                 return ErrorLevel.FolderNotEmpty;
             }
 
             // Check folders in list for uniqueness
-            if (!FolderService.Unique(folders, callbackError))
+            if (!FolderService.IsUnique(folders, callbackError))
             {
                 // Stop when folders are not unique
                 return ErrorLevel.FoldersAreNotUnique;
