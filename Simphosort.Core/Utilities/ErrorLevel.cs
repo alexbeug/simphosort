@@ -36,13 +36,28 @@ namespace Simphosort.Core.Utilities
         FolderNotEmpty = 120,
 
         /// <summary>
+        /// Sub folders are present in the given folder
+        /// </summary>
+        FoldersPresent = 121,
+
+        /// <summary>
         /// Given folders are not unique
         /// </summary>
         FoldersAreNotUnique = 150,
 
         /// <summary>
+        /// Format string is not valid (for date)
+        /// </summary>
+        FormatStringNotValid = 400,
+
+        /// <summary>
         /// Copy failed
         /// </summary>
         CopyFailed = 500,
+
+        /// <summary>
+        /// Grpup failed
+        /// </summary>
+        GroupFailed = 501,
     }
 }
