@@ -9,7 +9,7 @@ namespace Simphosort.Core.Services.Helper
     internal class FolderService : IFolderService
     {
         /// <inheritdoc/>
-        public bool Valid(string folder, Action<string> callbackError)
+        public bool IsValid(string folder, Action<string> callbackError)
         {
             if (Path.GetInvalidPathChars().AsEnumerable().Any(c => folder.Contains(c)))
             {
@@ -33,7 +33,7 @@ namespace Simphosort.Core.Services.Helper
         }
 
         /// <inheritdoc/>
-        public bool Empty(string folder, Action<string> callbackError)
+        public bool IsEmpty(string folder, Action<string> callbackError)
         {
             if (Directory.EnumerateFiles(folder).Any() || Directory.EnumerateDirectories(folder).Any())
             {
@@ -45,7 +45,19 @@ namespace Simphosort.Core.Services.Helper
         }
 
         /// <inheritdoc/>
-        public bool Unique(IEnumerable<string> folders, Action<string> callbackError)
+        public bool HasNoSubFolders(string folder, Action<string> callbackError)
+        {
+            if (Directory.EnumerateDirectories(folder).Any())
+            {
+                callbackError($"ERROR: Folder {folder} already contains sub folders!");
+                return false;
+            }
+
+            return true;
+        }
+
+        /// <inheritdoc/>
+        public bool IsUnique(IEnumerable<string> folders, Action<string> callbackError)
         {
             if (folders.Select(Path.GetFullPath).Distinct().Count() != folders.Count())
             {
