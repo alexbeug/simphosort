@@ -57,21 +57,21 @@ namespace Simphosort.Core.Services
 
             // Prepare grouping and get files in folder
             ErrorLevel errorLevel = Prepare(folder, formatString, callbackLog, callbackError, out List<FileInfo> files, cancellationToken);
-            if (errorLevel == ErrorLevel.Ok)
+            if (errorLevel != ErrorLevel.Ok)
             {
                 return errorLevel;
             }
 
             // Group files by fixed formatted date
             errorLevel = GroupFilesFixed(formatString, callbackLog, callbackError, files, out Dictionary<string, List<FileInfo>> groupedFiles, cancellationToken);
-            if (errorLevel == ErrorLevel.Ok)
+            if (errorLevel != ErrorLevel.Ok)
             {
                 return errorLevel;
             }
 
             // Move files to sub folders
             int moved = FileService.MoveGroupedFilesToSubFolders(groupedFiles, folder, callbackLog, callbackError, cancellationToken);
-            callbackLog($"\n{moved} files moved");
+            callbackLog($"\n{moved} files moved\n");
 
             // Log operation duration and remove milliseconds and microseconds for better readability
             TimeSpan duration = DateTime.UtcNow - start;
@@ -140,7 +140,7 @@ namespace Simphosort.Core.Services
             }
 
             // Log number of groups found
-            callbackLog($"{groupedFiles.Count} groups formed");
+            callbackLog($"{groupedFiles.Count} groups formed\n");
             return ErrorLevel.Ok;
         }
 
@@ -178,6 +178,13 @@ namespace Simphosort.Core.Services
             {
                 // Stop when target folder is not empty
                 return ErrorLevel.FoldersPresent;
+            }
+
+            // Check format string for emptiness
+            if (string.IsNullOrWhiteSpace(formatString))
+            {
+                callbackError("ERROR: Format string must not be empty!");
+                return ErrorLevel.FormatStringEmpty;
             }
 
             // Check format string for validity

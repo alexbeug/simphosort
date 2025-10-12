@@ -19,7 +19,7 @@ namespace Simphosort.Core.Services.Helper
                 return copied;
             }
 
-            callbackLog($"\nCopying {files.Count()} new image files to {targetFolder}\n");
+            callbackLog($"Copying {files.Count()} new image files to {targetFolder}\n");
 
             foreach (FileInfo file in files.TakeWhile(f => !cancellationToken.IsCancellationRequested))
             {
@@ -51,7 +51,7 @@ namespace Simphosort.Core.Services.Helper
                 return moved;
             }
 
-            callbackLog($"\nMoving {groupedFiles.Sum(g => g.Value.Count)} image files to {groupedFiles.Count} sub folders in {folder}\n");
+            callbackLog($"Moving {groupedFiles.Sum(g => g.Value.Count)} image files to {groupedFiles.Count} sub folders in {folder}\n");
 
             foreach (KeyValuePair<string, List<FileInfo>> group in groupedFiles.TakeWhile(g => !cancellationToken.IsCancellationRequested))
             {

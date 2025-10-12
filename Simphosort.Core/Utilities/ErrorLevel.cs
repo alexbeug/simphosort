@@ -46,9 +46,14 @@ namespace Simphosort.Core.Utilities
         FoldersAreNotUnique = 150,
 
         /// <summary>
+        /// Format string is empty
+        /// </summary>
+        FormatStringEmpty = 400,
+
+        /// <summary>
         /// Format string is not valid (for date)
         /// </summary>
-        FormatStringNotValid = 400,
+        FormatStringNotValid = 401,
 
         /// <summary>
         /// Copy failed

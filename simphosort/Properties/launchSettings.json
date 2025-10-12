@@ -21,7 +21,7 @@
     },
     "TestGroup": {
       "commandName": "Project",
-      "commandLineArgs": "group filedate j:\\_simphosort\\sort -f yyyyMM"
+      "commandLineArgs": "group fixed m:\\DCIM\\Sort -f yyyyMM"
     }
   }
 }
