@@ -156,25 +156,21 @@ namespace Simphosort.Core.Services
             int copied = FileService.CopyFiles(copyFiles, targetFolder, callbackLog, callbackError, cancellationToken);
             callbackLog($"\n{copied} of {copyFiles.Count} files copied\n");
 
-            // Log operation duration and remove milliseconds and microseconds for better readability
-            TimeSpan duration = DateTime.UtcNow - start;
-            TimeSpan simpleDuration = new(duration.Days, duration.Hours, duration.Minutes, duration.Seconds);
-
             // Break operation when cancellation requested
             if (cancellationToken.IsCancellationRequested)
             {
-                callbackLog($"Copy canceled while copying files (Duration: {simpleDuration:g})\n");
+                callbackLog($"Copy canceled while copying files (Duration: {Duration.Calculate(start):g})\n");
                 return ErrorLevel.Canceled;
             }
 
             if (copied == copyFiles.Count)
             {
-                callbackLog($"Copy completed successfully after (Duration: {simpleDuration:g})\n");
+                callbackLog($"Copy completed successfully (Duration: {Duration.Calculate(start):g})\n");
                 return ErrorLevel.Ok;
             }
             else
             {
-                callbackError($"Copy completed with errors after (Duration: {simpleDuration:g})\n");
+                callbackError($"Copy completed with errors (Duration: {Duration.Calculate(start):g})\n");
                 return ErrorLevel.CopyFailed;
             }
         }

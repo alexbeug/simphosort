@@ -73,25 +73,21 @@ namespace Simphosort.Core.Services
             int moved = FileService.MoveGroupedFilesToSubFolders(groupedFiles, folder, callbackLog, callbackError, cancellationToken);
             callbackLog($"\n{moved} files moved\n");
 
-            // Log operation duration and remove milliseconds and microseconds for better readability
-            TimeSpan duration = DateTime.UtcNow - start;
-            TimeSpan simpleDuration = new(duration.Days, duration.Hours, duration.Minutes, duration.Seconds);
-
             // Break operation when cancellation requested
             if (cancellationToken.IsCancellationRequested)
             {
-                callbackLog($"Group canceled while grouping files (Duration: {simpleDuration:g})\n");
+                callbackLog($"Group canceled while grouping files (Duration: {Duration.Calculate(start):g})\n");
                 return ErrorLevel.Canceled;
             }
 
             if (moved == files.Count)
             {
-                callbackLog($"Group completed successfully after (Duration: {simpleDuration:g})\n");
+                callbackLog($"Group completed successfully (Duration: {Duration.Calculate(start):g})\n");
                 return ErrorLevel.Ok;
             }
             else
             {
-                callbackError($"Group completed with errors after (Duration: {simpleDuration:g})\n");
+                callbackError($"Group completed with errors (Duration: {Duration.Calculate(start):g})\n");
                 return ErrorLevel.GroupFailed;
             }
         }
@@ -159,24 +155,24 @@ namespace Simphosort.Core.Services
             // Prepare empty file list
             files = new();
 
-            // Check folders for validity
+            // Check folder for validity
             if (!FolderService.IsValid(folder, callbackError))
             {
-                // Stop when a folder is not valid
+                // Stop folder is not valid
                 return ErrorLevel.FolderNotValid;
             }
 
             // Check folders for existence
             if (!FolderService.Exists(folder, callbackError))
             {
-                // Stop when a folder does not exist
+                // Stop when folder does not exist
                 return ErrorLevel.FolderDoesNotExist;
             }
 
-            // Target folder must not have sub folders
+            // Folder must not have sub folders
             if (!FolderService.HasNoSubFolders(folder, callbackError))
             {
-                // Stop when target folder is not empty
+                // Stop when sub folders present
                 return ErrorLevel.FoldersPresent;
             }
 
