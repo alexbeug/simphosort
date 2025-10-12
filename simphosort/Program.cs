@@ -6,12 +6,9 @@
 using System.Diagnostics.CodeAnalysis;
 
 using CommandDotNet;
-
-using JetBrains.Annotations;
-
+using CommandDotNet.IoC.MicrosoftDependencyInjection;
 using Microsoft.Extensions.DependencyInjection;
-
-using Simphosort.Core.Services;
+using Simphosort.Commands;
 using Simphosort.Core.Utilities;
 
 namespace Simphosort
@@ -22,33 +19,17 @@ namespace Simphosort
     [Command(Description = $"simphosort - Simple Photo Sorter - Copyright (c) 2025 Alexander Beug - https://www.alexpage.de", Usage = "simphosort [command] [options]")]
     internal class Program
     {
-        /// <inheritdoc cref="IServiceProvider"/>
-        private readonly IServiceProvider _provider;
+        /// <summary>
+        /// Gets or sets copy command
+        /// </summary>
+        [Subcommand]
+        public Copy? Copy { get; set; }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="Program"/> class.
+        /// Gets or sets group command
         /// </summary>
-        public Program()
-        {
-            // Register services
-            _provider = RegisterServices();
-        }
-
-        /// <summary>
-        /// Copy command
-        /// </summary>
-        /// <param name="sourceFolder">source folder</param>
-        /// <param name="targetFolder">target folder</param>
-        /// <param name="checkFolders">check folders</param>
-        /// <param name="ct">A <see cref="CancellationToken"/></param>
-        /// <returns>An <see cref="ErrorLevel"/> value as int.</returns>
-        [Command("copy", Description = "Copy new photos from source folder to target folder with optional checks")]
-        public int Copy(
-            [Operand("source", Description = "Source folder (containing the photo files to copy)"), PathReference] DirectoryInfo sourceFolder,
-            [Operand("target", Description = "Target folder (work folder, has to be empty)"), PathReference] DirectoryInfo targetFolder,
-            [Option('c', "check", Description = "Check for duplicate photos at these folders. Duplicate files will not be copied to target."), PathReference] DirectoryInfo[]? checkFolders,
-            CancellationToken ct)
-            => _provider.GetRequiredService<ICopyService>().Copy(sourceFolder.FullName, targetFolder.FullName, checkFolders?.Select(c => c.FullName), DisplayCallback, DisplayCallback, ct).ToInt();
+        [Subcommand]
+        public Group? Group { get; set; }
 
         /// <summary>
         /// Program main function
@@ -56,38 +37,44 @@ namespace Simphosort
         /// <param name="args">Command line arguments</param>
         /// <returns><see cref="ErrorLevel"/> as int value</returns>
         [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(Program))]
+        [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(Copy))]
+        [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(Group))]
+        [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(ErrorLevel))]
         [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(DirectoryInfo))]
         private static int Main(string[] args)
         {
-            // AppRunner<T> where T is the class defining your commands
-            // You can use Program or create commands in another class
-            return new AppRunner<Program>()
+            // Register services for DI and all command classes
+            IServiceProvider provider = RegisterServices();
+
+            // Configure the app runner
+            AppRunner appRunner = new AppRunner<Program>()
                 .UseVersionMiddleware() // Adds a version option and command
                 .UseTypoSuggestions() // Suggests correct command names if user makes a typo
                 .UseCancellationHandlers() // Enables Ctrl+C cancellation
-                .Run(args);
+                .UseMicrosoftDependencyInjection(provider); // Use Microsoft.Extensions.DependencyInjection for DI
+
+            // Run the app
+            return appRunner.Run(args);
         }
 
         /// <summary>
         /// Registers all services for DI
         /// </summary>
+        /// <param name="appRunner">The <see cref="AppRunner"/> instance</param>
         /// <returns>Service provider</returns>
         private static IServiceProvider RegisterServices()
         {
             IServiceCollection container = new ServiceCollection();
+
+            // Register core services
             container = Simphosort.Core.Utilities.RegisterServices.Register(container);
+
+            // Register command classes
+            container.AddSingleton<Copy, Copy>();
+            container.AddSingleton<Group, Group>();
 
             IServiceProvider provider = container.BuildServiceProvider();
             return provider;
-        }
-
-        /// <summary>
-        /// Callback for displaying an error or log message
-        /// </summary>
-        /// <param name="errmsg">Error/log message to display</param>
-        private static void DisplayCallback(string errmsg)
-        {
-            Console.WriteLine(errmsg);
         }
     }
 }

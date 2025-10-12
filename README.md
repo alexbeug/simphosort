@@ -29,7 +29,7 @@ photo collection folder structure.
 ### copy
 Copy all photo files (currently *.jpg and *.jpeg) from a _source_ folder (including sub folders) to a _target_ folder with optional checks.
 ```
-Usage: simphosort.exe copy [options] <source> <target>
+Usage: simphosort copy [options] <source> <target>
 
 Arguments:
 
@@ -45,5 +45,24 @@ Options:
   Check for duplicate photos at these folders. Duplicate files will not be copied to target.
 ```
 
+### group
+Group photo files (currently *.jpg and *.jpeg) in a folder to sub folders. Grouping mode is controlled by sub commands.
+
+#### fixed
+Group photos using a fixed date and a format string for sub folder names.
+
+```
+Usage: simphosort group fixed [options] <folder>
+
+Arguments:
+
+  folder  <PATH>
+  Folder (containing the photo files to group)
+
+Options:
+
+  -f | --format  <TEXT>
+  Format string (e.g. yyyy-MM-dd for daily sub folders)
+```
 ## License
 simphosort is using the MIT license. See [LICENSE](LICENSE).

@@ -18,6 +18,10 @@
     "TestCopyMoto": {
       "commandName": "Project",
       "commandLineArgs": "copy m:\\DCIM\\Moto m:\\DCIM\\Sort -c m:\\Fotos"
+    },
+    "TestGroup": {
+      "commandName": "Project",
+      "commandLineArgs": "group fixed i:\\DCIM\\Sort -f yyyyMM"
     }
   }
 }

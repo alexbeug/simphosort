@@ -192,3 +192,4 @@ dotnet_style_qualification_for_method = false:silent
 dotnet_style_qualification_for_property = false:silent
 dotnet_style_qualification_for_event = false:silent
 dotnet_style_prefer_collection_expression = never:suggestion
+dotnet_diagnostic.CA1822.severity = none

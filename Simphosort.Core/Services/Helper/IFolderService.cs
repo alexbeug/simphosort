@@ -16,7 +16,7 @@ namespace Simphosort.Core.Services.Helper
         /// <param name="folder">Folder path</param>
         /// <param name="callbackError">Error callback function</param>
         /// <returns>true when folder name valid</returns>
-        bool Valid(string folder, Action<string> callbackError);
+        bool IsValid(string folder, Action<string> callbackError);
 
         /// <summary>
         /// Checks folder for existence
@@ -32,14 +32,22 @@ namespace Simphosort.Core.Services.Helper
         /// <param name="folder">Folder path</param>
         /// <param name="callbackError">Error callback function</param>
         /// <returns>true when folder empty</returns>
-        bool Empty(string folder, Action<string> callbackError);
+        bool IsEmpty(string folder, Action<string> callbackError);
+
+        /// <summary>
+        /// Checks for sub folders
+        /// </summary>
+        /// <param name="folder">Folder path</param>
+        /// <param name="callbackError">Error callback function</param>
+        /// <returns>true when no sub folders present</returns>
+        bool HasNoSubFolders(string folder, Action<string> callbackError);
 
         /// <summary>
         /// Checks folders for uniqueness
         /// </summary>
-        /// <param name="folders">Source folder</param>
+        /// <param name="folders">Folder paths</param>
         /// <param name="callbackError">Error callback function</param>
         /// <returns>true when identical</returns>
-        bool Unique(IEnumerable<string> folders, Action<string> callbackError);
+        bool IsUnique(IEnumerable<string> folders, Action<string> callbackError);
     }
 }
