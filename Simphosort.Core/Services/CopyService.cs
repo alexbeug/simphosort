@@ -93,7 +93,7 @@ namespace Simphosort.Core.Services
             if (!FolderService.IsUnique(folders, callbackError))
             {
                 // Stop when folders are not unique
-                return ErrorLevel.FoldersAreNotUnique;
+                return ErrorLevel.FolderNamesNotUnique;
             }
 
             // Break operation when cancellation requested
