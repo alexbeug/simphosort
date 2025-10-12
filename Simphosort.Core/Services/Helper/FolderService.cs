@@ -11,7 +11,7 @@ namespace Simphosort.Core.Services.Helper
         /// <inheritdoc/>
         public bool IsValid(string folder, Action<string> callbackError)
         {
-            if (Path.GetInvalidPathChars().AsEnumerable().Any(c => folder.Contains(c)))
+            if (Path.GetInvalidPathChars().AsEnumerable().Any(folder.Contains))
             {
                 callbackError($"ERROR: Folder {folder} contains invalid characters!");
                 return false;
@@ -45,11 +45,35 @@ namespace Simphosort.Core.Services.Helper
         }
 
         /// <inheritdoc/>
+        public bool HasSubFolders(string folder, Action<string> callbackError)
+        {
+            if (!Directory.EnumerateDirectories(folder).Any())
+            {
+                callbackError($"ERROR: Folder {folder} contains not sub folders!");
+                return false;
+            }
+
+            return true;
+        }
+
+        /// <inheritdoc/>
         public bool HasNoSubFolders(string folder, Action<string> callbackError)
         {
             if (Directory.EnumerateDirectories(folder).Any())
             {
                 callbackError($"ERROR: Folder {folder} already contains sub folders!");
+                return false;
+            }
+
+            return true;
+        }
+
+        /// <inheritdoc/>
+        public bool HasNoFiles(string folder, Action<string> callbackError)
+        {
+            if (Directory.EnumerateFiles(folder).Any())
+            {
+                callbackError($"ERROR: Folder {folder} already contains files!");
                 return false;
             }
 

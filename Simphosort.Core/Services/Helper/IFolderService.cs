@@ -35,12 +35,28 @@ namespace Simphosort.Core.Services.Helper
         bool IsEmpty(string folder, Action<string> callbackError);
 
         /// <summary>
+        /// Checks for existing sub folders
+        /// </summary>
+        /// <param name="folder">Folder path</param>
+        /// <param name="callbackError">Error callback function</param>
+        /// <returns>true when sub folders present</returns>
+        bool HasSubFolders(string folder, Action<string> callbackError);
+
+        /// <summary>
         /// Checks for sub folders
         /// </summary>
         /// <param name="folder">Folder path</param>
         /// <param name="callbackError">Error callback function</param>
         /// <returns>true when no sub folders present</returns>
         bool HasNoSubFolders(string folder, Action<string> callbackError);
+
+        /// <summary>
+        /// Checks for files in a folder
+        /// </summary>
+        /// <param name="folder">Folder path</param>
+        /// <param name="callbackError">Error callback function</param>
+        /// <returns>true when no sub folders present</returns>
+        bool HasNoFiles(string folder, Action<string> callbackError);
 
         /// <summary>
         /// Checks folders for uniqueness

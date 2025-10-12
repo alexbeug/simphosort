@@ -19,7 +19,7 @@ namespace Simphosort.Core.Services.Helper
                 return copied;
             }
 
-            callbackLog($"Copying {files.Count()} new image files to {targetFolder}\n");
+            callbackLog($"Copying {files.Count()} new files to {targetFolder}\n");
 
             foreach (FileInfo file in files.TakeWhile(f => !cancellationToken.IsCancellationRequested))
             {
@@ -51,7 +51,7 @@ namespace Simphosort.Core.Services.Helper
                 return moved;
             }
 
-            callbackLog($"Moving {groupedFiles.Sum(g => g.Value.Count)} image files to {groupedFiles.Count} sub folders in {folder}\n");
+            callbackLog($"Moving {groupedFiles.Sum(g => g.Value.Count)} files to {groupedFiles.Count} sub folders in {folder}\n");
 
             foreach (KeyValuePair<string, List<FileInfo>> group in groupedFiles.TakeWhile(g => !cancellationToken.IsCancellationRequested))
             {
@@ -86,6 +86,69 @@ namespace Simphosort.Core.Services.Helper
             }
 
             return moved;
+        }
+
+        /// <inheritdoc/>
+        public int MoveFilesFromSubFoldersToFolder(IEnumerable<FileInfo> files, string folder, Action<string> callbackLog, Action<string> callbackError, CancellationToken cancellationToken)
+        {
+            int moved = 0;
+
+            if (cancellationToken.IsCancellationRequested)
+            {
+                // Return directly if canceled
+                return moved;
+            }
+
+            callbackLog($"Moving {files.Count()} files to {folder}\n");
+
+            foreach (FileInfo file in files.TakeWhile(f => !cancellationToken.IsCancellationRequested))
+            {
+                callbackLog($"Moving {file.FullName} to {folder}");
+                try
+                {
+                    File.Move(file.FullName, Path.Combine(folder, file.Name));
+                    callbackLog($"   -> moved");
+                    moved++;
+                }
+                catch
+                {
+                    callbackError($"   -> failed");
+                }
+            }
+
+            return moved;
+        }
+
+        /// <inheritdoc/>
+        public int DeleteFolders(string[] folders, Action<string> callbackLog, Action<string> callbackError, CancellationToken cancellationToken)
+        {
+            int deleted = 0;
+
+            if (cancellationToken.IsCancellationRequested)
+            {
+                // Return directly if canceled
+                return deleted;
+            }
+
+            callbackLog($"Deleting {folders.Length} folders\n");
+
+            foreach (string folder in folders.TakeWhile(f => !cancellationToken.IsCancellationRequested))
+            {
+                callbackLog($"Deleting folder {folder}");
+
+                try
+                {
+                    Directory.Delete(folder, true);
+                    callbackLog($"   -> deleted");
+                    deleted++;
+                }
+                catch
+                {
+                    callbackError($"   -> failed");
+                }
+            }
+
+            return deleted;
         }
     }
 }

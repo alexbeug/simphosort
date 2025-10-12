@@ -22,6 +22,10 @@
     "TestGroup": {
       "commandName": "Project",
       "commandLineArgs": "group fixed i:\\DCIM\\Sort -f yyyyMM"
+    },
+    "TestUngroup": {
+      "commandName": "Project",
+      "commandLineArgs": "ungroup i:\\DCIM\\Sort -d"
     }
   }
 }

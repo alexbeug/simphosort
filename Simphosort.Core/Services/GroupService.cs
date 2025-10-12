@@ -155,24 +155,24 @@ namespace Simphosort.Core.Services
             // Prepare empty file list
             files = new();
 
-            // Check folder for validity
+            // Check folder name for validity
             if (!FolderService.IsValid(folder, callbackError))
             {
-                // Stop folder is not valid
+                // Stop if folder name is not valid
                 return ErrorLevel.FolderNotValid;
             }
 
             // Check folders for existence
             if (!FolderService.Exists(folder, callbackError))
             {
-                // Stop when folder does not exist
+                // Stop if folder does not exist
                 return ErrorLevel.FolderDoesNotExist;
             }
 
             // Folder must not have sub folders
             if (!FolderService.HasNoSubFolders(folder, callbackError))
             {
-                // Stop when sub folders present
+                // Stop if sub folders present
                 return ErrorLevel.FoldersPresent;
             }
 
@@ -194,7 +194,7 @@ namespace Simphosort.Core.Services
                 return ErrorLevel.FormatStringNotValid;
             }
 
-            // Break operation when cancellation requested
+            // Break operation if cancellation requested
             if (cancellationToken.IsCancellationRequested)
             {
                 callbackLog($"Group canceled before grouping files\n");
@@ -206,7 +206,7 @@ namespace Simphosort.Core.Services
             files = SearchService.SearchFiles(folder, Constants.SupportedExtensions, false, cancellationToken);
             callbackLog($"   -> {files.Count} files found in folder\n");
 
-            // Break operation when cancellation requested
+            // Break operation if cancellation requested
             if (cancellationToken.IsCancellationRequested)
             {
                 callbackLog($"Group canceled before grouping files\n");

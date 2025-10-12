@@ -14,5 +14,10 @@ namespace Simphosort.Core.Utilities
         /// Supported file extensions (currently jpegs)
         /// </summary>
         public static readonly string[] SupportedExtensions = { "*.jpg", "*.jpeg" };
+
+        /// <summary>
+        /// Extension for all files (*.*)
+        /// </summary>
+        public static readonly string[] AllFilesExtension = { "*.*" };
     }
 }
