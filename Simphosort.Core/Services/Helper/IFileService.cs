@@ -14,7 +14,7 @@ namespace Simphosort.Core.Services.Helper
         /// Copy files to target folder
         /// </summary>
         /// <param name="files">Files to copy</param>
-        /// <param name="targetFolder">target folder</param>
+        /// <param name="targetFolder">Target folder</param>
         /// <param name="callbackLog">Log callback function</param>
         /// <param name="callbackError">Error callback function</param>
         /// <param name="cancellationToken">A <see cref="CancellationToken"/></param>
@@ -25,7 +25,7 @@ namespace Simphosort.Core.Services.Helper
         /// Move grouped files to sub folders
         /// </summary>
         /// <param name="groupedFiles">Grouped files</param>
-        /// <param name="folder">work folder</param>
+        /// <param name="folder">Folder</param>
         /// <param name="callbackLog">Log callback function</param>
         /// <param name="callbackError">Error callback function</param>
         /// <param name="cancellationToken">A <see cref="CancellationToken"/></param>

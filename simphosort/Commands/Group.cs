@@ -13,7 +13,7 @@ namespace Simphosort.Commands
     /// <summary>
     /// Group command
     /// </summary>
-    [Command("group", Description = "Group files in work folder and move them to sub folders", Usage = "simphosort group [command]")]
+    [Command("group", Description = "Group files in folder and move them to sub folders", Usage = "simphosort group [command]")]
     [Subcommand]
     public class Group
     {
@@ -27,7 +27,7 @@ namespace Simphosort.Commands
         /// <param name="ct"><see cref="CancellationToken"/></param>
         /// <returns><see cref="ErrorLevel"/></returns>
         [Command("fixed", Description = "Group files by fixed date", Usage = "simphosort group fixed [options] <folder>")]
-        public int FileDateMethod(
+        public int FixedMethod(
             [Operand("folder", Description = "Folder (containing the photo files to group)"), PathReference] DirectoryInfo folder,
             [Option('f', "format", Description = "Format string (e.g. yyyy-MM-dd for daily sub folders)")] string formatString,
             IConsole console,

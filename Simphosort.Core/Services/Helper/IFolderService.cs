@@ -45,7 +45,7 @@ namespace Simphosort.Core.Services.Helper
         /// <summary>
         /// Checks folders for uniqueness
         /// </summary>
-        /// <param name="folders">Source folder</param>
+        /// <param name="folders">Folder paths</param>
         /// <param name="callbackError">Error callback function</param>
         /// <returns>true when identical</returns>
         bool IsUnique(IEnumerable<string> folders, Action<string> callbackError);

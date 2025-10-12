@@ -75,23 +75,23 @@ namespace Simphosort.Core.Services
 
             // Log operation duration and remove milliseconds and microseconds for better readability
             TimeSpan duration = DateTime.UtcNow - start;
-            duration = duration.Subtract(new TimeSpan(0, 0, 0, 0, duration.Milliseconds, duration.Microseconds));
+            TimeSpan simpleDuration = new(duration.Days, duration.Hours, duration.Minutes, duration.Seconds);
 
             // Break operation when cancellation requested
             if (cancellationToken.IsCancellationRequested)
             {
-                callbackLog($"Group canceled while grouping files (Duration: {duration:g})\n");
+                callbackLog($"Group canceled while grouping files (Duration: {simpleDuration:g})\n");
                 return ErrorLevel.Canceled;
             }
 
             if (moved == files.Count)
             {
-                callbackLog($"Group completed successfully after (Duration: {duration:g})\n");
+                callbackLog($"Group completed successfully after (Duration: {simpleDuration:g})\n");
                 return ErrorLevel.Ok;
             }
             else
             {
-                callbackError($"Group completed with errors after (Duration: {duration:g})\n");
+                callbackError($"Group completed with errors after (Duration: {simpleDuration:g})\n");
                 return ErrorLevel.GroupFailed;
             }
         }
