@@ -30,7 +30,7 @@ namespace Simphosort.Commands
         [DefaultCommand]
         [Command("copy", Description = "Copy new photos from source folder to target folder with optional checks")]
         public int CopyMethod(
-            [Operand("source", Description = "Source folder (containing the photo files to copy)"), PathReference] DirectoryInfo sourceFolder,
+            [Operand("source", Description = "Source folder containing the photo files to copy"), PathReference] DirectoryInfo sourceFolder,
             [Operand("target", Description = "Target folder (has to be empty)"), PathReference] DirectoryInfo targetFolder,
             [Option('c', "check", Description = "Check for duplicate photos at these folders. Duplicate files will not be copied to target."), PathReference] DirectoryInfo[]? checkFolders,
             IConsole console,
