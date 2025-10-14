@@ -30,7 +30,7 @@ namespace Simphosort.Commands
         [Command("ungroup", Description = "Find files in sub folders and move them to parent folder")]
         public int UngroupMethod(
             [Operand("parent", Description = "Parent folder (containing the sub folders to ungroup)"), PathReference] DirectoryInfo parent,
-            [Option('d', "delete-empty", Description = "Delete empty sub folders containing no files after ungroup")] bool? deleteEmpty, // TODO: better name for option (clean, ...)?
+            [Option('c', "clean", Description = "Delete empty sub folders containing no files after ungroup")] bool? deleteEmpty,
             IConsole console,
             IUngroupService ungroupService,
             CancellationToken ct)

@@ -16,11 +16,11 @@ namespace Simphosort.Core.Services
         /// Ungroup files in sub folders and move them to parent folder
         /// </summary>
         /// <param name="parent">Parent folder</param>
-        /// <param name="deleteEmpty">Delete empty sub folders</param>
+        /// <param name="clean">Delete empty sub folders</param>
         /// <param name="callbackLog">Log message callback</param>
         /// <param name="callbackError">Error message callback</param>
         /// <param name="cancellationToken">A <see cref="CancellationToken"/></param>
         /// <returns><see cref="ErrorLevel"/></returns>
-        public ErrorLevel Ungroup(string parent, bool deleteEmpty, Action<string> callbackLog, Action<string> callbackError, CancellationToken cancellationToken);
+        public ErrorLevel Ungroup(string parent, bool clean, Action<string> callbackLog, Action<string> callbackError, CancellationToken cancellationToken);
     }
 }

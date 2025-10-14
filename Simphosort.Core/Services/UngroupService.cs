@@ -44,12 +44,12 @@ namespace Simphosort.Core.Services
         #region Methods
 
         /// <inheritdoc/>
-        public ErrorLevel Ungroup(string parent, bool deleteEmpty, Action<string> callbackLog, Action<string> callbackError, CancellationToken cancellationToken)
+        public ErrorLevel Ungroup(string parent, bool clean, Action<string> callbackLog, Action<string> callbackError, CancellationToken cancellationToken)
         {
             // Log operation start
             callbackLog($"Ungroup files");
-            callbackLog($"   parent                   : {parent}");
-            callbackLog($"   delete empty sub folders : {deleteEmpty}");
+            callbackLog($"   parent : {parent}");
+            callbackLog($"   clean  : {clean}");
             callbackLog(string.Empty);
 
             // Start time
@@ -77,7 +77,7 @@ namespace Simphosort.Core.Services
             }
 
             // Parent folder must have no files
-            // TODO: check for extensions here or duplicates later?
+            // TODO: Check for extensions here? Allow files with other extensions?
             if (!FolderService.HasNoFiles(parent, callbackError))
             {
                 // Stop if files are present
@@ -137,11 +137,19 @@ namespace Simphosort.Core.Services
             if (moved == files.Count)
             {
                 // Delete empty sub folders
-                if (deleteEmpty)
+                if (clean)
                 {
                     // Get all distinct sub folder paths
-                    // TODO: get top level only for recursive delete
                     List<string> paths = files.Select(f => f.DirectoryName).Where(p => p != null).Select(p => p!).Distinct().ToList();
+
+                    // Collections cannot be modified while enumerating
+                    List<string> pathsCopy = new(paths);
+
+                    // Remove child paths (keep only top level paths below parent folder)
+                    foreach (string path in pathsCopy)
+                    {
+                        paths.RemoveAll(p => p != path && p.StartsWith(path + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase));
+                    }
 
                     // Get all sub folder paths that are now empty (including sub folders of sub folders)
                     List<string> emptyPaths = paths.Where(s => SearchService.SearchFiles(s, Constants.AllFilesExtension, true, cancellationToken).Count == 0).ToList();

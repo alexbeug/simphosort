@@ -25,7 +25,7 @@
     },
     "TestUngroup": {
       "commandName": "Project",
-      "commandLineArgs": "ungroup i:\\DCIM\\Sort -d"
+      "commandLineArgs": "ungroup i:\\DCIM\\Sort -c"
     }
   }
 }
