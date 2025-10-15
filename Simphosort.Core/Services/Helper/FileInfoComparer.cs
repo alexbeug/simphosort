@@ -15,7 +15,7 @@ namespace Simphosort.Core.Services.Helper
         {
             return x != null
                 && y != null
-                && x.Name.Equals(y.Name, StringComparison.CurrentCultureIgnoreCase)
+                && x.Name.Equals(y.Name, StringComparison.OrdinalIgnoreCase) // TODO: use casing
                 && x.Length.Equals(y.Length);
         }
 

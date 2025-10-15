@@ -5,6 +5,7 @@
 
 using Simphosort.Core.Services.Helper;
 using Simphosort.Core.Utilities;
+using Simphosort.Core.Utilities.Casing;
 
 namespace Simphosort.Core.Services
 {
@@ -83,13 +84,16 @@ namespace Simphosort.Core.Services
                 return ErrorLevel.Canceled;
             }
 
+            // Set casing to default (case insensitive) for folder and file operations
+            CasingExtensionsConfig casing = new();
+
             // Get all files in sub folders (recursive) and parent folder
             callbackLog($"Searching files in parent folder and sub folders...");
             List<FileInfo> files = SearchService.SearchFiles(parent, Constants.SupportedExtensions, true, cancellationToken);
 
             // Separate files in parent folder and sub folders
-            List<FileInfo> subFiles = files.Where(f => !f.DirectoryName!.Equals(parent, StringComparison.OrdinalIgnoreCase)).ToList();
-            callbackLog($"   -> {subFiles.Count} files found in sub folders\n");
+            List<FileInfo> subFiles = files.Where(f => !f.DirectoryName!.Equals(parent, casing)).ToList();
+            callbackLog($"   -> {subFiles.Count} files found in sub folders");
 
             List<FileInfo> parentFiles = files.Except(subFiles).ToList();
             callbackLog($"   -> {parentFiles.Count} files found in parent folder\n");
@@ -103,14 +107,13 @@ namespace Simphosort.Core.Services
 
             // Check for duplicate file names in sub folders and parent folder
             // TODO: make this also a new command with exact file duplicates
-            // TODO: ToLowerInvariant() depends on OS Linux/Windows and folder/file system case sensitivity
             // TODO: Check with Exists for real existence?
-            if (files.Select(f => f.Name.ToLowerInvariant()).Distinct().Count() != files.Count)
+            if (files.Select(f => f.Name.ToConfigCase(casing)).Distinct().Count() != files.Count)
             {
                 callbackError("ERROR: Duplicate file names found!");
 
                 // Log duplicate file names with their paths
-                Dictionary<string, List<FileInfo>> duplicateFiles = files.GroupBy(f => f.Name.ToLowerInvariant()).Where(g => g.Count() > 1).ToDictionary(g => g.Key, g => g.ToList());
+                Dictionary<string, List<FileInfo>> duplicateFiles = files.GroupBy(f => f.Name.ToConfigCase(casing)).Where(g => g.Count() > 1).ToDictionary(g => g.Key, g => g.ToList());
                 foreach (KeyValuePair<string, List<FileInfo>> duplicate in duplicateFiles)
                 {
                     callbackError($"\nDuplicate {duplicate.Key} :");
@@ -148,7 +151,8 @@ namespace Simphosort.Core.Services
                     // Remove child paths (keep only top level paths below parent folder)
                     foreach (string path in pathsCopy)
                     {
-                        paths.RemoveAll(p => p != path && p.StartsWith(path + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase));
+                        // No casing here, because all paths come from the same parent folder
+                        paths.RemoveAll(p => p != path && p.StartsWith(path + Path.DirectorySeparatorChar));
                     }
 
                     // Get all sub folder paths that are now empty (including sub folders of sub folders)

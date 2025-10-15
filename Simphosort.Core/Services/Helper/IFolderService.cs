@@ -3,6 +3,8 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 // </copyright>
 
+using Simphosort.Core.Utilities.Casing;
+
 namespace Simphosort.Core.Services.Helper
 {
     /// <summary>
@@ -54,8 +56,9 @@ namespace Simphosort.Core.Services.Helper
         /// Checks folders for uniqueness
         /// </summary>
         /// <param name="folders">Folder paths</param>
+        /// <param name="casing">Casing config for folder name comparison</param>
         /// <param name="callbackError">Error callback function</param>
         /// <returns>true when identical</returns>
-        bool IsUnique(IEnumerable<string> folders, Action<string> callbackError);
+        bool IsUnique(IEnumerable<string> folders, CasingExtensionsConfig casing, Action<string> callbackError);
     }
 }

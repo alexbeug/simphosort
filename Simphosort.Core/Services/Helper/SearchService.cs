@@ -42,7 +42,9 @@ namespace Simphosort.Core.Services.Helper
             }
 
             DirectoryInfo directoryInfo = new(folder);
-            return extensions.SelectMany(x => directoryInfo.GetFiles(x.ToLower(), subfolders ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly)).TakeWhile(s => !cancellationToken.IsCancellationRequested).ToList();
+
+            // TODO: Check if extensions are case sensitive on the current OS
+            return extensions.SelectMany(x => directoryInfo.GetFiles(x, subfolders ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly)).TakeWhile(s => !cancellationToken.IsCancellationRequested).ToList();
         }
 
         /// <inheritdoc/>
