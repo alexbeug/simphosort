@@ -69,21 +69,10 @@ namespace Simphosort.Core.Services.Helper
         }
 
         /// <inheritdoc/>
-        public bool HasNoFiles(string folder, Action<string> callbackError)
-        {
-            if (Directory.EnumerateFiles(folder).Any())
-            {
-                callbackError($"ERROR: Folder {folder} already contains files!");
-                return false;
-            }
-
-            return true;
-        }
-
-        /// <inheritdoc/>
         public bool IsUnique(IEnumerable<string> folders, Action<string> callbackError)
         {
-            if (folders.Select(Path.GetFullPath).Distinct().Count() != folders.Count())
+            // TODO: case sensitivity based on OS rules
+            if (folders.Select(p => Path.GetFullPath(p).ToLowerInvariant()).Distinct().Count() != folders.Count())
             {
                 callbackError($"ERROR: Folders are not unique!");
                 return false;

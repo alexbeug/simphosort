@@ -41,11 +41,6 @@ namespace Simphosort.Core.Utilities
         FoldersPresent = 121,
 
         /// <summary>
-        /// Files are present in the given folder
-        /// </summary>
-        FilesPresent = 122,
-
-        /// <summary>
         /// No sub folders are present in the given folder
         /// </summary>
         NoSubFolders = 130,
