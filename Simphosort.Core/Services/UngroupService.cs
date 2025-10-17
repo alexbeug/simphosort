@@ -5,7 +5,6 @@
 
 using Simphosort.Core.Services.Helper;
 using Simphosort.Core.Utilities;
-using Simphosort.Core.Utilities.Casing;
 
 namespace Simphosort.Core.Services
 {
@@ -84,15 +83,13 @@ namespace Simphosort.Core.Services
                 return ErrorLevel.Canceled;
             }
 
-            // Set casing to default (case insensitive) for folder and file operations
-            CasingExtensionsConfig casing = new();
-
             // Get all files in sub folders (recursive) and parent folder
             callbackLog($"Searching files in parent folder and sub folders...");
             List<FileInfo> files = SearchService.SearchFiles(parent, Constants.SupportedExtensions, true, cancellationToken);
 
             // Separate files in parent folder and sub folders
-            List<FileInfo> subFiles = files.Where(f => !f.DirectoryName!.Equals(parent, casing)).ToList();
+            // TODO: casing
+            List<FileInfo> subFiles = files.Where(f => !f.DirectoryName!.Equals(parent)).ToList();
             callbackLog($"   -> {subFiles.Count} files found in sub folders");
 
             List<FileInfo> parentFiles = files.Except(subFiles).ToList();
@@ -107,13 +104,14 @@ namespace Simphosort.Core.Services
 
             // Check for duplicate file names in sub folders and parent folder
             // TODO: make this also a new command with exact file duplicates
-            // TODO: Check with Exists for real existence?
-            if (files.Select(f => f.Name.ToConfigCase(casing)).Distinct().Count() != files.Count)
+            // TODO: Casing check with Exists for real existence?
+            if (files.Select(f => f.Name).Distinct().Count() != files.Count)
             {
                 callbackError("ERROR: Duplicate file names found!");
 
                 // Log duplicate file names with their paths
-                Dictionary<string, List<FileInfo>> duplicateFiles = files.GroupBy(f => f.Name.ToConfigCase(casing)).Where(g => g.Count() > 1).ToDictionary(g => g.Key, g => g.ToList());
+                // TODO: casing
+                Dictionary<string, List<FileInfo>> duplicateFiles = files.GroupBy(f => f.Name).Where(g => g.Count() > 1).ToDictionary(g => g.Key, g => g.ToList());
                 foreach (KeyValuePair<string, List<FileInfo>> duplicate in duplicateFiles)
                 {
                     callbackError($"\nDuplicate {duplicate.Key} :");

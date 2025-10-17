@@ -57,8 +57,6 @@ namespace Simphosort.Core.Services.Helper
             }
 
             List<FileInfo> reducedFiles = new();
-
-            // TODO: make comparer use casing options?
             reducedFiles.AddRange(workFiles.Where(w => !reduceFiles.Contains(w, FileInfoComparer)).TakeWhile(s => !cancellationToken.IsCancellationRequested));
             return reducedFiles;
         }

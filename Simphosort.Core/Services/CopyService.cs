@@ -5,7 +5,6 @@
 
 using Simphosort.Core.Services.Helper;
 using Simphosort.Core.Utilities;
-using Simphosort.Core.Utilities.Casing;
 
 namespace Simphosort.Core.Services
 {
@@ -57,10 +56,6 @@ namespace Simphosort.Core.Services
             // Start time
             DateTime start = DateTime.UtcNow;
 
-            // Casing set to default (case insensitive) for folder and file operations
-            // TODO: make this configurable?
-            CasingExtensionsConfig casing = new();
-
             // Put the mandatory folders into a list
             List<string> folders = new()
             {
@@ -95,7 +90,7 @@ namespace Simphosort.Core.Services
             }
 
             // Check folders in list for uniqueness
-            if (!FolderService.IsUnique(folders, casing, callbackError))
+            if (!FolderService.IsUnique(folders, callbackError))
             {
                 // Stop if folders are not unique
                 return ErrorLevel.FolderNamesNotUnique;

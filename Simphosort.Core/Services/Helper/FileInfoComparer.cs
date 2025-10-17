@@ -13,10 +13,19 @@ namespace Simphosort.Core.Services.Helper
         /// <inheritdoc/>
         public bool Equals(FileInfo? x, FileInfo? y)
         {
-            return x != null
-                && y != null
-                && x.Name.Equals(y.Name, StringComparison.OrdinalIgnoreCase) // TODO: use casing
-                && x.Length.Equals(y.Length);
+            // Check for null and compare file length
+            if (x != null && y != null && x.Length.Equals(y.Length))
+            {
+                // Check if both files exist in each other's directory. This is done to avoid case sensitivity issues and
+                // letting File.Exists handle the case sensitivity based on the underlying file system or operating system.
+                return File.Exists(Path.Combine(y.DirectoryName ?? string.Empty, x.Name))
+                    && File.Exists(Path.Combine(x.DirectoryName ?? string.Empty, y.Name));
+            }
+            else
+            {
+                // Simple checks failed, return false
+                return false;
+            }
         }
 
         /// <inheritdoc/>

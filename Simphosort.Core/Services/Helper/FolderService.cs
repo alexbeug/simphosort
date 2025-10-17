@@ -3,8 +3,6 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 // </copyright>
 
-using Simphosort.Core.Utilities.Casing;
-
 namespace Simphosort.Core.Services.Helper
 {
     /// <inheritdoc/>
@@ -71,9 +69,10 @@ namespace Simphosort.Core.Services.Helper
         }
 
         /// <inheritdoc/>
-        public bool IsUnique(IEnumerable<string> folders, CasingExtensionsConfig casing, Action<string> callbackError)
+        public bool IsUnique(IEnumerable<string> folders, Action<string> callbackError)
         {
-            if (folders.Select(p => Path.GetFullPath(p).ToConfigCase(casing)).Distinct().Count() != folders.Count())
+            // TODO: Consider case sensitivity based on OS / File System
+            if (folders.Select(p => Path.GetFullPath(p)).Distinct().Count() != folders.Count())
             {
                 callbackError($"ERROR: Folders are not unique!");
                 return false;

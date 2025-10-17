@@ -3,27 +3,15 @@
     "Test - Usage": {
       "commandName": "Project"
     },
-    "Test - Moto": {
-      "commandName": "Project",
-      "commandLineArgs": "m:\\DCIM\\Moto m:\\Fotos m:\\DCIM\\Sort M:\\DCIM\\Junk"
-    },
-    "TestSimpleCopy - j:\\": {
-      "commandName": "Project",
-      "commandLineArgs": "copy j:\\_simphosort\\work j:\\_simphosort\\sort"
-    },
-    "TestCopyCheck - j:\\": {
-      "commandName": "Project",
-      "commandLineArgs": "copy j:\\_simphosort\\work j:\\_simphosort\\sort -c j:\\_simphosort\\photo"
-    },
     "TestCopyMoto": {
       "commandName": "Project",
-      "commandLineArgs": "copy m:\\DCIM\\Moto m:\\DCIM\\Sort -c m:\\Fotos"
+      "commandLineArgs": "copy i:\\DCIM\\Moto i:\\DCIM\\Sort -c m:\\Fotos"
     },
-    "TestGroup": {
+    "TestGroupMoto": {
       "commandName": "Project",
       "commandLineArgs": "group fixed i:\\DCIM\\Sort -f yyyyMM"
     },
-    "TestUngroup": {
+    "TestUngroupMoto": {
       "commandName": "Project",
       "commandLineArgs": "ungroup i:\\DCIM\\Sort -c"
     }
