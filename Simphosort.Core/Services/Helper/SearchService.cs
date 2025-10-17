@@ -43,7 +43,7 @@ namespace Simphosort.Core.Services.Helper
 
             DirectoryInfo directoryInfo = new(folder);
 
-            // TODO: Check if extensions are case sensitive on the current OS
+            // TODO: Check if extensions are case sensitive on the current OS (GetFiles Result ends with + Casing)
             return extensions.SelectMany(x => directoryInfo.GetFiles(x, subfolders ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly)).TakeWhile(s => !cancellationToken.IsCancellationRequested).ToList();
         }
 
@@ -57,6 +57,8 @@ namespace Simphosort.Core.Services.Helper
             }
 
             List<FileInfo> reducedFiles = new();
+
+            // TODO: make comparer use casing options?
             reducedFiles.AddRange(workFiles.Where(w => !reduceFiles.Contains(w, FileInfoComparer)).TakeWhile(s => !cancellationToken.IsCancellationRequested));
             return reducedFiles;
         }
