@@ -35,9 +35,17 @@ namespace Simphosort.Core.Services.Helper
         /// <inheritdoc/>
         public bool IsEmpty(string folder, Action<string> callbackError)
         {
-            if (Directory.EnumerateFiles(folder).Any() || Directory.EnumerateDirectories(folder).Any())
+            try
             {
-                callbackError($"ERROR: Folder {folder} is not empty!");
+                if (Directory.EnumerateFiles(folder).Any() || Directory.EnumerateDirectories(folder).Any())
+                {
+                    callbackError($"ERROR: Folder {folder} is not empty!");
+                    return false;
+                }
+            }
+            catch (Exception ex)
+            {
+                callbackError($"ERROR: Could not check folder {folder} for emptiness! {ex.Message}");
                 return false;
             }
 
@@ -47,9 +55,17 @@ namespace Simphosort.Core.Services.Helper
         /// <inheritdoc/>
         public bool HasSubFolders(string folder, Action<string> callbackError)
         {
-            if (!Directory.EnumerateDirectories(folder).Any())
+            try
             {
-                callbackError($"ERROR: Folder {folder} contains not sub folders!");
+                if (!Directory.EnumerateDirectories(folder).Any())
+                {
+                    callbackError($"ERROR: Folder {folder} contains not sub folders!");
+                    return false;
+                }
+            }
+            catch (Exception ex)
+            {
+                callbackError($"ERROR: Could not check folder {folder} for sub folders! {ex.Message}");
                 return false;
             }
 
@@ -59,9 +75,17 @@ namespace Simphosort.Core.Services.Helper
         /// <inheritdoc/>
         public bool HasNoSubFolders(string folder, Action<string> callbackError)
         {
-            if (Directory.EnumerateDirectories(folder).Any())
+            try
             {
-                callbackError($"ERROR: Folder {folder} already contains sub folders!");
+                if (Directory.EnumerateDirectories(folder).Any())
+                {
+                    callbackError($"ERROR: Folder {folder} already contains sub folders!");
+                    return false;
+                }
+            }
+            catch (Exception ex)
+            {
+                callbackError($"ERROR: Could not check folder {folder} for no sub folders! {ex.Message}");
                 return false;
             }
 
@@ -71,10 +95,20 @@ namespace Simphosort.Core.Services.Helper
         /// <inheritdoc/>
         public bool IsUnique(IEnumerable<string> folders, Action<string> callbackError)
         {
-            // TODO: Consider case sensitivity based on OS / File System
-            if (folders.Select(p => Path.GetFullPath(p)).Distinct().Count() != folders.Count())
+            try
             {
-                callbackError($"ERROR: Folders are not unique!");
+                // Check for uniqueness by comparing full paths case insensitive. If number of distinct paths is less than
+                // number of folders, there are duplicates. Does not support case sensitive aware testing without running
+                // into issues when running on case insensitive file or operating system.
+                if (folders.Select(p => Path.GetFullPath(p).ToLowerInvariant()).Distinct().Count() != folders.Count())
+                {
+                    callbackError($"ERROR: Folders are not unique!");
+                    return false;
+                }
+            }
+            catch (Exception ex)
+            {
+                callbackError($"ERROR: Could not check folders for uniqueness! {ex.Message}");
                 return false;
             }
 

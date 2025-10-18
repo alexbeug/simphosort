@@ -119,19 +119,19 @@ namespace Simphosort.Core.Services
                 {
                     // Return when format string is not valid for a file (should not happen because of previous check)
                     callbackError($"ERROR: Format string {formatString} is not valid for file {file.Name}!");
-                    return ErrorLevel.Canceled;
+                    return ErrorLevel.FormatStringNotValid;
                 }
 
                 // Get or create list for date string
-                if (!groupedFiles.TryGetValue(dateString, out List<FileInfo>? list))
+                if (!groupedFiles.TryGetValue(dateString, out List<FileInfo>? group))
                 {
-                    list = new List<FileInfo>();
-                    groupedFiles.Add(dateString, list);
+                    group = new List<FileInfo>();
+                    groupedFiles.Add(dateString, group);
                     callbackLog($"   -> {dateString} added as new group");
                 }
 
                 // Add file to list
-                list.Add(file);
+                group.Add(file);
                 callbackLog($"   -> {file.Name} added to group {dateString}");
             }
 
