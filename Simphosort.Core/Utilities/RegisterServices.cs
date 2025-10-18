@@ -6,6 +6,7 @@
 using Microsoft.Extensions.DependencyInjection;
 
 using Simphosort.Core.Services;
+using Simphosort.Core.Services.Comparer;
 using Simphosort.Core.Services.Helper;
 
 namespace Simphosort.Core.Utilities
@@ -27,10 +28,12 @@ namespace Simphosort.Core.Utilities
             services.AddSingleton<IGroupService, GroupService>();
             services.AddSingleton<IUngroupService, UngroupService>();
 
-            services.AddSingleton<IFileInfoComparer, FileInfoComparer>();
             services.AddSingleton<IFolderService, FolderService>();
             services.AddSingleton<ISearchService, SearchService>();
             services.AddSingleton<IFileService, FileService>();
+
+            // Add transient services (stateful)
+            services.AddTransient<IFileInfoComparerFactory, FileInfoComparerFactory>();
 
             return services;
         }

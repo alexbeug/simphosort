@@ -3,6 +3,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 // </copyright>
 
+using Simphosort.Core.Services.Comparer;
 using Simphosort.Core.Services.Helper;
 using Simphosort.Core.Utilities;
 
@@ -19,11 +20,13 @@ namespace Simphosort.Core.Services
         /// <param name="folderService">A <see cref="IFolderService"/>.</param>
         /// <param name="searchService">A <see cref="ISearchService"/>.</param>
         /// <param name="fileService">A <see cref="IFileService"/>.</param>
-        public UngroupService(IFolderService folderService, ISearchService searchService, IFileService fileService)
+        /// <param name="fileInfoComparerFactory">A <see cref="IFileInfoComparerFactory"/>.</param>
+        public UngroupService(IFolderService folderService, ISearchService searchService, IFileService fileService, IFileInfoComparerFactory fileInfoComparerFactory)
         {
             FolderService = folderService;
             SearchService = searchService;
             FileService = fileService;
+            FileInfoComparerFactory = fileInfoComparerFactory;
         }
 
         #endregion // Constructor
@@ -38,6 +41,9 @@ namespace Simphosort.Core.Services
 
         /// <inheritdoc cref="IFileService"/>
         private IFileService FileService { get; }
+
+        /// <inheritdoc cref="IFileInfoComparerFactory"/>
+        private IFileInfoComparerFactory FileInfoComparerFactory { get; }
 
         #endregion // Properties
 
@@ -87,8 +93,7 @@ namespace Simphosort.Core.Services
             callbackLog($"Searching files in parent folder and sub folders...");
             List<FileInfo> files = SearchService.SearchFiles(parent, Constants.SupportedExtensions, true, cancellationToken);
 
-            // Separate files in parent folder and sub folders
-            // TODO: casing
+            // Separate files in parent folder and sub folders. Casing is not relevant here, because all paths come from the same parent folder
             List<FileInfo> subFiles = files.Where(f => !f.DirectoryName!.Equals(parent)).ToList();
             callbackLog($"   -> {subFiles.Count} files found in sub folders");
 
@@ -102,22 +107,32 @@ namespace Simphosort.Core.Services
                 return ErrorLevel.Canceled;
             }
 
-            // Check for duplicate file names in sub folders and parent folder
-            // TODO: make this also a new command with exact file duplicates
-            // TODO: Casing check with Exists for real existence?
-            if (files.Select(f => f.Name).Distinct().Count() != files.Count)
+            // Create comparer with desired configuration
+            FileInfoComparerConfig fileInfoComparerConfig = new()
+            {
+                // Do not force case insensitive file name comparison by default
+                CompareFileNameCaseInSensitive = false,
+
+                // Only compare file names to identify duplicates
+                CompareFileSize = false,
+            };
+
+            IFileInfoComparer fileInfoComparer = FileInfoComparerFactory.Create(fileInfoComparerConfig);
+
+            // Check for duplicate file names in sub folders and parent folder with comparer from factory
+            IEnumerable<IGrouping<FileInfo, FileInfo>> duplicates = files.GroupBy(f => f, fileInfoComparer).Where(g => g.Count() > 1);
+
+            if (duplicates.Any())
             {
                 callbackError("ERROR: Duplicate file names found!");
 
                 // Log duplicate file names with their paths
-                // TODO: casing
-                Dictionary<string, List<FileInfo>> duplicateFiles = files.GroupBy(f => f.Name).Where(g => g.Count() > 1).ToDictionary(g => g.Key, g => g.ToList());
-                foreach (KeyValuePair<string, List<FileInfo>> duplicate in duplicateFiles)
+                foreach (IGrouping<FileInfo, FileInfo> duplicate in duplicates)
                 {
-                    callbackError($"\nDuplicate {duplicate.Key} :");
-                    foreach (FileInfo file in duplicate.Value)
+                    callbackError($"\nDuplicate {duplicate.Key.Name} :");
+                    foreach (FileInfo file in duplicate)
                     {
-                         callbackError($"   -> found in {file.DirectoryName}");
+                        callbackError($"   -> found in {file.DirectoryName}");
                     }
                 }
 

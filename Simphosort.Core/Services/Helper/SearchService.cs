@@ -3,6 +3,8 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 // </copyright>
 
+using Simphosort.Core.Services.Comparer;
+
 namespace Simphosort.Core.Services.Helper
 {
     /// <inheritdoc/>
@@ -13,10 +15,10 @@ namespace Simphosort.Core.Services.Helper
         /// <summary>
         /// Initializes a new instance of the <see cref="SearchService"/> class.
         /// </summary>
-        /// <param name="fileInfoComparer">A <see cref="IFileInfoComparer"/></param>
-        public SearchService(IFileInfoComparer fileInfoComparer)
+        /// <param name="fileInfoComparerFactory">A <see cref="IFileInfoComparerFactory"/></param>
+        public SearchService(IFileInfoComparerFactory fileInfoComparerFactory)
         {
-            FileInfoComparer = fileInfoComparer;
+            FileInfoComparerFactory = fileInfoComparerFactory;
         }
 
         #endregion // Constructor
@@ -24,9 +26,9 @@ namespace Simphosort.Core.Services.Helper
         #region Properties
 
         /// <summary>
-        /// Gets the <see cref="IFileInfoComparer"/>
+        /// Gets the <see cref="IFileInfoComparerFactory"/>
         /// </summary>
-        private IFileInfoComparer FileInfoComparer { get; }
+        private IFileInfoComparerFactory FileInfoComparerFactory { get; }
 
         #endregion // Properties
 
@@ -41,6 +43,7 @@ namespace Simphosort.Core.Services.Helper
                 return new List<FileInfo>();
             }
 
+            // TODO: TrySearchFiles
             DirectoryInfo directoryInfo = new(folder);
 
             // TODO: Check if extensions are case sensitive on the current OS (GetFiles Result ends with + Casing)
@@ -56,8 +59,20 @@ namespace Simphosort.Core.Services.Helper
                 return new List<FileInfo>();
             }
 
+            // Create comparer with desired configuration
+            FileInfoComparerConfig fileInfoComparerConfig = new()
+            {
+                // Do not force case insensitive file name comparison by default
+                CompareFileNameCaseInSensitive = false,
+
+                // Always compare file size to indentify identical files
+                CompareFileSize = true,
+            };
+
+            IFileInfoComparer fileInfoComparer = FileInfoComparerFactory.Create(fileInfoComparerConfig);
+
             List<FileInfo> reducedFiles = new();
-            reducedFiles.AddRange(workFiles.Where(w => !reduceFiles.Contains(w, FileInfoComparer)).TakeWhile(s => !cancellationToken.IsCancellationRequested));
+            reducedFiles.AddRange(workFiles.Where(w => !reduceFiles.Contains(w, fileInfoComparer)).TakeWhile(s => !cancellationToken.IsCancellationRequested));
             return reducedFiles;
         }
 

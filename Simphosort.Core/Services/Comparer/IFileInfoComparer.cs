@@ -3,10 +3,10 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 // </copyright>
 
-namespace Simphosort.Core.Services.Helper
+namespace Simphosort.Core.Services.Comparer
 {
     /// <summary>
-    /// Special comparer for <see cref="FileInfo"/>
+    /// Special comparer for <see cref="FileInfo"/> with custom comparison options.
     /// </summary>
     internal interface IFileInfoComparer : IEqualityComparer<FileInfo>
     {
