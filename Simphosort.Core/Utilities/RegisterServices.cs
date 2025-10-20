@@ -32,8 +32,7 @@ namespace Simphosort.Core.Utilities
             services.AddSingleton<ISearchService, SearchService>();
             services.AddSingleton<IFileService, FileService>();
 
-            // Add transient services (stateful)
-            services.AddTransient<IFileInfoComparerFactory, FileInfoComparerFactory>();
+            services.AddSingleton<IFileInfoComparerFactory, FileInfoComparerFactory>();
 
             return services;
         }
