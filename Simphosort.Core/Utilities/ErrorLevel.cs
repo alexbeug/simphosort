@@ -66,23 +66,28 @@ namespace Simphosort.Core.Utilities
         FormatStringNotValid = 401,
 
         /// <summary>
+        /// Searching files failed
+        /// </summary>
+        SearchFailed = 500,
+
+        /// <summary>
         /// Copy failed
         /// </summary>
-        CopyFailed = 500,
+        CopyFailed = 501,
 
         /// <summary>
         /// Group failed
         /// </summary>
-        GroupFailed = 501,
+        GroupFailed = 502,
 
         /// <summary>
         /// Ungroup failed
         /// </summary>
-        UngroupFailed = 502,
+        UngroupFailed = 503,
 
         /// <summary>
         /// Deletion of emtpy sub folders after ungrouping failed
         /// </summary>
-        DeleteEmptySubFoldersFailed = 503,
+        DeleteEmptySubFoldersFailed = 504,
     }
 }

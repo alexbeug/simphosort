@@ -136,7 +136,7 @@ namespace Simphosort.Core.Services
             }
 
             // Log number of groups found
-            callbackLog($"{groupedFiles.Count} groups formed\n");
+            callbackLog($"\n{groupedFiles.Count} groups formed\n");
             return ErrorLevel.Ok;
         }
 
@@ -203,8 +203,15 @@ namespace Simphosort.Core.Services
 
             // Find files in folder (non-recursive)
             callbackLog($"Searching files in folder...");
-            files = SearchService.SearchFiles(folder, Constants.SupportedExtensions, false, cancellationToken);
-            callbackLog($"   -> {files.Count} files found in folder\n");
+            if (SearchService.TrySearchFiles(folder, Constants.SupportedExtensions, false, out files, cancellationToken))
+            {
+                callbackLog($"   -> {files.Count} files found in folder\n");
+            }
+            else
+            {
+                callbackError($"ERROR: Searching files failed!");
+                return ErrorLevel.SearchFailed;
+            }
 
             // Break operation if cancellation requested
             if (cancellationToken.IsCancellationRequested)

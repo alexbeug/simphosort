@@ -105,8 +105,15 @@ namespace Simphosort.Core.Services
 
             // Find files in source folder (non-recursive)
             callbackLog($"Searching files in source folder...");
-            List<FileInfo> sourceFiles = SearchService.SearchFiles(sourceFolder, Constants.SupportedExtensions, false, cancellationToken);
-            callbackLog($"   -> {sourceFiles.Count} files found in source folder\n");
+            if (SearchService.TrySearchFiles(sourceFolder, Constants.SupportedExtensions, false, out List<FileInfo> sourceFiles, cancellationToken))
+            {
+                callbackLog($"   -> {sourceFiles.Count} files found in source folder\n");
+            }
+            else
+            {
+                callbackError($"ERROR: Searching files failed!");
+                return ErrorLevel.SearchFailed;
+            }
 
             // Break operation if cancellation requested
             if (cancellationToken.IsCancellationRequested)
@@ -123,7 +130,19 @@ namespace Simphosort.Core.Services
                 // Find files in check folders (recursive)
                 callbackLog($"Searching files in check folders...");
                 List<FileInfo> checkFiles = new();
-                checkFolders.TakeWhile(c => !cancellationToken.IsCancellationRequested).ToList().ForEach(folder => checkFiles.AddRange(SearchService.SearchFiles(folder, Constants.SupportedExtensions, true, cancellationToken).TakeWhile(s => !cancellationToken.IsCancellationRequested)));
+                foreach (string folder in checkFolders.TakeWhile(c => !cancellationToken.IsCancellationRequested))
+                {
+                    if (SearchService.TrySearchFiles(folder, Constants.SupportedExtensions, true, out List<FileInfo> foundFiles, cancellationToken))
+                    {
+                        checkFiles.AddRange(foundFiles);
+                    }
+                    else
+                    {
+                        callbackError($"ERROR: Searching files in check folder {folder} failed!");
+                        return ErrorLevel.SearchFailed;
+                    }
+                }
+
                 callbackLog($"   -> {checkFiles.Count} files found in check folders\n");
 
                 // Break operation if cancellation requested

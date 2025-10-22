@@ -11,14 +11,15 @@ namespace Simphosort.Core.Services.Helper
     public interface ISearchService
     {
         /// <summary>
-        /// Search for files in a given folder
+        /// Try to search for files in a given folder
         /// </summary>
         /// <param name="folder">Folder to search</param>
         /// <param name="extensions">list of extensions (*.jpg, *.jpeg)</param>
         /// <param name="subfolders">include subfolders</param>
+        /// <param name="filesFound">List of <see cref="FileInfo"/> objects with files found</param>
         /// <param name="cancellationToken">Cancellation token</param>
-        /// <returns>List of <see cref="FileInfo"/> objects with files found</returns>
-        List<FileInfo> SearchFiles(string folder, string[] extensions, bool subfolders, CancellationToken cancellationToken);
+        /// <returns>True when files searched, result may be zero</returns>
+        bool TrySearchFiles(string folder, string[] extensions, bool subfolders, out List<FileInfo> filesFound, CancellationToken cancellationToken);
 
         /// <summary>
         /// Reduce files in given workFiles

@@ -91,7 +91,11 @@ namespace Simphosort.Core.Services
 
             // Get all files in sub folders (recursive) and parent folder
             callbackLog($"Searching files in parent folder and sub folders...");
-            List<FileInfo> files = SearchService.SearchFiles(parent, Constants.SupportedExtensions, true, cancellationToken);
+            if (!SearchService.TrySearchFiles(parent, Constants.SupportedExtensions, true, out List<FileInfo> files, cancellationToken))
+            {
+                callbackError("ERROR: Searching files failed!");
+                return ErrorLevel.SearchFailed;
+            }
 
             // Separate files in parent folder and sub folders. Casing is not relevant here, because all paths come from the same parent folder
             List<FileInfo> subFiles = files.Where(f => !f.DirectoryName!.Equals(parent)).ToList();
@@ -169,10 +173,23 @@ namespace Simphosort.Core.Services
                     }
 
                     // Get all sub folder paths that are now empty (including sub folders of sub folders)
-                    List<string> emptyPaths = paths.Where(s => SearchService.SearchFiles(s, Constants.AllFilesExtension, true, cancellationToken).Count == 0).ToList();
+                    List<string> emptyPaths = paths.Where(s => SearchService.TrySearchFiles(s, Constants.AllFilesExtension, true, out List<FileInfo> found, cancellationToken) && found.Count > 0).ToList();
 
-                    // Log number of empty sub folders found
-                    callbackLog($"{emptyPaths.Count} out of {paths.Count} sub folders found empty\n");
+                    foreach (string path in paths.TakeWhile(c => !cancellationToken.IsCancellationRequested))
+                    {
+                        if (SearchService.TrySearchFiles(path, Constants.AllFilesExtension, true, out List<FileInfo> found, cancellationToken))
+                        {
+                            if (found.Count == 0)
+                            {
+                                emptyPaths.Add(path);
+                            }
+                        }
+                        else
+                        {
+                            callbackError($"ERROR: Searching empty paths failed for {path}!");
+                            return ErrorLevel.SearchFailed;
+                        }
+                    }
 
                     // Break operation if cancellation requested
                     if (cancellationToken.IsCancellationRequested)
@@ -180,6 +197,9 @@ namespace Simphosort.Core.Services
                         callbackLog($"Ungroup canceled before deleting empty sub folders (Duration: {Duration.Calculate(start):g})\n");
                         return ErrorLevel.Canceled;
                     }
+
+                    // Log number of empty sub folders found
+                    callbackLog($"{emptyPaths.Count} out of {paths.Count} sub folders found empty\n");
 
                     // Delete empty sub folders
                     int deleted = FileService.DeleteFolders(emptyPaths.ToArray(), callbackLog, callbackError, cancellationToken);

@@ -35,19 +35,31 @@ namespace Simphosort.Core.Services.Helper
         #region Methods
 
         /// <inheritdoc/>
-        public List<FileInfo> SearchFiles(string folder, string[] extensions, bool subfolders, CancellationToken cancellationToken)
+        public bool TrySearchFiles(string folder, string[] extensions, bool subfolders, out List<FileInfo> filesFound, CancellationToken cancellationToken)
         {
+            // Always initialize out parameter
+            filesFound = new List<FileInfo>();
+
             if (cancellationToken.IsCancellationRequested)
             {
-                // Return directly if cancelled
-                return new List<FileInfo>();
+                // Return directly if cancelled, result ist true with empty list, Canceled state is handled by caller
+                return true;
             }
 
-            // TODO: TrySearchFiles
-            DirectoryInfo directoryInfo = new(folder);
+            try
+            {
+                // Create DirectoryInfo object, may throw exception if folder is invalid
+                DirectoryInfo directoryInfo = new(folder);
 
-            // TODO: Check if extensions are case sensitive on the current OS (GetFiles Result ends with + Casing)
-            return extensions.SelectMany(x => directoryInfo.GetFiles(x, subfolders ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly)).TakeWhile(s => !cancellationToken.IsCancellationRequested).ToList();
+                // TODO: Check if extensions are case sensitive on the current OS (GetFiles Result ends with + Casing)
+                filesFound = extensions.SelectMany(x => directoryInfo.GetFiles(x, subfolders ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly)).TakeWhile(s => !cancellationToken.IsCancellationRequested).ToList();
+                return true;
+            }
+            catch (Exception)
+            {
+                // Return empty list on error
+                return false;
+            }
         }
 
         /// <inheritdoc/>
