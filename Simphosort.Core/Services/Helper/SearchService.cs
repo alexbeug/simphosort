@@ -51,7 +51,7 @@ namespace Simphosort.Core.Services.Helper
                 // Create DirectoryInfo object, may throw exception if folder is invalid
                 DirectoryInfo directoryInfo = new(folder);
 
-                // TODO: Check if extensions are case sensitive on the current OS (GetFiles Result ends with + Casing)
+                // Get files with specified extensions
                 filesFound = extensions.SelectMany(x => directoryInfo.GetFiles(x, subfolders ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly)).TakeWhile(s => !cancellationToken.IsCancellationRequested).ToList();
                 return true;
             }
