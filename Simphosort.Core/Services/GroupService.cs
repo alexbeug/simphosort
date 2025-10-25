@@ -127,7 +127,7 @@ namespace Simphosort.Core.Services
                 {
                     group = new List<FileInfo>();
                     groupedFiles.Add(dateString, group);
-                    callbackLog($"   -> {dateString} added as new group");
+                    callbackLog($"{dateString} added as new group");
                 }
 
                 // Add file to list
