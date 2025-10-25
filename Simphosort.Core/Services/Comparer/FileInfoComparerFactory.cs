@@ -70,23 +70,9 @@ namespace Simphosort.Core.Services.Comparer
             /// <inheritdoc/>
             public int GetHashCode([DisallowNull] FileInfo obj)
             {
-                int hashCode = 17;
-
-                if (_config.CompareFileSize)
-                {
-                    hashCode = (hashCode * 31) + obj.Length.GetHashCode();
-                }
-
-                if (_config.CompareFileNameCaseInSensitive)
-                {
-                    hashCode = (hashCode * 31) + StringComparer.OrdinalIgnoreCase.GetHashCode(obj.Name);
-                }
-                else
-                {
-                    hashCode = (hashCode * 31) + obj.Name.GetHashCode();
-                }
-
-                return hashCode;
+                // Throw exception as GetHashCode is not supported for FileInfoComparer to usage of Equals method only. A hash code
+                // based comparison is not feasible for FileInfo objects as it would break the case sensitivity handling with File.Exists.
+                throw new NotSupportedException("GetHashCode is not supported for FileInfoComparer!");
             }
         }
 
