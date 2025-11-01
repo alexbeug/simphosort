@@ -5,7 +5,7 @@
     },
     "TestCopyMoto": {
       "commandName": "Project",
-      "commandLineArgs": "copy i:\\DCIM\\MOTO i:\\DCiM\\Sort -c m:\\Fotos"
+      "commandLineArgs": "copy i:\\DCIM\\MOTO i:\\DCiM\\Sort -c m:\\Fotos -s *.jpg -s *.jpeg"
     },
     "TestGroupMoto": {
       "commandName": "Project",
