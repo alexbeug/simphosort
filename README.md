@@ -54,8 +54,8 @@ pathes must exist. The target folder must be empty. Paths have to be unique (no 
 
 #### Checks
 The copy command supports multiple check folders. Each photo file in the source folder is checked for duplicates in all specified check folders (including their sub folders). 
-If a duplicate is found in any of the check folders, the file is not copied to the target. The comparison is done by file name and file size. File name comparison is platform 
-dependent.
+If a duplicate is found in any of the check folders, the file is not copied to the target. The comparison is done by file name and file size. File name comparison casing is platform 
+default (usually case insensitive on Windows and case sensitive on Linux).
 
 ### group
 Move photo files (default *.jpg and *.jpeg) in a folder to sub folders. Grouping mode is controlled by sub commands.
