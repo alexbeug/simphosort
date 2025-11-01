@@ -28,7 +28,7 @@ namespace Simphosort.Commands
         /// <returns><see cref="ErrorLevel"/></returns>
         [Command("fixed", Description = "Group files by fixed date", Usage = "simphosort group fixed [options] <folder>")]
         public int FixedMethod(
-            [Operand("folder", Description = "Folder (containing the photo files to group)"), PathReference] DirectoryInfo folder,
+            [Operand("folder", Description = "Folder containing the photo files to group"), PathReference] DirectoryInfo folder,
             [Option('f', "format", Description = "Format string (e.g. yyyy-MM-dd for daily sub folders)")] string formatString,
             IConsole console,
             IGroupService groupService,

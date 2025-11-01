@@ -32,6 +32,12 @@ namespace Simphosort
         public Group? Group { get; set; }
 
         /// <summary>
+        /// Gets or sets ungroup command
+        /// </summary>
+        [Subcommand]
+        public Ungroup? Ungroup { get; set; }
+
+        /// <summary>
         /// Program main function
         /// </summary>
         /// <param name="args">Command line arguments</param>
@@ -39,6 +45,7 @@ namespace Simphosort
         [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(Program))]
         [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(Copy))]
         [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(Group))]
+        [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(Ungroup))]
         [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(ErrorLevel))]
         [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(DirectoryInfo))]
         private static int Main(string[] args)
@@ -72,6 +79,7 @@ namespace Simphosort
             // Register command classes
             container.AddSingleton<Copy, Copy>();
             container.AddSingleton<Group, Group>();
+            container.AddSingleton<Ungroup, Ungroup>();
 
             IServiceProvider provider = container.BuildServiceProvider();
             return provider;

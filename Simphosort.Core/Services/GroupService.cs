@@ -73,25 +73,21 @@ namespace Simphosort.Core.Services
             int moved = FileService.MoveGroupedFilesToSubFolders(groupedFiles, folder, callbackLog, callbackError, cancellationToken);
             callbackLog($"\n{moved} files moved\n");
 
-            // Log operation duration and remove milliseconds and microseconds for better readability
-            TimeSpan duration = DateTime.UtcNow - start;
-            TimeSpan simpleDuration = new(duration.Days, duration.Hours, duration.Minutes, duration.Seconds);
-
             // Break operation when cancellation requested
             if (cancellationToken.IsCancellationRequested)
             {
-                callbackLog($"Group canceled while grouping files (Duration: {simpleDuration:g})\n");
+                callbackLog($"Group canceled while grouping files (Duration: {Duration.Calculate(start):g})\n");
                 return ErrorLevel.Canceled;
             }
 
             if (moved == files.Count)
             {
-                callbackLog($"Group completed successfully after (Duration: {simpleDuration:g})\n");
+                callbackLog($"Group completed successfully (Duration: {Duration.Calculate(start):g})\n");
                 return ErrorLevel.Ok;
             }
             else
             {
-                callbackError($"Group completed with errors after (Duration: {simpleDuration:g})\n");
+                callbackError($"Group completed with errors (Duration: {Duration.Calculate(start):g})\n");
                 return ErrorLevel.GroupFailed;
             }
         }
@@ -123,24 +119,24 @@ namespace Simphosort.Core.Services
                 {
                     // Return when format string is not valid for a file (should not happen because of previous check)
                     callbackError($"ERROR: Format string {formatString} is not valid for file {file.Name}!");
-                    return ErrorLevel.Canceled;
+                    return ErrorLevel.FormatStringNotValid;
                 }
 
                 // Get or create list for date string
-                if (!groupedFiles.TryGetValue(dateString, out List<FileInfo>? list))
+                if (!groupedFiles.TryGetValue(dateString, out List<FileInfo>? group))
                 {
-                    list = new List<FileInfo>();
-                    groupedFiles.Add(dateString, list);
-                    callbackLog($"   -> {dateString} added as new group");
+                    group = new List<FileInfo>();
+                    groupedFiles.Add(dateString, group);
+                    callbackLog($"{dateString} added as new group");
                 }
 
                 // Add file to list
-                list.Add(file);
+                group.Add(file);
                 callbackLog($"   -> {file.Name} added to group {dateString}");
             }
 
             // Log number of groups found
-            callbackLog($"{groupedFiles.Count} groups formed\n");
+            callbackLog($"\n{groupedFiles.Count} groups formed\n");
             return ErrorLevel.Ok;
         }
 
@@ -159,24 +155,24 @@ namespace Simphosort.Core.Services
             // Prepare empty file list
             files = new();
 
-            // Check folders for validity
+            // Check folder name for validity
             if (!FolderService.IsValid(folder, callbackError))
             {
-                // Stop when a folder is not valid
+                // Stop if folder name is not valid
                 return ErrorLevel.FolderNotValid;
             }
 
             // Check folders for existence
             if (!FolderService.Exists(folder, callbackError))
             {
-                // Stop when a folder does not exist
+                // Stop if folder does not exist
                 return ErrorLevel.FolderDoesNotExist;
             }
 
-            // Target folder must not have sub folders
+            // Folder must not have sub folders
             if (!FolderService.HasNoSubFolders(folder, callbackError))
             {
-                // Stop when target folder is not empty
+                // Stop if sub folders present
                 return ErrorLevel.FoldersPresent;
             }
 
@@ -198,7 +194,7 @@ namespace Simphosort.Core.Services
                 return ErrorLevel.FormatStringNotValid;
             }
 
-            // Break operation when cancellation requested
+            // Break operation if cancellation requested
             if (cancellationToken.IsCancellationRequested)
             {
                 callbackLog($"Group canceled before grouping files\n");
@@ -207,10 +203,17 @@ namespace Simphosort.Core.Services
 
             // Find files in folder (non-recursive)
             callbackLog($"Searching files in folder...");
-            files = SearchService.SearchFiles(folder, Constants.SupportedExtensions, false, cancellationToken);
-            callbackLog($"   -> {files.Count} files found in folder\n");
+            if (SearchService.TrySearchFiles(folder, Constants.SupportedExtensions, false, out files, cancellationToken))
+            {
+                callbackLog($"   -> {files.Count} files found in folder\n");
+            }
+            else
+            {
+                callbackError($"ERROR: Searching files failed!");
+                return ErrorLevel.SearchFailed;
+            }
 
-            // Break operation when cancellation requested
+            // Break operation if cancellation requested
             if (cancellationToken.IsCancellationRequested)
             {
                 callbackLog($"Group canceled before grouping files\n");

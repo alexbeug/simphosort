@@ -46,7 +46,7 @@ Options:
 ```
 
 ### group
-Group photo files (currently *.jpg and *.jpeg) in a folder to sub folders. Grouping mode is controlled by sub commands.
+Move photo files (currently *.jpg and *.jpeg) in a folder to sub folders. Grouping mode is controlled by sub commands.
 
 #### fixed
 Group photos using a fixed date and a format string for sub folder names.
@@ -64,5 +64,24 @@ Options:
   -f | --format  <TEXT>
   Format string (e.g. yyyy-MM-dd for daily sub folders)
 ```
+
+### ungroup
+Move files (currently *.jpg and *.jpeg) from sub folders back to the parent folder. Checks for duplicates before moving. Optionally delete empty sub folders after moving files back to parent folder.
+This command is intended to undo a previous grouping step.
+
+```
+Usage: simphosort ungroup [options] <parent>
+
+Arguments:
+
+  parent  <PATH>
+  Parent folder (containing the sub folders to ungroup)
+
+Options:
+
+  -d | --delete-empty
+  Delete empty sub folders containing no files after ungroup
+```
+
 ## License
 simphosort is using the MIT license. See [LICENSE](LICENSE).

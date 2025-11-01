@@ -3,6 +3,8 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 // </copyright>
 
+using Simphosort.Core.Services.Comparer;
+
 namespace Simphosort.Core.Services.Helper
 {
     /// <summary>
@@ -11,14 +13,15 @@ namespace Simphosort.Core.Services.Helper
     public interface ISearchService
     {
         /// <summary>
-        /// Search for files in a given folder
+        /// Try to search for files in a given folder
         /// </summary>
         /// <param name="folder">Folder to search</param>
         /// <param name="extensions">list of extensions (*.jpg, *.jpeg)</param>
         /// <param name="subfolders">include subfolders</param>
+        /// <param name="filesFound">List of <see cref="FileInfo"/> objects with files found</param>
         /// <param name="cancellationToken">Cancellation token</param>
-        /// <returns>List of <see cref="FileInfo"/> objects with files found</returns>
-        List<FileInfo> SearchFiles(string folder, string[] extensions, bool subfolders, CancellationToken cancellationToken);
+        /// <returns>True when files searched, result may be zero</returns>
+        bool TrySearchFiles(string folder, string[] extensions, bool subfolders, out List<FileInfo> filesFound, CancellationToken cancellationToken);
 
         /// <summary>
         /// Reduce files in given workFiles
@@ -28,5 +31,14 @@ namespace Simphosort.Core.Services.Helper
         /// <param name="cancellationToken">Cancellation token</param>
         /// <returns>Reduced work files</returns>
         List<FileInfo> ReduceFiles(IEnumerable<FileInfo> workFiles, IEnumerable<FileInfo> reduceFiles, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Find duplicate files by using <see cref="IFileInfoComparer.Equals"/>
+        /// </summary>
+        /// <param name="files">Files to check for equals</param>
+        /// <param name="fileInfoComparer"><see cref="IFileInfoComparer"/> to use</param>
+        /// <param name="cancellationToken">Cancellation token</param>
+        /// <returns>A dictionary with duplicates files</returns>
+        Dictionary<FileInfo, IEnumerable<FileInfo>> FindDuplicateFiles(IEnumerable<FileInfo> files, IFileInfoComparer fileInfoComparer, CancellationToken cancellationToken);
     }
 }

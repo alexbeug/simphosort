@@ -41,9 +41,19 @@ namespace Simphosort.Core.Utilities
         FoldersPresent = 121,
 
         /// <summary>
-        /// Given folders are not unique
+        /// No sub folders are present in the given folder
         /// </summary>
-        FoldersAreNotUnique = 150,
+        NoSubFolders = 130,
+
+        /// <summary>
+        /// Given folder names are not unique
+        /// </summary>
+        FolderNamesNotUnique = 150,
+
+        /// <summary>
+        /// Given file names are not unique (same file name in different sub folders)
+        /// </summary>
+        FileNamesNotUnique = 151,
 
         /// <summary>
         /// Format string is empty
@@ -56,13 +66,28 @@ namespace Simphosort.Core.Utilities
         FormatStringNotValid = 401,
 
         /// <summary>
-        /// Copy failed
+        /// Searching files failed
         /// </summary>
-        CopyFailed = 500,
+        SearchFailed = 500,
 
         /// <summary>
-        /// Grpup failed
+        /// Copy failed
         /// </summary>
-        GroupFailed = 501,
+        CopyFailed = 501,
+
+        /// <summary>
+        /// Group failed
+        /// </summary>
+        GroupFailed = 502,
+
+        /// <summary>
+        /// Ungroup failed
+        /// </summary>
+        UngroupFailed = 503,
+
+        /// <summary>
+        /// Deletion of emtpy sub folders after ungrouping failed
+        /// </summary>
+        DeleteEmptySubFoldersFailed = 504,
     }
 }

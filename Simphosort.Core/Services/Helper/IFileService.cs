@@ -31,5 +31,26 @@ namespace Simphosort.Core.Services.Helper
         /// <param name="cancellationToken">A <see cref="CancellationToken"/></param>
         /// <returns>Files moved</returns>
         int MoveGroupedFilesToSubFolders(Dictionary<string, List<FileInfo>> groupedFiles, string folder, Action<string> callbackLog, Action<string> callbackError, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Move files from sub folders to folder
+        /// </summary>
+        /// <param name="files">Files to move</param>
+        /// <param name="folder">Folder</param>
+        /// <param name="callbackLog">Log callback function</param>
+        /// <param name="callbackError">Error callback function</param>
+        /// <param name="cancellationToken">A <see cref="CancellationToken"/></param>
+        /// <returns>Files moved</returns>
+        int MoveFilesFromSubFoldersToFolder(IEnumerable<FileInfo> files, string folder, Action<string> callbackLog, Action<string> callbackError, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Delete folders (recursive)
+        /// </summary>
+        /// <param name="folders">Folders to delete</param>
+        /// <param name="callbackLog">Log callback function</param>
+        /// <param name="callbackError">Error callback function</param>
+        /// <param name="cancellationToken">A <see cref="CancellationToken"/></param>
+        /// <returns>Files moved</returns>
+        int DeleteFolders(string[] folders, Action<string> callbackLog, Action<string> callbackError, CancellationToken cancellationToken);
     }
 }
