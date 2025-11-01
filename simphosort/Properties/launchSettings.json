@@ -13,7 +13,7 @@
     },
     "TestUngroupMoto": {
       "commandName": "Project",
-      "commandLineArgs": "ungroup i:\\DCIM\\SoRt -c"
+      "commandLineArgs": "ungroup i:\\DCIM\\SoRt -c -s *.JPG"
     }
   }
 }
