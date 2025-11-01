@@ -101,6 +101,14 @@ Options:
   Specify custom search pattern using wildcards (e.g. *.jpg or IMG_*.nef)
 ```
 
+#### Checks
+The ungroup command checks for duplicate files in the parent folder before moving files from sub folders back to the parent folder. A file is considered a duplicate if a file with the same name 
+already exists in the parent folder. File name comparison casing is platform default (usually case insensitive on Windows and case sensitive on Linux).
+
+#### Delete empty
+If the -d or --delete-empty option is specified, empty sub folders (containing no files) are deleted after moving files back to the parent folder. If a sub folder contains other sub folders, the 
+check is done recursively. An empty sub folder is only deleted if it and all its sub folders contain no files.
+
 ## Search patterns
 Without any search pattern specified, simphosort will search for files with the common JPEG file extensions .jpg and .jpeg. You can specify custom search patterns using wildcards with the -s or --search option. 
 Multiple search patterns can be specified by repeating the option. Case sensitivity is platform dependent (usually case insensitive on Windows, case sensitive on Linux).
