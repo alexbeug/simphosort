@@ -168,12 +168,8 @@ namespace Simphosort.Core.Services
                 return ErrorLevel.SearchFailed;
             }
 
-            // Separate files in parent folder and sub folders. Casing is not relevant here, because all paths come from the same parent folder
-            subFiles = files.Where(f => !f.DirectoryName!.Equals(parent)).ToList();
-            callbackLog($"   -> {subFiles.Count} files found in sub folders");
-
-            List<FileInfo> parentFiles = files.Where(f => f.DirectoryName!.Equals(parent)).ToList();
-            callbackLog($"   -> {parentFiles.Count} files found in parent folder\n");
+            // Retrieve enumerated files
+            List<FileInfo> foundFiles = files.TakeWhile(f => !cancellationToken.IsCancellationRequested).ToList();
 
             // Break operation if cancellation requested
             if (cancellationToken.IsCancellationRequested)
@@ -181,6 +177,14 @@ namespace Simphosort.Core.Services
                 callbackLog($"Ungroup canceled before ungrouping files\n");
                 return ErrorLevel.Canceled;
             }
+
+            // Separate files in parent folder and sub folders. Casing is not relevant here, because all paths come from the same parent folder
+            subFiles = foundFiles.Where(f => !f.DirectoryName!.Equals(parent)).ToList();
+            callbackLog($"   -> {subFiles.Count} files found in sub folders");
+
+            // Get files in parent folder by excluding sub folder files from found files
+            List<FileInfo> parentFiles = foundFiles.Except(subFiles).ToList();
+            callbackLog($"   -> {parentFiles.Count} files found in parent folder\n");
 
             return ErrorLevel.Ok;
         }
