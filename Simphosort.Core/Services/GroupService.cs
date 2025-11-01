@@ -56,14 +56,14 @@ namespace Simphosort.Core.Services
             DateTime start = DateTime.UtcNow;
 
             // Prepare grouping and get files in folder
-            ErrorLevel errorLevel = Prepare(folder, formatString, callbackLog, callbackError, out List<FileInfo> files, cancellationToken);
+            ErrorLevel errorLevel = Prepare(folder, formatString, callbackLog, callbackError, out IEnumerable<FileInfo> files, cancellationToken);
             if (errorLevel != ErrorLevel.Ok)
             {
                 return errorLevel;
             }
 
             // Group files by fixed formatted date
-            errorLevel = GroupFilesFixed(formatString, callbackLog, callbackError, files, out Dictionary<string, List<FileInfo>> groupedFiles, cancellationToken);
+            errorLevel = GroupFilesFixed(formatString, callbackLog, callbackError, files, out Dictionary<string, IEnumerable<FileInfo>> groupedFiles, cancellationToken);
             if (errorLevel != ErrorLevel.Ok)
             {
                 return errorLevel;
@@ -80,7 +80,7 @@ namespace Simphosort.Core.Services
                 return ErrorLevel.Canceled;
             }
 
-            if (moved == files.Count)
+            if (moved == files.Count())
             {
                 callbackLog($"Group completed successfully (Duration: {Duration.Calculate(start):g})\n");
                 return ErrorLevel.Ok;
@@ -102,7 +102,7 @@ namespace Simphosort.Core.Services
         /// <param name="groupedFiles">Grouped files</param>
         /// <param name="cancellationToken">A <see cref="CancellationToken"/></param>
         /// <returns><see cref="ErrorLevel"/> and <paramref name="groupedFiles"/></returns>
-        private static ErrorLevel GroupFilesFixed(string formatString, Action<string> callbackLog, Action<string> callbackError, List<FileInfo> files, out Dictionary<string, List<FileInfo>> groupedFiles, CancellationToken cancellationToken)
+        private static ErrorLevel GroupFilesFixed(string formatString, Action<string> callbackLog, Action<string> callbackError, IEnumerable<FileInfo> files, out Dictionary<string, IEnumerable<FileInfo>> groupedFiles, CancellationToken cancellationToken)
         {
             // Create Dictionary for grouped files
             groupedFiles = new();
@@ -123,7 +123,7 @@ namespace Simphosort.Core.Services
                 }
 
                 // Get or create list for date string
-                if (!groupedFiles.TryGetValue(dateString, out List<FileInfo>? group))
+                if (!groupedFiles.TryGetValue(dateString, out IEnumerable<FileInfo>? group))
                 {
                     group = new List<FileInfo>();
                     groupedFiles.Add(dateString, group);
@@ -131,7 +131,7 @@ namespace Simphosort.Core.Services
                 }
 
                 // Add file to list
-                group.Add(file);
+                ((List<FileInfo>)group).Add(file);
                 callbackLog($"   -> {file.Name} added to group {dateString}");
             }
 
@@ -150,10 +150,10 @@ namespace Simphosort.Core.Services
         /// <param name="files">Ungrouped files in folder</param>
         /// <param name="cancellationToken">A <see cref="CancellationToken"/></param>
         /// <returns><see cref="ErrorLevel"/> and <paramref name="files"/></returns>
-        private ErrorLevel Prepare(string folder, string formatString, Action<string> callbackLog, Action<string> callbackError, out List<FileInfo> files, CancellationToken cancellationToken)
+        private ErrorLevel Prepare(string folder, string formatString, Action<string> callbackLog, Action<string> callbackError, out IEnumerable<FileInfo> files, CancellationToken cancellationToken)
         {
             // Prepare empty file list
-            files = new();
+            files = new List<FileInfo>();
 
             // Check folder name for validity
             if (!FolderService.IsValid(folder, callbackError))
@@ -205,19 +205,20 @@ namespace Simphosort.Core.Services
             callbackLog($"Searching files in folder...");
             if (SearchService.TrySearchFiles(folder, Constants.SupportedExtensions, false, out files, cancellationToken))
             {
-                callbackLog($"   -> {files.Count} files found in folder\n");
+                // Break operation if cancellation requested
+                if (cancellationToken.IsCancellationRequested)
+                {
+                    callbackLog($"Group canceled before grouping files\n");
+                    return ErrorLevel.Canceled;
+                }
+
+                // Log number of files found
+                callbackLog($"   -> {files.Count()} files found in folder\n");
             }
             else
             {
                 callbackError($"ERROR: Searching files failed!");
                 return ErrorLevel.SearchFailed;
-            }
-
-            // Break operation if cancellation requested
-            if (cancellationToken.IsCancellationRequested)
-            {
-                callbackLog($"Group canceled before grouping files\n");
-                return ErrorLevel.Canceled;
             }
 
             return ErrorLevel.Ok;

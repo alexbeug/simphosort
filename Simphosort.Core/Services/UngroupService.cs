@@ -62,7 +62,7 @@ namespace Simphosort.Core.Services
             DateTime start = DateTime.UtcNow;
 
             // Prepare ungrouping and get files in parent folder and sub folders
-            ErrorLevel errorLevel = Prepare(parent, callbackLog, callbackError, out List<FileInfo> files, out List<FileInfo> subFiles, cancellationToken);
+            ErrorLevel errorLevel = Prepare(parent, callbackLog, callbackError, out IEnumerable<FileInfo> files, out List<FileInfo> subFiles, cancellationToken);
             if (errorLevel != ErrorLevel.Ok)
             {
                 return errorLevel;
@@ -124,7 +124,7 @@ namespace Simphosort.Core.Services
         /// <param name="subFiles">Files found in sub folders</param>
         /// <param name="cancellationToken">A <see cref="CancellationToken"/></param>
         /// <returns><see cref="ErrorLevel"/>, <paramref name="parentFiles"/> abd <paramref name="subFiles"/></returns>
-        private ErrorLevel Prepare(string parent, Action<string> callbackLog, Action<string> callbackError, out List<FileInfo> files, out List<FileInfo> subFiles, CancellationToken cancellationToken)
+        private ErrorLevel Prepare(string parent, Action<string> callbackLog, Action<string> callbackError, out IEnumerable<FileInfo> files, out List<FileInfo> subFiles, CancellationToken cancellationToken)
         {
             // Always initialize out parameters
             files = new List<FileInfo>();
@@ -189,7 +189,7 @@ namespace Simphosort.Core.Services
         /// <param name="files">Files to check</param>
         /// <param name="callbackError">Error message callback</param>
         /// <returns>An <see cref="ErrorLevel"/></returns>
-        private ErrorLevel CheckDuplicates(List<FileInfo> files, Action<string> callbackError)
+        private ErrorLevel CheckDuplicates(IEnumerable<FileInfo> files, Action<string> callbackError)
         {
             // Create comparer with desired configuration
             FileInfoComparerConfig fileInfoComparerConfig = new()
@@ -248,13 +248,13 @@ namespace Simphosort.Core.Services
             }
 
             // Get all sub folder paths that are now empty (including sub folders of sub folders)
-            List<string> emptyPaths = paths.Where(s => SearchService.TrySearchFiles(s, Constants.AllFilesExtension, true, out List<FileInfo> found, cancellationToken) && found.Count > 0).ToList();
+            List<string> emptyPaths = new();
 
             foreach (string path in paths.TakeWhile(c => !cancellationToken.IsCancellationRequested))
             {
-                if (SearchService.TrySearchFiles(path, Constants.AllFilesExtension, true, out List<FileInfo> found, cancellationToken))
+                if (SearchService.TrySearchFiles(path, Constants.AllFilesExtension, true, out IEnumerable<FileInfo> found, cancellationToken))
                 {
-                    if (found.Count == 0)
+                    if (!found.Any())
                     {
                         emptyPaths.Add(path);
                     }

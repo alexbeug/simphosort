@@ -30,7 +30,7 @@ namespace Simphosort.Core.Services.Helper
         /// <param name="callbackError">Error callback function</param>
         /// <param name="cancellationToken">A <see cref="CancellationToken"/></param>
         /// <returns>Files moved</returns>
-        int MoveGroupedFilesToSubFolders(Dictionary<string, List<FileInfo>> groupedFiles, string folder, Action<string> callbackLog, Action<string> callbackError, CancellationToken cancellationToken);
+        int MoveGroupedFilesToSubFolders(Dictionary<string, IEnumerable<FileInfo>> groupedFiles, string folder, Action<string> callbackLog, Action<string> callbackError, CancellationToken cancellationToken);
 
         /// <summary>
         /// Move files from sub folders to folder

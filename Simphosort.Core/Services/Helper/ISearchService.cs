@@ -21,7 +21,7 @@ namespace Simphosort.Core.Services.Helper
         /// <param name="filesFound">List of <see cref="FileInfo"/> objects with files found</param>
         /// <param name="cancellationToken">Cancellation token</param>
         /// <returns>True when files searched, result may be zero</returns>
-        bool TrySearchFiles(string folder, string[] extensions, bool subfolders, out List<FileInfo> filesFound, CancellationToken cancellationToken);
+        bool TrySearchFiles(string folder, string[] extensions, bool subfolders, out IEnumerable<FileInfo> filesFound, CancellationToken cancellationToken);
 
         /// <summary>
         /// Reduce files in given workFiles

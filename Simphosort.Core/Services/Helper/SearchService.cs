@@ -35,7 +35,7 @@ namespace Simphosort.Core.Services.Helper
         #region Methods
 
         /// <inheritdoc/>
-        public bool TrySearchFiles(string folder, string[] extensions, bool subfolders, out List<FileInfo> filesFound, CancellationToken cancellationToken)
+        public bool TrySearchFiles(string folder, string[] extensions, bool subfolders, out IEnumerable<FileInfo> filesFound, CancellationToken cancellationToken)
         {
             // Always initialize out parameter
             filesFound = new List<FileInfo>();
