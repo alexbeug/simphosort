@@ -9,7 +9,7 @@
     },
     "TestGroupMoto": {
       "commandName": "Project",
-      "commandLineArgs": "group fixed i:\\DCIM\\Sort -f yyyyMM"
+      "commandLineArgs": "group fixed i:\\DCIM\\Sort -f yyyyMM -s *.jpg -s *.jpeg"
     },
     "TestUngroupMoto": {
       "commandName": "Project",

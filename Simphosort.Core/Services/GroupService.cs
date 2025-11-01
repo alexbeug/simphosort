@@ -70,12 +70,15 @@ namespace Simphosort.Core.Services
                 return errorLevel;
             }
 
+            // Get total file count before moving (enumeration will be lost after)
+            int totalFiles = files.Count();
+
             // Move files to sub folders
             int moved = FileService.MoveGroupedFilesToSubFolders(groupedFiles, folder, callbackLog, callbackError, cancellationToken);
             callbackLog($"\n{moved} files moved\n");
 
             // Finish grouping operation (print result and return error level)
-            return Finish(start, files.Count(), moved, callbackLog, callbackError, cancellationToken);
+            return Finish(start, totalFiles, moved, callbackLog, callbackError, cancellationToken);
         }
 
         /// <summary>
