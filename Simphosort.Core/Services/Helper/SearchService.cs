@@ -88,6 +88,50 @@ namespace Simphosort.Core.Services.Helper
             return reducedFiles;
         }
 
+        /// <inheritdoc/>
+        public Dictionary<FileInfo, IEnumerable<FileInfo>> FindDuplicateFiles(IEnumerable<FileInfo> files, IFileInfoComparer fileInfoComparer, CancellationToken cancellationToken)
+        {
+            if (cancellationToken.IsCancellationRequested)
+            {
+                // Return directly if cancelled
+                return new Dictionary<FileInfo, IEnumerable<FileInfo>>();
+            }
+
+            // Dictionary to hold duplicates
+            Dictionary<FileInfo, IEnumerable<FileInfo>> duplicates = new();
+
+            foreach (FileInfo file in files.TakeWhile(s => !cancellationToken.IsCancellationRequested))
+            {
+                uint appearanceCount = 0;
+                List<FileInfo> equalFiles = new();
+
+                // Exclude files in the same directory and the file itself
+                List<FileInfo> testFiles = files.Where(
+                    f => !string.IsNullOrWhiteSpace(f.DirectoryName)
+                    && !f.DirectoryName.Equals(file.DirectoryName)
+                    && !f.FullName.Equals(file.FullName)).ToList();
+
+                // Check test files for equalness
+                foreach (var testFile in testFiles.TakeWhile(t => !cancellationToken.IsCancellationRequested).Where(testFile => fileInfoComparer.Equals(file, testFile)))
+                {
+                    // Count appearances and collect equal files
+                    appearanceCount++;
+
+                    // Add to dictionary, when first duplicate found, including the original file
+                    if (appearanceCount == 1)
+                    {
+                        equalFiles.Add(file);
+                        duplicates.Add(file, equalFiles);
+                    }
+
+                    // Add duplicate file to list
+                    equalFiles.Add(testFile);
+                }
+            }
+
+            return duplicates;
+        }
+
         #endregion // Methods
     }
 }

@@ -3,6 +3,8 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 // </copyright>
 
+using Simphosort.Core.Services.Comparer;
+
 namespace Simphosort.Core.Services.Helper
 {
     /// <summary>
@@ -29,5 +31,14 @@ namespace Simphosort.Core.Services.Helper
         /// <param name="cancellationToken">Cancellation token</param>
         /// <returns>Reduced work files</returns>
         List<FileInfo> ReduceFiles(IEnumerable<FileInfo> workFiles, IEnumerable<FileInfo> reduceFiles, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Find duplicate files by using <see cref="IFileInfoComparer.Equals"/>
+        /// </summary>
+        /// <param name="files">Files to check for equals</param>
+        /// <param name="fileInfoComparer"><see cref="IFileInfoComparer"/> to use</param>
+        /// <param name="cancellationToken">Cancellation token</param>
+        /// <returns>A dictionary with duplicates files</returns>
+        Dictionary<FileInfo, IEnumerable<FileInfo>> FindDuplicateFiles(IEnumerable<FileInfo> files, IFileInfoComparer fileInfoComparer, CancellationToken cancellationToken);
     }
 }

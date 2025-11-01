@@ -8,7 +8,7 @@ namespace Simphosort.Core.Services.Comparer
     /// <summary>
     /// Special comparer for <see cref="FileInfo"/> with custom comparison options.
     /// </summary>
-    internal interface IFileInfoComparer : IEqualityComparer<FileInfo>
+    public interface IFileInfoComparer : IEqualityComparer<FileInfo>
     {
     }
 }

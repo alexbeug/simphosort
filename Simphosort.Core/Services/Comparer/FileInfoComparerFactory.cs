@@ -46,6 +46,14 @@ namespace Simphosort.Core.Services.Comparer
                     return false;
                 }
 
+                // Do not compare files in the same folder
+                if (!string.IsNullOrWhiteSpace(x.DirectoryName)
+                    && !string.IsNullOrWhiteSpace(y.DirectoryName)
+                    && x.DirectoryName.Equals(y.DirectoryName))
+                {
+                    throw new ArgumentException($"Comparing files in the same folder is not supported! Folder: {x.DirectoryName}");
+                }
+
                 // Compare file sizes if configured to do so
                 if (_config.CompareFileSize && !x.Length.Equals(y.Length))
                 {
@@ -70,7 +78,7 @@ namespace Simphosort.Core.Services.Comparer
             /// <inheritdoc/>
             public int GetHashCode([DisallowNull] FileInfo obj)
             {
-                // Throw exception as GetHashCode is not supported for FileInfoComparer to usage of Equals method only. A hash code
+                // Throw exception because GetHashCode is not supported for FileInfoComparer (supports only Equals method). A hash code
                 // based comparison is not feasible for FileInfo objects as it would break the case sensitivity handling with File.Exists.
                 throw new NotSupportedException("GetHashCode is not supported for FileInfoComparer!");
             }

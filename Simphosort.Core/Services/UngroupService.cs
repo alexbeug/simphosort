@@ -204,18 +204,17 @@ namespace Simphosort.Core.Services
             IFileInfoComparer fileInfoComparer = FileInfoComparerFactory.Create(fileInfoComparerConfig);
 
             // Check for duplicate file names in sub folders and parent folder with comparer from factory
-            // TODO: Do not use GroupBy here, because it uses GetHashCode internally, which is not case sensitive implemented in the comparer.
-            IEnumerable<IGrouping<FileInfo, FileInfo>> duplicates = files.GroupBy(f => f, fileInfoComparer).Where(g => g.Count() > 1);
+            Dictionary<FileInfo, IEnumerable<FileInfo>> duplicates = SearchService.FindDuplicateFiles(files, fileInfoComparer, CancellationToken.None);
 
-            if (duplicates.Any())
+            if (duplicates.Count > 0)
             {
                 callbackError("ERROR: Duplicate file names found!");
 
                 // Log duplicate file names with their paths
-                foreach (IGrouping<FileInfo, FileInfo> duplicate in duplicates)
+                foreach (KeyValuePair<FileInfo, IEnumerable<FileInfo>> duplicate in duplicates)
                 {
                     callbackError($"\nDuplicate {duplicate.Key.Name} :");
-                    foreach (FileInfo file in duplicate)
+                    foreach (FileInfo file in duplicate.Value)
                     {
                         callbackError($"   -> found in {file.DirectoryName}");
                     }
