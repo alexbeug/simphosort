@@ -35,7 +35,7 @@ namespace Simphosort.Core.Services.Helper
         #region Methods
 
         /// <inheritdoc/>
-        public bool TrySearchFiles(string folder, string[] extensions, bool subfolders, out List<FileInfo> filesFound, CancellationToken cancellationToken)
+        public bool TrySearchFiles(string folder, string[] extensions, bool subfolders, out IEnumerable<FileInfo> filesFound, CancellationToken cancellationToken)
         {
             // Always initialize out parameter
             filesFound = new List<FileInfo>();
@@ -52,7 +52,15 @@ namespace Simphosort.Core.Services.Helper
                 DirectoryInfo directoryInfo = new(folder);
 
                 // Get files with specified extensions
-                filesFound = extensions.SelectMany(x => directoryInfo.GetFiles(x, subfolders ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly)).TakeWhile(s => !cancellationToken.IsCancellationRequested).ToList();
+                foreach (string extension in extensions.TakeWhile(e => !cancellationToken.IsCancellationRequested))
+                {
+                    // Enumerate files for each extension
+                    IEnumerable<FileInfo> foundFiles = directoryInfo.EnumerateFiles(extension, subfolders ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly);
+
+                    // Add found files to result list
+                    filesFound = filesFound.Concat(foundFiles);
+                }
+
                 return true;
             }
             catch (Exception)
@@ -84,7 +92,7 @@ namespace Simphosort.Core.Services.Helper
             IFileInfoComparer fileInfoComparer = FileInfoComparerFactory.Create(fileInfoComparerConfig);
 
             List<FileInfo> reducedFiles = new();
-            reducedFiles.AddRange(workFiles.Where(w => !reduceFiles.Contains(w, fileInfoComparer)).TakeWhile(s => !cancellationToken.IsCancellationRequested));
+            reducedFiles.AddRange(workFiles.Where(w => !reduceFiles.TakeWhile(s => !cancellationToken.IsCancellationRequested).Contains(w, fileInfoComparer)));
             return reducedFiles;
         }
 

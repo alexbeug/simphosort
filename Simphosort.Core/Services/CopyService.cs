@@ -105,9 +105,17 @@ namespace Simphosort.Core.Services
 
             // Find files in source folder (non-recursive)
             callbackLog($"Searching files in source folder...");
-            if (SearchService.TrySearchFiles(sourceFolder, Constants.SupportedExtensions, false, out List<FileInfo> sourceFiles, cancellationToken))
+            if (SearchService.TrySearchFiles(sourceFolder, Constants.SupportedExtensions, false, out IEnumerable<FileInfo> sourceFiles, cancellationToken))
             {
-                callbackLog($"   -> {sourceFiles.Count} files found in source folder\n");
+                // Break operation if cancellation requested
+                if (cancellationToken.IsCancellationRequested)
+                {
+                    callbackLog($"Copy canceled before copying files\n");
+                    return ErrorLevel.Canceled;
+                }
+
+                // Log number of files found
+                callbackLog($"   -> {sourceFiles.Count()} files found in source folder\n");
             }
             else
             {
@@ -115,15 +123,8 @@ namespace Simphosort.Core.Services
                 return ErrorLevel.SearchFailed;
             }
 
-            // Break operation if cancellation requested
-            if (cancellationToken.IsCancellationRequested)
-            {
-                callbackLog($"Copy canceled before copying files\n");
-                return ErrorLevel.Canceled;
-            }
-
             // Prepare list for files to copy
-            List<FileInfo> copyFiles;
+            IEnumerable<FileInfo> copyFiles;
 
             if (checkFolders != null && checkFolders.Any())
             {
@@ -132,9 +133,9 @@ namespace Simphosort.Core.Services
                 List<FileInfo> checkFiles = new();
                 foreach (string folder in checkFolders.TakeWhile(c => !cancellationToken.IsCancellationRequested))
                 {
-                    if (SearchService.TrySearchFiles(folder, Constants.SupportedExtensions, true, out List<FileInfo> foundFiles, cancellationToken))
+                    if (SearchService.TrySearchFiles(folder, Constants.SupportedExtensions, true, out IEnumerable<FileInfo> foundFiles, cancellationToken))
                     {
-                        checkFiles.AddRange(foundFiles);
+                        checkFiles.AddRange(foundFiles.TakeWhile(s => !cancellationToken.IsCancellationRequested));
                     }
                     else
                     {
@@ -143,7 +144,19 @@ namespace Simphosort.Core.Services
                     }
                 }
 
+                // Break operation if cancellation requested
+                if (cancellationToken.IsCancellationRequested)
+                {
+                    callbackLog($"Copy canceled before copying files\n");
+                    return ErrorLevel.Canceled;
+                }
+
+                // Log number of files found
                 callbackLog($"   -> {checkFiles.Count} files found in check folders\n");
+
+                // Compare sourceFiles with existing ones in checkFolders and give a list of files to copy
+                callbackLog($"Comparing files in source and check folders...");
+                copyFiles = SearchService.ReduceFiles(sourceFiles, checkFiles, cancellationToken);
 
                 // Break operation if cancellation requested
                 if (cancellationToken.IsCancellationRequested)
@@ -152,16 +165,14 @@ namespace Simphosort.Core.Services
                     return ErrorLevel.Canceled;
                 }
 
-                // Compare sourceFiles with existing ones in checkFolders and give a list of files to copy
-                callbackLog($"Comparing files in source and check folders...");
-                copyFiles = SearchService.ReduceFiles(sourceFiles, checkFiles, cancellationToken);
-                callbackLog($"   -> {copyFiles.Count} new files to copy\n");
+                // Log number of new files to copy
+                callbackLog($"   -> {copyFiles.Count()} new files to copy\n");
             }
             else
             {
                 // No check folders given, so all files from source folder are new
                 copyFiles = sourceFiles;
-                callbackLog($"   -> {copyFiles.Count} source files to copy\n");
+                callbackLog($"   -> {copyFiles.Count()} source files to copy\n");
             }
 
             // Break operation if cancellation requested
@@ -173,7 +184,7 @@ namespace Simphosort.Core.Services
 
             // Copy files to target folder
             int copied = FileService.CopyFiles(copyFiles, targetFolder, callbackLog, callbackError, cancellationToken);
-            callbackLog($"\n{copied} of {copyFiles.Count} files copied\n");
+            callbackLog($"\n{copied} of {copyFiles.Count()} files copied\n");
 
             // Break operation if cancellation requested
             if (cancellationToken.IsCancellationRequested)
@@ -182,7 +193,7 @@ namespace Simphosort.Core.Services
                 return ErrorLevel.Canceled;
             }
 
-            if (copied == copyFiles.Count)
+            if (copied == copyFiles.Count())
             {
                 callbackLog($"Copy completed successfully (Duration: {Duration.Calculate(start):g})\n");
                 return ErrorLevel.Ok;

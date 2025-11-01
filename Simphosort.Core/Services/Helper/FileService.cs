@@ -41,7 +41,7 @@ namespace Simphosort.Core.Services.Helper
         }
 
         /// <inheritdoc/>
-        public int MoveGroupedFilesToSubFolders(Dictionary<string, List<FileInfo>> groupedFiles, string folder, Action<string> callbackLog, Action<string> callbackError, CancellationToken cancellationToken)
+        public int MoveGroupedFilesToSubFolders(Dictionary<string, IEnumerable<FileInfo>> groupedFiles, string folder, Action<string> callbackLog, Action<string> callbackError, CancellationToken cancellationToken)
         {
             int moved = 0;
 
@@ -51,9 +51,9 @@ namespace Simphosort.Core.Services.Helper
                 return moved;
             }
 
-            callbackLog($"Moving {groupedFiles.Sum(g => g.Value.Count)} files to {groupedFiles.Count} sub folders in {folder}\n");
+            callbackLog($"Moving {groupedFiles.Sum(g => g.Value.Count())} files to {groupedFiles.Count} sub folders in {folder}\n");
 
-            foreach (KeyValuePair<string, List<FileInfo>> group in groupedFiles.TakeWhile(g => !cancellationToken.IsCancellationRequested))
+            foreach (KeyValuePair<string, IEnumerable<FileInfo>> group in groupedFiles.TakeWhile(g => !cancellationToken.IsCancellationRequested))
             {
                 // Create sub folder
                 string subFolder = Path.Combine(folder, group.Key);
