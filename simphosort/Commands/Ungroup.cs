@@ -22,6 +22,7 @@ namespace Simphosort.Commands
         /// </summary>
         /// <param name="parent">Folder</param>
         /// <param name="deleteEmpty">Delete empty sub folders</param>
+        /// <param name="searchPatterns">Search patterns</param>
         /// <param name="console">Console output</param>
         /// <param name="ungroupService">An <see cref="IUngroupService"/></param>
         /// <param name="ct">A <see cref="CancellationToken"/></param>
@@ -31,9 +32,10 @@ namespace Simphosort.Commands
         public int UngroupMethod(
             [Operand("parent", Description = "Parent folder containing the sub folders to ungroup"), PathReference] DirectoryInfo parent,
             [Option('c', "clean", Description = "Delete empty sub folders containing no files after ungroup")] bool? deleteEmpty,
+            [Option('s', "search", Description = "Specify custom search pattern using wildcards (e.g. *.jpg or IMG_*.nef)")] string[]? searchPatterns,
             IConsole console,
             IUngroupService ungroupService,
             CancellationToken ct)
-            => ungroupService.Ungroup(parent.FullName, deleteEmpty ?? false, console.WriteLine, console.WriteLine, ct).ToInt();
+            => ungroupService.Ungroup(parent.FullName, deleteEmpty ?? false, searchPatterns ?? Constants.CommonJpegExtensions, console.WriteLine, console.WriteLine, ct).ToInt();
     }
 }
