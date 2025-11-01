@@ -35,7 +35,7 @@ namespace Simphosort.Core.Services.Helper
         #region Methods
 
         /// <inheritdoc/>
-        public bool TrySearchFiles(string folder, string[] extensions, bool subfolders, out IEnumerable<FileInfo> filesFound, CancellationToken cancellationToken)
+        public bool TrySearchFiles(string folder, IEnumerable<string> searchPatterns, bool subfolders, out IEnumerable<FileInfo> filesFound, CancellationToken cancellationToken)
         {
             // Always initialize out parameter
             filesFound = new List<FileInfo>();
@@ -52,7 +52,7 @@ namespace Simphosort.Core.Services.Helper
                 DirectoryInfo directoryInfo = new(folder);
 
                 // Get files with specified extensions
-                foreach (string extension in extensions.TakeWhile(e => !cancellationToken.IsCancellationRequested))
+                foreach (string extension in searchPatterns.TakeWhile(e => !cancellationToken.IsCancellationRequested))
                 {
                     // Enumerate files for each extension
                     IEnumerable<FileInfo> foundFiles = directoryInfo.EnumerateFiles(extension, subfolders ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly);

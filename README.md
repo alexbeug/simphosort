@@ -27,7 +27,7 @@ photo collection folder structure.
 ## Commands
 
 ### copy
-Copy all photo files (currently *.jpg and *.jpeg) from a _source_ folder (including sub folders) to a _target_ folder with optional checks.
+Copy all photo files (default *.jpg and *.jpeg) from a _source_ folder (including sub folders) to a _target_ folder with optional checks.
 ```
 Usage: simphosort copy [options] <source> <target>
 
@@ -43,10 +43,22 @@ Options:
 
   -c | --check (Multiple)  <PATH>
   Check for duplicate photos at these folders. Duplicate files will not be copied to target.
+
+  -s | --search (Multiple)  <TEXT>
+  Specify custom search pattern using wildcards (e.g. *.jpg or IMG_*.nef)
 ```
 
+#### Paths
+All folder paths can be absolute or relative. Relative paths are resolved against the current working directory. Paths containing spaces should be enclosed in quotes. All specified
+pathes must exist. The target folder must be empty. Paths have to be unique (no duplicates). Unique paths are determined by the full absolute path and are always checked case insensitive.
+
+#### Checks
+The copy command supports multiple check folders. Each photo file in the source folder is checked for duplicates in all specified check folders (including their sub folders). 
+If a duplicate is found in any of the check folders, the file is not copied to the target. The comparison is done by file name and file size. File name comparison casing is platform 
+default (usually case insensitive on Windows and case sensitive on Linux).
+
 ### group
-Move photo files (currently *.jpg and *.jpeg) in a folder to sub folders. Grouping mode is controlled by sub commands.
+Move photo files (default *.jpg and *.jpeg) in a folder to sub folders. Grouping mode is controlled by sub commands.
 
 #### fixed
 Group photos using a fixed date and a format string for sub folder names.
@@ -63,10 +75,13 @@ Options:
 
   -f | --format  <TEXT>
   Format string (e.g. yyyy-MM-dd for daily sub folders)
+
+  -s | --search (Multiple)  <TEXT>
+  Specify custom search pattern using wildcards (e.g. *.jpg or IMG_*.nef)
 ```
 
 ### ungroup
-Move files (currently *.jpg and *.jpeg) from sub folders back to the parent folder. Checks for duplicates before moving. Optionally delete empty sub folders after moving files back to parent folder.
+Move files (default *.jpg and *.jpeg) from sub folders back to the parent folder. Checks for duplicates before moving. Optionally delete empty sub folders after moving files back to parent folder.
 This command is intended to undo a previous grouping step.
 
 ```
@@ -81,7 +96,22 @@ Options:
 
   -d | --delete-empty
   Delete empty sub folders containing no files after ungroup
+
+  -s | --search (Multiple)  <TEXT>
+  Specify custom search pattern using wildcards (e.g. *.jpg or IMG_*.nef)
 ```
+
+#### Checks
+The ungroup command checks for duplicate files in the parent folder before moving files from sub folders back to the parent folder. A file is considered a duplicate if a file with the same name 
+already exists in the parent folder. File name comparison casing is platform default (usually case insensitive on Windows and case sensitive on Linux).
+
+#### Delete empty
+If the -d or --delete-empty option is specified, empty sub folders (containing no files) are deleted after moving files back to the parent folder. If a sub folder contains other sub folders, the 
+check is done recursively. An empty sub folder is only deleted if it and all its sub folders contain no files.
+
+## Search patterns
+Without any search pattern specified, simphosort will search for files with the common JPEG file extensions .jpg and .jpeg. You can specify custom search patterns using wildcards with the -s or --search option. 
+Multiple search patterns can be specified by repeating the option. Case sensitivity is platform dependent (usually case insensitive on Windows, case sensitive on Linux).
 
 ## License
 simphosort is using the MIT license. See [LICENSE](LICENSE).

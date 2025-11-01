@@ -23,6 +23,7 @@ namespace Simphosort.Commands
         /// <param name="sourceFolder">Source folder</param>
         /// <param name="targetFolder">Target folder</param>
         /// <param name="checkFolders">Check folders</param>
+        /// <param name="searchPatterns">Search patterns</param>
         /// <param name="console">Console output</param>
         /// <param name="copyService">A <see cref="ICopyService"/></param>
         /// <param name="ct">A <see cref="CancellationToken"/></param>
@@ -33,9 +34,10 @@ namespace Simphosort.Commands
             [Operand("source", Description = "Source folder containing the photo files to copy"), PathReference] DirectoryInfo sourceFolder,
             [Operand("target", Description = "Target folder (has to be empty)"), PathReference] DirectoryInfo targetFolder,
             [Option('c', "check", Description = "Check for duplicate photos at these folders. Duplicate files will not be copied to target."), PathReference] DirectoryInfo[]? checkFolders,
+            [Option('s', "search", Description = "Specify custom search pattern using wildcards (e.g. *.jpg or IMG_*.nef)")] string[]? searchPatterns,
             IConsole console,
             ICopyService copyService,
             CancellationToken ct)
-            => copyService.Copy(sourceFolder.FullName, targetFolder.FullName, checkFolders?.Select(c => c.FullName), console.WriteLine, console.WriteLine, ct).ToInt();
+            => copyService.Copy(sourceFolder.FullName, targetFolder.FullName, checkFolders?.Select(c => c.FullName), searchPatterns ?? Constants.CommonJpegExtensions, console.WriteLine, console.WriteLine, ct).ToInt();
     }
 }

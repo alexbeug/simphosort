@@ -44,19 +44,20 @@ namespace Simphosort.Core.Services
         #region Methods
 
         /// <inheritdoc/>
-        public ErrorLevel GroupFixed(string folder, string formatString, Action<string> callbackLog, Action<string> callbackError, CancellationToken cancellationToken)
+        public ErrorLevel GroupFixed(string folder, string formatString, IEnumerable<string> searchPatterns, Action<string> callbackLog, Action<string> callbackError, CancellationToken cancellationToken)
         {
             // Log operation start
             callbackLog($"Group files");
             callbackLog($"   folder : {folder}");
             callbackLog($"   format : {formatString}");
+            searchPatterns.ToList().ForEach(s => callbackLog($"   search : {s}"));
             callbackLog(string.Empty);
 
             // Start time
             DateTime start = DateTime.UtcNow;
 
             // Prepare grouping and get files in folder
-            ErrorLevel errorLevel = Prepare(folder, formatString, callbackLog, callbackError, out IEnumerable<FileInfo> files, cancellationToken);
+            ErrorLevel errorLevel = Prepare(folder, formatString, searchPatterns, callbackLog, callbackError, out IEnumerable<FileInfo> files, cancellationToken);
             if (errorLevel != ErrorLevel.Ok)
             {
                 return errorLevel;
@@ -69,12 +70,15 @@ namespace Simphosort.Core.Services
                 return errorLevel;
             }
 
+            // Get total file count before moving (enumeration will be lost after)
+            int total = files.Count();
+
             // Move files to sub folders
             int moved = FileService.MoveGroupedFilesToSubFolders(groupedFiles, folder, callbackLog, callbackError, cancellationToken);
             callbackLog($"\n{moved} files moved\n");
 
             // Finish grouping operation (print result and return error level)
-            return Finish(start, files.Count(), moved, callbackLog, callbackError, cancellationToken);
+            return Finish(start, total, moved, callbackLog, callbackError, cancellationToken);
         }
 
         /// <summary>
@@ -168,12 +172,13 @@ namespace Simphosort.Core.Services
         /// </summary>
         /// <param name="folder">Folder containing the files to group</param>
         /// <param name="formatString">Format string</param>
+        /// <param name="searchPatterns">Search patterns</param>
         /// <param name="callbackLog">Log message callback</param>
         /// <param name="callbackError">Error message callback</param>
         /// <param name="files">Ungrouped files in folder</param>
         /// <param name="cancellationToken">A <see cref="CancellationToken"/></param>
         /// <returns><see cref="ErrorLevel"/> and <paramref name="files"/></returns>
-        private ErrorLevel Prepare(string folder, string formatString, Action<string> callbackLog, Action<string> callbackError, out IEnumerable<FileInfo> files, CancellationToken cancellationToken)
+        private ErrorLevel Prepare(string folder, string formatString, IEnumerable<string> searchPatterns, Action<string> callbackLog, Action<string> callbackError, out IEnumerable<FileInfo> files, CancellationToken cancellationToken)
         {
             // Prepare empty file list
             files = new List<FileInfo>();
@@ -226,7 +231,7 @@ namespace Simphosort.Core.Services
 
             // Find files in folder (non-recursive)
             callbackLog($"Searching files in folder...");
-            if (SearchService.TrySearchFiles(folder, Constants.SupportedExtensions, false, out files, cancellationToken))
+            if (SearchService.TrySearchFiles(folder, searchPatterns, false, out files, cancellationToken))
             {
                 // Break operation if cancellation requested
                 if (cancellationToken.IsCancellationRequested)

@@ -18,10 +18,11 @@ namespace Simphosort.Core.Services
         /// <param name="sourceFolder">Source folder</param>
         /// <param name="targetFolder">Target folder</param>
         /// <param name="checkFolders">Check folders (exclude duplicates)</param>
+        /// <param name="searchPatterns">Search patterns</param>
         /// <param name="callbackLog">Log message callback</param>
         /// <param name="callbackError">Error message callback</param>
         /// <param name="cancellationToken">A <see cref="CancellationToken"/></param>
         /// <returns><see cref="ErrorLevel"/></returns>
-        ErrorLevel Copy(string sourceFolder, string targetFolder, IEnumerable<string>? checkFolders, Action<string> callbackLog, Action<string> callbackError, CancellationToken cancellationToken);
+        ErrorLevel Copy(string sourceFolder, string targetFolder, IEnumerable<string>? checkFolders, IEnumerable<string> searchPatterns, Action<string> callbackLog, Action<string> callbackError, CancellationToken cancellationToken);
     }
 }

@@ -5,15 +5,15 @@
     },
     "TestCopyMoto": {
       "commandName": "Project",
-      "commandLineArgs": "copy i:\\DCIM\\MOTO i:\\DCiM\\Sort -c m:\\Fotos"
+      "commandLineArgs": "copy i:\\DCIM\\MOTO i:\\DCiM\\Sort -c m:\\Fotos -s *.jpg -s *.jpeg"
     },
     "TestGroupMoto": {
       "commandName": "Project",
-      "commandLineArgs": "group fixed i:\\DCIM\\Sort -f yyyyMM"
+      "commandLineArgs": "group fixed i:\\DCIM\\Sort -f yyyyMM -s *.jpg -s *.jpeg"
     },
     "TestUngroupMoto": {
       "commandName": "Project",
-      "commandLineArgs": "ungroup i:\\DCIM\\SoRt -c"
+      "commandLineArgs": "ungroup i:\\DCIM\\SoRt -c -s *.JPG"
     }
   }
 }

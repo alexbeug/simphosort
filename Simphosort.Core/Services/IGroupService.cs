@@ -17,10 +17,11 @@ namespace Simphosort.Core.Services
         /// </summary>
         /// <param name="folder">Folder containing the files to group</param>
         /// <param name="formatString">Format string</param>
+        /// <param name="searchPatterns">Search patterns</param>
         /// <param name="callbackLog">Log message callback</param>
         /// <param name="callbackError">Error message callback</param>
         /// <param name="cancellationToken">A <see cref="CancellationToken"/></param>
         /// <returns><see cref="ErrorLevel"/></returns>
-        ErrorLevel GroupFixed(string folder, string formatString, Action<string> callbackLog, Action<string> callbackError, CancellationToken cancellationToken);
+        ErrorLevel GroupFixed(string folder, string formatString, IEnumerable<string> searchPatterns, Action<string> callbackLog, Action<string> callbackError, CancellationToken cancellationToken);
     }
 }

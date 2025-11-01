@@ -22,6 +22,7 @@ namespace Simphosort.Commands
         /// </summary>
         /// <param name="folder">Folder to group to sub folders</param>
         /// <param name="formatString">Format string</param>
+        /// <param name="searchPatterns">Search patterns</param>
         /// <param name="console">Console output</param>
         /// <param name="groupService">A <see cref="IGroupService"/></param>
         /// <param name="ct"><see cref="CancellationToken"/></param>
@@ -30,11 +31,12 @@ namespace Simphosort.Commands
         public int FixedMethod(
             [Operand("folder", Description = "Folder containing the photo files to group"), PathReference] DirectoryInfo folder,
             [Option('f', "format", Description = "Format string (e.g. yyyy-MM-dd for daily sub folders)")] string formatString,
+            [Option('s', "search", Description = "Specify custom search pattern using wildcards (e.g. *.jpg or IMG_*.nef)")] string[]? searchPatterns,
             IConsole console,
             IGroupService groupService,
             CancellationToken ct)
         {
-            return groupService.GroupFixed(folder.FullName, formatString, console.WriteLine, console.WriteLine, ct).ToInt();
+            return groupService.GroupFixed(folder.FullName, formatString, searchPatterns ?? Constants.CommonJpegExtensions, console.WriteLine, console.WriteLine, ct).ToInt();
         }
     }
 }

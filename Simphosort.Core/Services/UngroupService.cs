@@ -50,19 +50,20 @@ namespace Simphosort.Core.Services
         #region Methods
 
         /// <inheritdoc/>
-        public ErrorLevel Ungroup(string parent, bool clean, Action<string> callbackLog, Action<string> callbackError, CancellationToken cancellationToken)
+        public ErrorLevel Ungroup(string parent, bool clean, IEnumerable<string> searchPatterns, Action<string> callbackLog, Action<string> callbackError, CancellationToken cancellationToken)
         {
             // Log operation start
             callbackLog($"Ungroup files");
             callbackLog($"   parent : {parent}");
             callbackLog($"   clean  : {clean}");
+            searchPatterns.ToList().ForEach(s => callbackLog($"   search : {s}"));
             callbackLog(string.Empty);
 
             // Start time
             DateTime start = DateTime.UtcNow;
 
             // Prepare ungrouping and get files in parent folder and sub folders
-            ErrorLevel errorLevel = Prepare(parent, callbackLog, callbackError, out IEnumerable<FileInfo> files, out List<FileInfo> subFiles, cancellationToken);
+            ErrorLevel errorLevel = Prepare(parent, searchPatterns, callbackLog, callbackError, out IEnumerable<FileInfo> files, out List<FileInfo> subFiles, cancellationToken);
             if (errorLevel != ErrorLevel.Ok)
             {
                 return errorLevel;
@@ -118,13 +119,14 @@ namespace Simphosort.Core.Services
         /// Prepare ungrouping by validating folder and getting files in parent folder and sub folders.
         /// </summary>
         /// <param name="parent">Parent folder</param>
+        /// <param name="searchPatterns">Search patterns</param>
         /// <param name="callbackLog">Log message callback</param>
         /// <param name="callbackError">Error message callback</param>
         /// <param name="files">Files found in parent and sub folders</param>
         /// <param name="subFiles">Files found in sub folders</param>
         /// <param name="cancellationToken">A <see cref="CancellationToken"/></param>
         /// <returns><see cref="ErrorLevel"/>, <paramref name="parentFiles"/> abd <paramref name="subFiles"/></returns>
-        private ErrorLevel Prepare(string parent, Action<string> callbackLog, Action<string> callbackError, out IEnumerable<FileInfo> files, out List<FileInfo> subFiles, CancellationToken cancellationToken)
+        private ErrorLevel Prepare(string parent, IEnumerable<string> searchPatterns, Action<string> callbackLog, Action<string> callbackError, out IEnumerable<FileInfo> files, out List<FileInfo> subFiles, CancellationToken cancellationToken)
         {
             // Always initialize out parameters
             files = new List<FileInfo>();
@@ -160,18 +162,14 @@ namespace Simphosort.Core.Services
 
             // Get all files in sub folders (recursive) and parent folder
             callbackLog($"Searching files in parent folder and sub folders...");
-            if (!SearchService.TrySearchFiles(parent, Constants.SupportedExtensions, true, out files, cancellationToken))
+            if (!SearchService.TrySearchFiles(parent, searchPatterns, true, out files, cancellationToken))
             {
                 callbackError("ERROR: Searching files failed!");
                 return ErrorLevel.SearchFailed;
             }
 
-            // Separate files in parent folder and sub folders. Casing is not relevant here, because all paths come from the same parent folder
-            subFiles = files.Where(f => !f.DirectoryName!.Equals(parent)).ToList();
-            callbackLog($"   -> {subFiles.Count} files found in sub folders");
-
-            List<FileInfo> parentFiles = files.Except(subFiles).ToList();
-            callbackLog($"   -> {parentFiles.Count} files found in parent folder\n");
+            // Retrieve enumerated files
+            List<FileInfo> foundFiles = files.TakeWhile(f => !cancellationToken.IsCancellationRequested).ToList();
 
             // Break operation if cancellation requested
             if (cancellationToken.IsCancellationRequested)
@@ -179,6 +177,14 @@ namespace Simphosort.Core.Services
                 callbackLog($"Ungroup canceled before ungrouping files\n");
                 return ErrorLevel.Canceled;
             }
+
+            // Separate files in parent folder and sub folders. Casing is not relevant here, because all paths come from the same parent folder
+            subFiles = foundFiles.Where(f => !f.DirectoryName!.Equals(parent)).ToList();
+            callbackLog($"   -> {subFiles.Count} files found in sub folders");
+
+            // Get files in parent folder by excluding sub folder files from found files
+            List<FileInfo> parentFiles = foundFiles.Except(subFiles).ToList();
+            callbackLog($"   -> {parentFiles.Count} files found in parent folder\n");
 
             return ErrorLevel.Ok;
         }

@@ -44,13 +44,14 @@ namespace Simphosort.Core.Services
         #region Methods
 
         /// <inheritdoc/>
-        public ErrorLevel Copy(string sourceFolder, string targetFolder, IEnumerable<string>? checkFolders, Action<string> callbackLog, Action<string> callbackError, CancellationToken cancellationToken)
+        public ErrorLevel Copy(string sourceFolder, string targetFolder, IEnumerable<string>? checkFolders, IEnumerable<string> searchPatterns, Action<string> callbackLog, Action<string> callbackError, CancellationToken cancellationToken)
         {
             // Log operation start
             callbackLog($"Copy files");
             callbackLog($"   source : {sourceFolder}");
             callbackLog($"   target : {targetFolder}");
-            checkFolders?.ToList().ForEach(f => callbackLog($"   check  : {f}"));
+            checkFolders?.ToList().ForEach(c => callbackLog($"   check  : {c}"));
+            searchPatterns.ToList().ForEach(s => callbackLog($"   search : {s}"));
             callbackLog(string.Empty);
 
             // Start time
@@ -105,7 +106,7 @@ namespace Simphosort.Core.Services
 
             // Find files in source folder (non-recursive)
             callbackLog($"Searching files in source folder...");
-            if (SearchService.TrySearchFiles(sourceFolder, Constants.SupportedExtensions, false, out IEnumerable<FileInfo> sourceFiles, cancellationToken))
+            if (SearchService.TrySearchFiles(sourceFolder, searchPatterns, false, out IEnumerable<FileInfo> sourceFiles, cancellationToken))
             {
                 // Break operation if cancellation requested
                 if (cancellationToken.IsCancellationRequested)
@@ -133,7 +134,7 @@ namespace Simphosort.Core.Services
                 List<FileInfo> checkFiles = new();
                 foreach (string folder in checkFolders.TakeWhile(c => !cancellationToken.IsCancellationRequested))
                 {
-                    if (SearchService.TrySearchFiles(folder, Constants.SupportedExtensions, true, out IEnumerable<FileInfo> foundFiles, cancellationToken))
+                    if (SearchService.TrySearchFiles(folder, searchPatterns, true, out IEnumerable<FileInfo> foundFiles, cancellationToken))
                     {
                         checkFiles.AddRange(foundFiles.TakeWhile(s => !cancellationToken.IsCancellationRequested));
                     }

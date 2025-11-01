@@ -11,9 +11,9 @@ namespace Simphosort.Core.Utilities
     public static class Constants
     {
         /// <summary>
-        /// Supported file extensions (currently jpegs)
+        /// Default common file extensions (currently jpegs)
         /// </summary>
-        public static readonly string[] SupportedExtensions = { "*.jpg", "*.jpeg" };
+        public static readonly string[] CommonJpegExtensions = { "*.jpg", "*.jpeg" };
 
         /// <summary>
         /// Extension for all files (*.*)
