@@ -73,23 +73,8 @@ namespace Simphosort.Core.Services
             int moved = FileService.MoveGroupedFilesToSubFolders(groupedFiles, folder, callbackLog, callbackError, cancellationToken);
             callbackLog($"\n{moved} files moved\n");
 
-            // Break operation when cancellation requested
-            if (cancellationToken.IsCancellationRequested)
-            {
-                callbackLog($"Group canceled while grouping files (Duration: {Duration.Calculate(start):g})\n");
-                return ErrorLevel.Canceled;
-            }
-
-            if (moved == files.Count())
-            {
-                callbackLog($"Group completed successfully (Duration: {Duration.Calculate(start):g})\n");
-                return ErrorLevel.Ok;
-            }
-            else
-            {
-                callbackError($"Group completed with errors (Duration: {Duration.Calculate(start):g})\n");
-                return ErrorLevel.GroupFailed;
-            }
+            // Finish grouping operation (print result and return error level)
+            return Finish(start, files.Count(), moved, callbackLog, callbackError, cancellationToken);
         }
 
         /// <summary>
@@ -135,9 +120,47 @@ namespace Simphosort.Core.Services
                 callbackLog($"   -> {file.Name} added to group {dateString}");
             }
 
+            // Break operation if cancellation requested
+            if (cancellationToken.IsCancellationRequested)
+            {
+                callbackLog($"Group canceled before grouping files\n");
+                return ErrorLevel.Canceled;
+            }
+
             // Log number of groups found
             callbackLog($"\n{groupedFiles.Count} groups formed\n");
             return ErrorLevel.Ok;
+        }
+
+        /// <summary>
+        /// Finish grouping operation
+        /// </summary>
+        /// <param name="start">Start time</param>
+        /// <param name="total">Total files to group</param>
+        /// <param name="moved">Moved grouped files</param>
+        /// <param name="callbackLog">Log message callback</param>
+        /// <param name="callbackError">Error message callback</param>
+        /// <param name="cancellationToken">A <see cref="CancellationToken"/></param>
+        /// <returns><see cref="ErrorLevel"/></returns>
+        private static ErrorLevel Finish(DateTime start, int total, int moved, Action<string> callbackLog, Action<string> callbackError, CancellationToken cancellationToken)
+        {
+            // Break operation when cancellation requested
+            if (cancellationToken.IsCancellationRequested)
+            {
+                callbackLog($"Group canceled while grouping files (Duration: {Duration.Calculate(start):g})\n");
+                return ErrorLevel.Canceled;
+            }
+
+            if (moved == total)
+            {
+                callbackLog($"Group completed successfully (Duration: {Duration.Calculate(start):g})\n");
+                return ErrorLevel.Ok;
+            }
+            else
+            {
+                callbackError($"Group completed with errors (Duration: {Duration.Calculate(start):g})\n");
+                return ErrorLevel.GroupFailed;
+            }
         }
 
         /// <summary>

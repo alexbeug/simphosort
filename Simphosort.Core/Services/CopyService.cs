@@ -135,7 +135,7 @@ namespace Simphosort.Core.Services
                 {
                     if (SearchService.TrySearchFiles(folder, Constants.SupportedExtensions, true, out IEnumerable<FileInfo> foundFiles, cancellationToken))
                     {
-                        checkFiles.AddRange(foundFiles);
+                        checkFiles.AddRange(foundFiles.TakeWhile(s => !cancellationToken.IsCancellationRequested));
                     }
                     else
                     {
@@ -157,6 +157,15 @@ namespace Simphosort.Core.Services
                 // Compare sourceFiles with existing ones in checkFolders and give a list of files to copy
                 callbackLog($"Comparing files in source and check folders...");
                 copyFiles = SearchService.ReduceFiles(sourceFiles, checkFiles, cancellationToken);
+
+                // Break operation if cancellation requested
+                if (cancellationToken.IsCancellationRequested)
+                {
+                    callbackLog($"Copy canceled before copying files\n");
+                    return ErrorLevel.Canceled;
+                }
+
+                // Log number of new files to copy
                 callbackLog($"   -> {copyFiles.Count()} new files to copy\n");
             }
             else
