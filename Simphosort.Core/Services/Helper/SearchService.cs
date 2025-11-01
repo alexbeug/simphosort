@@ -121,6 +121,14 @@ namespace Simphosort.Core.Services.Helper
                     if (appearanceCount == 1)
                     {
                         equalFiles.Add(file);
+
+                        // Check if already in dictionary (only exact file name match)
+                        if (duplicates.Any(d => d.Key.Name.Equals(file.Name)))
+                        {
+                            // Already in dictionary, skip adding
+                            continue;
+                        }
+
                         duplicates.Add(file, equalFiles);
                     }
 
