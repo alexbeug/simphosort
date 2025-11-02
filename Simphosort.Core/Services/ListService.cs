@@ -3,6 +3,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 // </copyright>
 
+using Simphosort.Core.Enums;
 using Simphosort.Core.Services.Comparer;
 using Simphosort.Core.Services.Helper;
 using Simphosort.Core.Utilities;
@@ -45,11 +46,13 @@ namespace Simphosort.Core.Services
         #region Methods
 
         /// <inheritdoc/>
-        public ErrorLevel List(string folder, bool fileDetails, IEnumerable<string> searchPatterns, Action<string> callbackLog, Action<string> callbackError, CancellationToken cancellationToken)
+        public ErrorLevel List(string folder, bool fileDetails, IEnumerable<FileOrder> fileOrder, IEnumerable<string> searchPatterns, Action<string> callbackLog, Action<string> callbackError, CancellationToken cancellationToken)
         {
             // Log operation start
             callbackLog($"List files");
             callbackLog($"   folder : {folder}");
+            callbackLog($"   details: {fileDetails}");
+            fileOrder.ToList().ForEach(o => callbackLog($"   order  : {o}"));
             searchPatterns.ToList().ForEach(s => callbackLog($"   search : {s}"));
             callbackLog(string.Empty);
 
@@ -65,6 +68,9 @@ namespace Simphosort.Core.Services
 
             // Count files found
             int total = 0;
+
+            // Append order by criterias
+            files = AppendOrderBy(files, fileOrder, callbackLog);
 
             // List files
             foreach (FileInfo file in files.TakeWhile(c => !cancellationToken.IsCancellationRequested))
@@ -86,6 +92,39 @@ namespace Simphosort.Core.Services
             // Log successful completion
             callbackLog($"List completed successfully (Duration: {Duration.Calculate(start):g})\n");
             return ErrorLevel.Ok;
+        }
+
+        /// <summary>
+        /// Append order criterias
+        /// </summary>
+        /// <param name="files">IEnumerable of <see cref="FileInfo"/></param>
+        /// <param name="fileOrder"><see cref="FileOrder"/></param>
+        /// <param name="callbackLog">Log message callback</param>
+        /// <returns>Ordered IEnumerable</returns>
+        private static IEnumerable<FileInfo> AppendOrderBy(IEnumerable<FileInfo> files, IEnumerable<FileOrder> fileOrder, Action<string> callbackLog)
+        {
+            if (fileOrder != null && fileOrder.Any() && !fileOrder.All(a => a == FileOrder.None))
+            {
+                // Log total files found
+                callbackLog($"\nAppending order criterias...\n");
+
+                bool firstOrder = true;
+
+                foreach (FileOrder order in fileOrder)
+                {
+                    if (firstOrder)
+                    {
+                        files = OrderBy.AppendOrderBy(files, order);
+                        firstOrder = false;
+                    }
+                    else
+                    {
+                        files = OrderBy.AppendThenBy((IOrderedEnumerable<FileInfo>)files, order);
+                    }
+                }
+            }
+
+            return files;
         }
 
         /// <summary>

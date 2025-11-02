@@ -5,6 +5,7 @@
 
 using CommandDotNet;
 using JetBrains.Annotations;
+using Simphosort.Core.Enums;
 using Simphosort.Core.Services;
 using Simphosort.Core.Utilities;
 
@@ -22,6 +23,7 @@ namespace Simphosort.Commands
         /// </summary>
         /// <param name="folder">Folder to search for photo files</param>
         /// <param name="details">List file details</param>
+        /// <param name="order">Order files by</param>
         /// <param name="searchPatterns">Search patterns</param>
         /// <param name="console">Console output</param>
         /// <param name="listService">A <see cref="IGroupService"/></param>
@@ -32,12 +34,13 @@ namespace Simphosort.Commands
         public int ListMethod(
             [Operand("folder", Description = "Folder containing the photo files to list"), PathReference] DirectoryInfo folder,
             [Option('d', "details", Description = "List file details")] bool? details,
+            [Option('o', "order", Description = "Order files by")] FileOrder[]? order,
             [Option('s', "search", Description = "Specify custom search pattern using wildcards (e.g. *.jpg or IMG_*.nef)")] string[]? searchPatterns,
             IConsole console,
             IListService listService,
             CancellationToken ct)
         {
-            return listService.List(folder.FullName, details ?? false, searchPatterns ?? Constants.CommonJpegExtensions, console.WriteLine, console.WriteLine, ct).ToInt();
+            return listService.List(folder.FullName, details ?? false, order?.Length > 0 ? order : new List<FileOrder> { FileOrder.None }, searchPatterns ?? Constants.CommonJpegExtensions, console.WriteLine, console.WriteLine, ct).ToInt();
         }
     }
 }
