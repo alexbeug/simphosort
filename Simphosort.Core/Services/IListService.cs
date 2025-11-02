@@ -18,12 +18,13 @@ namespace Simphosort.Core.Services
         /// </summary>
         /// <param name="folder">Folder</param>
         /// <param name="fileDetails">List file details</param>
+        /// <param name="onlyDuplicates">List only duplicates</param>
         /// <param name="fileOrder">File order</param>
         /// <param name="searchPatterns">Search patterns</param>
         /// <param name="callbackLog">Log message callback</param>
         /// <param name="callbackError">Error message callback</param>
         /// <param name="cancellationToken">A <see cref="CancellationToken"/></param>
         /// <returns><see cref="ErrorLevel"/></returns>
-        public ErrorLevel List(string folder, bool fileDetails, IEnumerable<FileOrder> fileOrder, IEnumerable<string> searchPatterns, Action<string> callbackLog, Action<string> callbackError, CancellationToken cancellationToken);
+        public ErrorLevel List(string folder, bool fileDetails, bool onlyDuplicates, IEnumerable<FileOrder> fileOrder, IEnumerable<string> searchPatterns, Action<string> callbackLog, Action<string> callbackError, CancellationToken cancellationToken);
     }
 }

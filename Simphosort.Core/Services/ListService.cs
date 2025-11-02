@@ -46,14 +46,15 @@ namespace Simphosort.Core.Services
         #region Methods
 
         /// <inheritdoc/>
-        public ErrorLevel List(string folder, bool fileDetails, IEnumerable<FileOrder> fileOrder, IEnumerable<string> searchPatterns, Action<string> callbackLog, Action<string> callbackError, CancellationToken cancellationToken)
+        public ErrorLevel List(string folder, bool fileDetails, bool onlyDuplicates, IEnumerable<FileOrder> fileOrder, IEnumerable<string> searchPatterns, Action<string> callbackLog, Action<string> callbackError, CancellationToken cancellationToken)
         {
             // Log operation start
             callbackLog($"List files");
-            callbackLog($"   folder : {folder}");
-            callbackLog($"   details: {fileDetails}");
-            fileOrder.ToList().ForEach(o => callbackLog($"   order  : {o}"));
-            searchPatterns.ToList().ForEach(s => callbackLog($"   search : {s}"));
+            callbackLog($"   folder    : {folder}");
+            callbackLog($"   details   : {fileDetails}");
+            callbackLog($"   duplicates: {onlyDuplicates}");
+            fileOrder.ToList().ForEach(o => callbackLog($"   order     : {o}"));
+            searchPatterns.ToList().ForEach(s => callbackLog($"   search    : {s}"));
             callbackLog(string.Empty);
 
             // Start time
@@ -68,6 +69,8 @@ namespace Simphosort.Core.Services
 
             // Count files found
             int total = 0;
+
+            // TODO: Implement only duplicates listing
 
             // Append order by criterias
             files = AppendOrderBy(files, fileOrder, callbackLog, cancellationToken);

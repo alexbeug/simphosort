@@ -22,7 +22,8 @@ namespace Simphosort.Commands
         /// List photos in a folder and its sub folders with optional details
         /// </summary>
         /// <param name="folder">Folder to search for photo files</param>
-        /// <param name="details">List file details</param>
+        /// <param name="fileDetails">List file details</param>
+        /// <param name="onlyDuplicates">List only files with duplicates</param>
         /// <param name="order">Order files by</param>
         /// <param name="searchPatterns">Search patterns</param>
         /// <param name="console">Console output</param>
@@ -33,14 +34,15 @@ namespace Simphosort.Commands
         [Command("list", Description = "List photos in a folder and its sub folders with optional details", Usage = "simphosort list [options] <folder>")]
         public int ListMethod(
             [Operand("folder", Description = "Folder containing the photo files to list"), PathReference] DirectoryInfo folder,
-            [Option('d', "details", Description = "List file details")] bool? details,
+            [Option('f', "file-details", Description = "List file details")] bool? fileDetails,
+            [Option('d', "duplicates", Description = "List only files with duplicates")] bool? onlyDuplicates,
             [Option('o', "order", Description = "Order files by")] FileOrder[]? order,
             [Option('s', "search", Description = "Specify custom search pattern using wildcards (e.g. *.jpg or IMG_*.nef)")] string[]? searchPatterns,
             IConsole console,
             IListService listService,
             CancellationToken ct)
         {
-            return listService.List(folder.FullName, details ?? false, order?.Length > 0 ? order : new List<FileOrder> { FileOrder.None }, searchPatterns ?? Constants.CommonJpegExtensions, console.WriteLine, console.WriteLine, ct).ToInt();
+            return listService.List(folder.FullName, fileDetails ?? false, onlyDuplicates ?? false, order?.Length > 0 ? order : new List<FileOrder> { FileOrder.None }, searchPatterns ?? Constants.CommonJpegExtensions, console.WriteLine, console.WriteLine, ct).ToInt();
         }
     }
 }
