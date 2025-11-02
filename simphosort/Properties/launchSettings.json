@@ -21,7 +21,7 @@
     },
     "TestListLib": {
       "commandName": "Project",
-      "commandLineArgs": "list m:\\Fotos -s *.jpg -s *.jpeg -o FullFileName"
+      "commandLineArgs": "list m:\\Fotos -s *.jpg -s *.jpeg -o SizeDesc -o FullFileName"
     }
   }
 }

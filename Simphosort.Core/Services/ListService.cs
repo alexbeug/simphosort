@@ -70,7 +70,7 @@ namespace Simphosort.Core.Services
             int total = 0;
 
             // Append order by criterias
-            files = AppendOrderBy(files, fileOrder, callbackLog);
+            files = AppendOrderBy(files, fileOrder, callbackLog, cancellationToken);
 
             // List files
             foreach (FileInfo file in files.TakeWhile(c => !cancellationToken.IsCancellationRequested))
@@ -100,8 +100,9 @@ namespace Simphosort.Core.Services
         /// <param name="files">IEnumerable of <see cref="FileInfo"/></param>
         /// <param name="fileOrder"><see cref="FileOrder"/></param>
         /// <param name="callbackLog">Log message callback</param>
+        /// <param name="cancellationToken">A <see cref="CancellationToken"/></param>
         /// <returns>Ordered IEnumerable</returns>
-        private static IEnumerable<FileInfo> AppendOrderBy(IEnumerable<FileInfo> files, IEnumerable<FileOrder> fileOrder, Action<string> callbackLog)
+        private static IEnumerable<FileInfo> AppendOrderBy(IEnumerable<FileInfo> files, IEnumerable<FileOrder> fileOrder, Action<string> callbackLog, CancellationToken cancellationToken)
         {
             if (fileOrder != null && fileOrder.Any() && !fileOrder.All(a => a == FileOrder.None))
             {
@@ -114,7 +115,7 @@ namespace Simphosort.Core.Services
                 {
                     if (firstOrder)
                     {
-                        files = OrderBy.AppendOrderBy(files, order);
+                        files = OrderBy.AppendOrderBy(files, order, cancellationToken);
                         firstOrder = false;
                     }
                     else

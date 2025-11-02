@@ -17,23 +17,24 @@ namespace Simphosort.Core.Utilities
         /// </summary>
         /// <param name="fileInfos">An IEnumerable of FileInfo</param>
         /// <param name="fileOrder">FileOrder to append</param>
+        /// <param name="cancellationToken">A <see cref="CancellationToken"/></param>
         /// <returns>Ordered IEnumerable</returns>
-        public static IEnumerable<FileInfo> AppendOrderBy(IEnumerable<FileInfo> fileInfos, FileOrder fileOrder)
+        public static IEnumerable<FileInfo> AppendOrderBy(IEnumerable<FileInfo> fileInfos, FileOrder fileOrder, CancellationToken cancellationToken)
         {
             return fileOrder switch
             {
-                FileOrder.FullFileName => fileInfos.OrderBy(f => f.FullName, StringComparer.InvariantCulture),
-                FileOrder.FullFileNameDesc => fileInfos.OrderByDescending(f => f.FullName, StringComparer.InvariantCulture),
-                FileOrder.FullFileNameLowerInvariant => fileInfos.OrderBy(f => f.FullName.ToLowerInvariant(), StringComparer.InvariantCulture),
-                FileOrder.FullFileNameLowerInvariantDesc => fileInfos.OrderByDescending(f => f.FullName.ToLowerInvariant(), StringComparer.InvariantCulture),
-                FileOrder.Size => fileInfos.OrderBy(f => f.Length),
-                FileOrder.SizeDesc => fileInfos.OrderByDescending(f => f.Length),
-                FileOrder.Created => fileInfos.OrderBy(f => f.CreationTimeUtc),
-                FileOrder.CreatedDesc => fileInfos.OrderByDescending(f => f.CreationTimeUtc),
-                FileOrder.Modified => fileInfos.OrderBy(f => f.LastWriteTimeUtc),
-                FileOrder.ModifiedDesc => fileInfos.OrderByDescending(f => f.LastWriteTimeUtc),
-                FileOrder.Accessed => fileInfos.OrderBy(f => f.LastAccessTimeUtc),
-                FileOrder.AccessedDesc => fileInfos.OrderByDescending(f => f.LastAccessTimeUtc),
+                FileOrder.FullFileName => fileInfos.TakeWhile(c => !cancellationToken.IsCancellationRequested).OrderBy(f => f.FullName, StringComparer.InvariantCulture),
+                FileOrder.FullFileNameDesc => fileInfos.TakeWhile(c => !cancellationToken.IsCancellationRequested).OrderByDescending(f => f.FullName, StringComparer.InvariantCulture),
+                FileOrder.FullFileNameLowerInvariant => fileInfos.TakeWhile(c => !cancellationToken.IsCancellationRequested).OrderBy(f => f.FullName.ToLowerInvariant(), StringComparer.InvariantCulture),
+                FileOrder.FullFileNameLowerInvariantDesc => fileInfos.TakeWhile(c => !cancellationToken.IsCancellationRequested).OrderByDescending(f => f.FullName.ToLowerInvariant(), StringComparer.InvariantCulture),
+                FileOrder.Size => fileInfos.TakeWhile(c => !cancellationToken.IsCancellationRequested).OrderBy(f => f.Length),
+                FileOrder.SizeDesc => fileInfos.TakeWhile(c => !cancellationToken.IsCancellationRequested).OrderByDescending(f => f.Length),
+                FileOrder.Created => fileInfos.TakeWhile(c => !cancellationToken.IsCancellationRequested).OrderBy(f => f.CreationTimeUtc),
+                FileOrder.CreatedDesc => fileInfos.TakeWhile(c => !cancellationToken.IsCancellationRequested).OrderByDescending(f => f.CreationTimeUtc),
+                FileOrder.Modified => fileInfos.TakeWhile(c => !cancellationToken.IsCancellationRequested).OrderBy(f => f.LastWriteTimeUtc),
+                FileOrder.ModifiedDesc => fileInfos.TakeWhile(c => !cancellationToken.IsCancellationRequested).OrderByDescending(f => f.LastWriteTimeUtc),
+                FileOrder.Accessed => fileInfos.TakeWhile(c => !cancellationToken.IsCancellationRequested).OrderBy(f => f.LastAccessTimeUtc),
+                FileOrder.AccessedDesc => fileInfos.TakeWhile(c => !cancellationToken.IsCancellationRequested).OrderByDescending(f => f.LastAccessTimeUtc),
                 _ => fileInfos,
             };
         }
