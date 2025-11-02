@@ -14,6 +14,14 @@
     "TestUngroupMoto": {
       "commandName": "Project",
       "commandLineArgs": "ungroup i:\\DCIM\\SoRt -c -s *.JPG"
+    },
+    "TestListMoto": {
+      "commandName": "Project",
+      "commandLineArgs": "list i:\\DCIM\\MOTO -f"
+    },
+    "TestListLib": {
+      "commandName": "Project",
+      "commandLineArgs": "list m:\\Fotos -s *.jpg -s *.jpeg"
     }
   }
 }

@@ -25,6 +25,7 @@ namespace Simphosort.Core.Utilities
         {
             // Add singleton services (stateless)
             services.AddSingleton<ICopyService, CopyService>();
+            services.AddSingleton<IListService, ListService>();
             services.AddSingleton<IGroupService, GroupService>();
             services.AddSingleton<IUngroupService, UngroupService>();
 
