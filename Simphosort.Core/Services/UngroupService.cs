@@ -6,6 +6,7 @@
 using Simphosort.Core.Services.Comparer;
 using Simphosort.Core.Services.Helper;
 using Simphosort.Core.Utilities;
+using Simphosort.Core.Values;
 
 namespace Simphosort.Core.Services
 {
@@ -20,8 +21,8 @@ namespace Simphosort.Core.Services
         /// <param name="folderService">A <see cref="IFolderService"/>.</param>
         /// <param name="searchService">A <see cref="ISearchService"/>.</param>
         /// <param name="fileService">A <see cref="IFileService"/>.</param>
-        /// <param name="fileInfoComparerFactory">A <see cref="IFileInfoComparerFactory"/>.</param>
-        public UngroupService(IFolderService folderService, ISearchService searchService, IFileService fileService, IFileInfoComparerFactory fileInfoComparerFactory)
+        /// <param name="fileInfoComparerFactory">A <see cref="IPhotoFileInfoComparerFactory"/>.</param>
+        public UngroupService(IFolderService folderService, ISearchService searchService, IFileService fileService, IPhotoFileInfoComparerFactory fileInfoComparerFactory)
         {
             FolderService = folderService;
             SearchService = searchService;
@@ -42,8 +43,8 @@ namespace Simphosort.Core.Services
         /// <inheritdoc cref="IFileService"/>
         private IFileService FileService { get; }
 
-        /// <inheritdoc cref="IFileInfoComparerFactory"/>
-        private IFileInfoComparerFactory FileInfoComparerFactory { get; }
+        /// <inheritdoc cref="IPhotoFileInfoComparerFactory"/>
+        private IPhotoFileInfoComparerFactory FileInfoComparerFactory { get; }
 
         #endregion // Properties
 
@@ -63,7 +64,7 @@ namespace Simphosort.Core.Services
             DateTime start = DateTime.UtcNow;
 
             // Prepare ungrouping and get files in parent folder and sub folders
-            ErrorLevel errorLevel = Prepare(parent, searchPatterns, callbackLog, callbackError, out IEnumerable<FileInfo> files, out List<FileInfo> subFiles, cancellationToken);
+            ErrorLevel errorLevel = Prepare(parent, searchPatterns, callbackLog, callbackError, out IEnumerable<IPhotoFileInfo> files, out List<IPhotoFileInfo> subFiles, cancellationToken);
             if (errorLevel != ErrorLevel.Ok)
             {
                 return errorLevel;
@@ -93,7 +94,7 @@ namespace Simphosort.Core.Services
                 if (clean)
                 {
                     // Get all distinct sub folder paths
-                    List<string> paths = subFiles.Select(f => f.DirectoryName).Where(p => p != null).Select(p => p!).Distinct().ToList();
+                    List<string> paths = subFiles.Select(f => f.FileInfo.DirectoryName).Where(p => p != null).Select(p => p!).Distinct().ToList();
 
                     // Clean up empty sub folders
                     errorLevel = CleanUp(start, paths, callbackLog, callbackError, cancellationToken);
@@ -126,11 +127,11 @@ namespace Simphosort.Core.Services
         /// <param name="subFiles">Files found in sub folders</param>
         /// <param name="cancellationToken">A <see cref="CancellationToken"/></param>
         /// <returns><see cref="ErrorLevel"/>, <paramref name="parentFiles"/> abd <paramref name="subFiles"/></returns>
-        private ErrorLevel Prepare(string parent, IEnumerable<string> searchPatterns, Action<string> callbackLog, Action<string> callbackError, out IEnumerable<FileInfo> files, out List<FileInfo> subFiles, CancellationToken cancellationToken)
+        private ErrorLevel Prepare(string parent, IEnumerable<string> searchPatterns, Action<string> callbackLog, Action<string> callbackError, out IEnumerable<IPhotoFileInfo> files, out List<IPhotoFileInfo> subFiles, CancellationToken cancellationToken)
         {
             // Always initialize out parameters
-            files = new List<FileInfo>();
-            subFiles = new List<FileInfo>();
+            files = new List<IPhotoFileInfo>();
+            subFiles = new List<IPhotoFileInfo>();
 
             // Check folder name for validity
             if (!FolderService.IsValid(parent, callbackError))
@@ -169,7 +170,7 @@ namespace Simphosort.Core.Services
             }
 
             // Retrieve enumerated files
-            List<FileInfo> foundFiles = files.TakeWhile(f => !cancellationToken.IsCancellationRequested).ToList();
+            List<IPhotoFileInfo> foundFiles = files.TakeWhile(f => !cancellationToken.IsCancellationRequested).ToList();
 
             // Break operation if cancellation requested
             if (cancellationToken.IsCancellationRequested)
@@ -179,11 +180,11 @@ namespace Simphosort.Core.Services
             }
 
             // Separate files in parent folder and sub folders. Casing is not relevant here, because all paths come from the same parent folder
-            subFiles = foundFiles.Where(f => !f.DirectoryName!.Equals(parent)).ToList();
+            subFiles = foundFiles.Where(f => !f.FileInfo.DirectoryName!.Equals(parent)).ToList();
             callbackLog($"   -> {subFiles.Count} files found in sub folders");
 
             // Get files in parent folder by excluding sub folder files from found files
-            List<FileInfo> parentFiles = foundFiles.Except(subFiles).ToList();
+            List<IPhotoFileInfo> parentFiles = foundFiles.Except(subFiles).ToList();
             callbackLog($"   -> {parentFiles.Count} files found in parent folder\n");
 
             return ErrorLevel.Ok;
@@ -195,10 +196,10 @@ namespace Simphosort.Core.Services
         /// <param name="files">Files to check</param>
         /// <param name="callbackError">Error message callback</param>
         /// <returns>An <see cref="ErrorLevel"/></returns>
-        private ErrorLevel CheckDuplicates(IEnumerable<FileInfo> files, Action<string> callbackError)
+        private ErrorLevel CheckDuplicates(IEnumerable<IPhotoFileInfo> files, Action<string> callbackError)
         {
             // Create comparer with desired configuration
-            FileInfoComparerConfig fileInfoComparerConfig = new()
+            PhotoFileInfoComparerConfig fileInfoComparerConfig = new()
             {
                 // Do not force case insensitive file name comparison by default
                 CompareFileNameCaseInSensitive = false,
@@ -207,20 +208,20 @@ namespace Simphosort.Core.Services
                 CompareFileSize = false,
             };
 
-            IFileInfoComparer fileInfoComparer = FileInfoComparerFactory.Create(fileInfoComparerConfig);
+            IPhotoFileInfoComparer fileInfoComparer = FileInfoComparerFactory.Create(fileInfoComparerConfig);
 
             // Check for duplicate file names in sub folders and parent folder with comparer from factory
-            Dictionary<FileInfo, IEnumerable<FileInfo>> duplicates = SearchService.FindDuplicateFiles(files, fileInfoComparer, CancellationToken.None);
+            List<IPhotoFileInfoWithDuplicates> duplicates = SearchService.FindDuplicateFiles(files, fileInfoComparer, CancellationToken.None);
 
             if (duplicates.Count > 0)
             {
                 callbackError("ERROR: Duplicate file names found!");
 
                 // Log duplicate file names with their paths
-                foreach (KeyValuePair<FileInfo, IEnumerable<FileInfo>> duplicate in duplicates)
+                foreach (IPhotoFileInfoWithDuplicates duplicate in duplicates)
                 {
-                    callbackError($"\nDuplicate {duplicate.Key.Name} :");
-                    foreach (FileInfo file in duplicate.Value)
+                    callbackError($"\nDuplicate {duplicate.FileInfo.Name} :");
+                    foreach (FileInfo file in duplicate.Duplicates)
                     {
                         callbackError($"   -> found in {file.DirectoryName}");
                     }
@@ -258,7 +259,7 @@ namespace Simphosort.Core.Services
 
             foreach (string path in paths.TakeWhile(c => !cancellationToken.IsCancellationRequested))
             {
-                if (SearchService.TrySearchFiles(path, Constants.AllFilesExtension, true, out IEnumerable<FileInfo> found, cancellationToken))
+                if (SearchService.TrySearchFiles(path, Constants.AllFilesExtension, true, out IEnumerable<IPhotoFileInfo> found, cancellationToken))
                 {
                     if (!found.Any())
                     {

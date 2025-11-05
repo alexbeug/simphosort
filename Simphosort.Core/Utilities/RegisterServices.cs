@@ -33,7 +33,7 @@ namespace Simphosort.Core.Utilities
             services.AddSingleton<ISearchService, SearchService>();
             services.AddSingleton<IFileService, FileService>();
 
-            services.AddSingleton<IFileInfoComparerFactory, FileInfoComparerFactory>();
+            services.AddSingleton<IPhotoFileInfoComparerFactory, PhotoFileInfoComparerFactory>();
 
             return services;
         }

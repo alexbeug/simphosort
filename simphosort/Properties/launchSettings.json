@@ -17,11 +17,11 @@
     },
     "TestListMoto": {
       "commandName": "Project",
-      "commandLineArgs": "list i:\\DCIM\\MOTO -d -o FullFileName"
+      "commandLineArgs": "list i:\\DCIM\\MOTO -o FullFileName"
     },
     "TestListLib": {
       "commandName": "Project",
-      "commandLineArgs": "list m:\\Fotos -s *.jpg -s *.jpeg -o SizeDesc -o FullFileName"
+      "commandLineArgs": "list m:\\Fotos -f -d -s *.jpg -s *.jpeg -o SizeDesc -o FullFileName"
     }
   }
 }

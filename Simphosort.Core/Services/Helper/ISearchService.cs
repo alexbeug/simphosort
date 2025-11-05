@@ -4,6 +4,7 @@
 // </copyright>
 
 using Simphosort.Core.Services.Comparer;
+using Simphosort.Core.Values;
 
 namespace Simphosort.Core.Services.Helper
 {
@@ -21,7 +22,7 @@ namespace Simphosort.Core.Services.Helper
         /// <param name="filesFound">List of <see cref="FileInfo"/> objects with files found</param>
         /// <param name="cancellationToken">Cancellation token</param>
         /// <returns>True when files searched, result may be zero</returns>
-        bool TrySearchFiles(string folder, IEnumerable<string> searchPatterns, bool subfolders, out IEnumerable<FileInfo> filesFound, CancellationToken cancellationToken);
+        bool TrySearchFiles(string folder, IEnumerable<string> searchPatterns, bool subfolders, out IEnumerable<IPhotoFileInfo> filesFound, CancellationToken cancellationToken);
 
         /// <summary>
         /// Reduce files in given workFiles
@@ -30,15 +31,15 @@ namespace Simphosort.Core.Services.Helper
         /// <param name="reduceFiles">Files for comparison</param>
         /// <param name="cancellationToken">Cancellation token</param>
         /// <returns>Reduced work files</returns>
-        List<FileInfo> ReduceFiles(IEnumerable<FileInfo> workFiles, IEnumerable<FileInfo> reduceFiles, CancellationToken cancellationToken);
+        List<IPhotoFileInfo> ReduceFiles(IEnumerable<IPhotoFileInfo> workFiles, IEnumerable<IPhotoFileInfo> reduceFiles, CancellationToken cancellationToken);
 
         /// <summary>
-        /// Find duplicate files by using <see cref="IFileInfoComparer.Equals"/>
+        /// Find duplicate files by using <see cref="IPhotoFileInfoComparer.Equals"/>
         /// </summary>
         /// <param name="files">Files to check for equals</param>
-        /// <param name="fileInfoComparer"><see cref="IFileInfoComparer"/> to use</param>
+        /// <param name="fileInfoComparer"><see cref="IPhotoFileInfoComparer"/> to use</param>
         /// <param name="cancellationToken">Cancellation token</param>
         /// <returns>A dictionary with duplicates files</returns>
-        Dictionary<FileInfo, IEnumerable<FileInfo>> FindDuplicateFiles(IEnumerable<FileInfo> files, IFileInfoComparer fileInfoComparer, CancellationToken cancellationToken);
+        List<IPhotoFileInfoWithDuplicates> FindDuplicateFiles(IEnumerable<IPhotoFileInfo> files, IPhotoFileInfoComparer fileInfoComparer, CancellationToken cancellationToken);
     }
 }

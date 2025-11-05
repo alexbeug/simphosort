@@ -3,13 +3,15 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 // </copyright>
 
+using Simphosort.Core.Values;
+
 namespace Simphosort.Core.Services.Helper
 {
     /// <inheritdoc/>
     internal class FileService : IFileService
     {
         /// <inheritdoc/>
-        public int CopyFiles(IEnumerable<FileInfo> files, string targetFolder, Action<string> callbackLog, Action<string> callbackError, CancellationToken cancellationToken)
+        public int CopyFiles(IEnumerable<IPhotoFileInfo> files, string targetFolder, Action<string> callbackLog, Action<string> callbackError, CancellationToken cancellationToken)
         {
             int copied = 0;
 
@@ -21,7 +23,7 @@ namespace Simphosort.Core.Services.Helper
 
             callbackLog($"Copying {files.Count()} new files to {targetFolder}\n");
 
-            foreach (FileInfo file in files.TakeWhile(f => !cancellationToken.IsCancellationRequested))
+            foreach (FileInfo file in files.TakeWhile(f => !cancellationToken.IsCancellationRequested).Select(x => x.FileInfo))
             {
                 callbackLog($"Copying {file.FullName}");
 
@@ -41,7 +43,7 @@ namespace Simphosort.Core.Services.Helper
         }
 
         /// <inheritdoc/>
-        public int MoveGroupedFilesToSubFolders(Dictionary<string, IEnumerable<FileInfo>> groupedFiles, string folder, Action<string> callbackLog, Action<string> callbackError, CancellationToken cancellationToken)
+        public int MoveGroupedFilesToSubFolders(Dictionary<string, IEnumerable<IPhotoFileInfo>> groupedFiles, string folder, Action<string> callbackLog, Action<string> callbackError, CancellationToken cancellationToken)
         {
             int moved = 0;
 
@@ -53,7 +55,7 @@ namespace Simphosort.Core.Services.Helper
 
             callbackLog($"Moving {groupedFiles.Sum(g => g.Value.Count())} files to {groupedFiles.Count} sub folders in {folder}\n");
 
-            foreach (KeyValuePair<string, IEnumerable<FileInfo>> group in groupedFiles.TakeWhile(g => !cancellationToken.IsCancellationRequested))
+            foreach (KeyValuePair<string, IEnumerable<IPhotoFileInfo>> group in groupedFiles.TakeWhile(g => !cancellationToken.IsCancellationRequested))
             {
                 // Create sub folder
                 string subFolder = Path.Combine(folder, group.Key);
@@ -69,7 +71,7 @@ namespace Simphosort.Core.Services.Helper
                 }
 
                 // Move files to sub folder
-                foreach (FileInfo file in group.Value.TakeWhile(f => !cancellationToken.IsCancellationRequested))
+                foreach (FileInfo file in group.Value.TakeWhile(f => !cancellationToken.IsCancellationRequested).Select(x => x.FileInfo))
                 {
                     callbackLog($"Moving {file.FullName} to {subFolder}");
                     try
@@ -89,7 +91,7 @@ namespace Simphosort.Core.Services.Helper
         }
 
         /// <inheritdoc/>
-        public int MoveFilesFromSubFoldersToFolder(IEnumerable<FileInfo> files, string folder, Action<string> callbackLog, Action<string> callbackError, CancellationToken cancellationToken)
+        public int MoveFilesFromSubFoldersToFolder(IEnumerable<IPhotoFileInfo> files, string folder, Action<string> callbackLog, Action<string> callbackError, CancellationToken cancellationToken)
         {
             int moved = 0;
 
@@ -101,7 +103,7 @@ namespace Simphosort.Core.Services.Helper
 
             callbackLog($"Moving {files.Count()} files to {folder}\n");
 
-            foreach (FileInfo file in files.TakeWhile(f => !cancellationToken.IsCancellationRequested))
+            foreach (FileInfo file in files.TakeWhile(f => !cancellationToken.IsCancellationRequested).Select(x => x.FileInfo))
             {
                 callbackLog($"Moving {file.FullName} to {folder}");
                 try

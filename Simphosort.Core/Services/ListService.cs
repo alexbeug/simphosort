@@ -7,6 +7,7 @@ using Simphosort.Core.Enums;
 using Simphosort.Core.Services.Comparer;
 using Simphosort.Core.Services.Helper;
 using Simphosort.Core.Utilities;
+using Simphosort.Core.Values;
 
 namespace Simphosort.Core.Services
 {
@@ -20,8 +21,8 @@ namespace Simphosort.Core.Services
         /// </summary>
         /// <param name="folderService">A <see cref="IFolderService"/>.</param>
         /// <param name="searchService">A <see cref="ISearchService"/>.</param>
-        /// <param name="fileInfoComparerFactory">A <see cref="IFileInfoComparerFactory"/>.</param>
-        public ListService(IFolderService folderService, ISearchService searchService, IFileInfoComparerFactory fileInfoComparerFactory)
+        /// <param name="fileInfoComparerFactory">A <see cref="IPhotoFileInfoComparerFactory"/>.</param>
+        public ListService(IFolderService folderService, ISearchService searchService, IPhotoFileInfoComparerFactory fileInfoComparerFactory)
         {
             FolderService = folderService;
             SearchService = searchService;
@@ -38,8 +39,8 @@ namespace Simphosort.Core.Services
         /// <inheritdoc cref="ISearchService"/>
         private ISearchService SearchService { get; }
 
-        /// <inheritdoc cref="IFileInfoComparerFactory"/>
-        private IFileInfoComparerFactory FileInfoComparerFactory { get; }
+        /// <inheritdoc cref="IPhotoFileInfoComparerFactory"/>
+        private IPhotoFileInfoComparerFactory FileInfoComparerFactory { get; }
 
         #endregion // Properties
 
@@ -61,7 +62,7 @@ namespace Simphosort.Core.Services
             DateTime start = DateTime.UtcNow;
 
             // Prepare ungrouping and get files in parent folder and sub folders
-            ErrorLevel errorLevel = Prepare(folder, searchPatterns, callbackLog, callbackError, out IEnumerable<FileInfo> files, cancellationToken);
+            ErrorLevel errorLevel = Prepare(folder, searchPatterns, callbackLog, callbackError, out IEnumerable<IPhotoFileInfo> files, cancellationToken);
             if (errorLevel != ErrorLevel.Ok)
             {
                 return errorLevel;
@@ -70,16 +71,43 @@ namespace Simphosort.Core.Services
             // Count files found
             int total = 0;
 
-            // TODO: Implement only duplicates listing
-
-            // Append order by criterias
-            files = AppendOrderBy(files, fileOrder, callbackLog, cancellationToken);
-
-            // List files
-            foreach (FileInfo file in files.TakeWhile(c => !cancellationToken.IsCancellationRequested))
+            if (onlyDuplicates)
             {
-                ListFile(file, fileDetails, callbackLog);
-                total++;
+                PhotoFileInfoComparerConfig fileInfoComparerConfig = new()
+                {
+                    // Do not force case insensitive file name comparison by default
+                    CompareFileNameCaseInSensitive = false,
+
+                    // Find real duplicate files by comparing file size as well
+                    CompareFileSize = true,
+                };
+
+                // Create comparer with desired configuration
+                IPhotoFileInfoComparer duplicateComparer = FileInfoComparerFactory.Create(fileInfoComparerConfig);
+
+                // Find duplicate files
+                callbackLog($"   -> Testing for duplicate files...");
+                IEnumerable<IPhotoFileInfoWithDuplicates> duplicates = SearchService.FindDuplicateFiles(files, duplicateComparer, cancellationToken);
+
+                duplicates = AppendOrderBy(duplicates, fileOrder, callbackLog, cancellationToken);
+
+                foreach (IPhotoFileInfoWithDuplicates duplicate in duplicates.TakeWhile(c => !cancellationToken.IsCancellationRequested))
+                {
+                    ListDuplicates(duplicate, fileDetails, callbackLog);
+                    total++;
+                }
+            }
+            else
+            {
+                // Append order by criterias
+                files = AppendOrderBy(files, fileOrder, callbackLog, cancellationToken);
+
+                // List files
+                foreach (IPhotoFileInfo file in files.TakeWhile(c => !cancellationToken.IsCancellationRequested))
+                {
+                    ListFile(file, fileDetails, callbackLog);
+                    total++;
+                }
             }
 
             // Break operation if cancellation requested
@@ -100,17 +128,19 @@ namespace Simphosort.Core.Services
         /// <summary>
         /// Append order criterias
         /// </summary>
-        /// <param name="files">IEnumerable of <see cref="FileInfo"/></param>
+        /// <typeparam name="T">A <see cref="IPhotoFileInfo"/> type</typeparam>
+        /// <param name="files">IEnumerable of <see cref="IPhotoFileInfo"/></param>
         /// <param name="fileOrder"><see cref="FileOrder"/></param>
         /// <param name="callbackLog">Log message callback</param>
         /// <param name="cancellationToken">A <see cref="CancellationToken"/></param>
         /// <returns>Ordered IEnumerable</returns>
-        private static IEnumerable<FileInfo> AppendOrderBy(IEnumerable<FileInfo> files, IEnumerable<FileOrder> fileOrder, Action<string> callbackLog, CancellationToken cancellationToken)
+        private static IEnumerable<T> AppendOrderBy<T>(IEnumerable<T> files, IEnumerable<FileOrder> fileOrder, Action<string> callbackLog, CancellationToken cancellationToken)
+            where T : IPhotoFileInfo
         {
             if (fileOrder != null && fileOrder.Any() && !fileOrder.All(a => a == FileOrder.None))
             {
                 // Log total files found
-                callbackLog($"\nAppending order criterias...\n");
+                callbackLog($"   -> Appending order criterias...\n");
 
                 bool firstOrder = true;
 
@@ -123,7 +153,7 @@ namespace Simphosort.Core.Services
                     }
                     else
                     {
-                        files = OrderBy.AppendThenBy((IOrderedEnumerable<FileInfo>)files, order);
+                        files = OrderBy.AppendThenBy((IOrderedEnumerable<T>)files, order);
                     }
                 }
             }
@@ -137,19 +167,51 @@ namespace Simphosort.Core.Services
         /// <param name="file">File</param>
         /// <param name="fileDetails">List file details</param>
         /// <param name="callbackLog">Log message callback</param>
-        private static void ListFile(FileInfo file, bool fileDetails, Action<string> callbackLog)
+        private static void ListFile(IPhotoFileInfo file, bool fileDetails, Action<string> callbackLog)
         {
-            callbackLog($"{file.FullName}");
+            callbackLog($"{file.FileInfo.FullName}");
 
             // List file details
             if (fileDetails)
             {
-                callbackLog($"   Size    : {file.Length} bytes");
-                callbackLog($"   Created : {file.CreationTimeUtc:u}");
-                callbackLog($"   Modified: {file.LastWriteTimeUtc:u}");
-                callbackLog($"   Accessed: {file.LastAccessTimeUtc:u}");
+                callbackLog($"   Size    : {file.FileInfo.Length} bytes");
+                callbackLog($"   Created : {file.FileInfo.CreationTimeUtc:u}");
+                callbackLog($"   Modified: {file.FileInfo.LastWriteTimeUtc:u}");
+                callbackLog($"   Accessed: {file.FileInfo.LastAccessTimeUtc:u}");
                 callbackLog(string.Empty);
             }
+        }
+
+        /// <summary>
+        /// List duplicates file information
+        /// </summary>
+        /// <param name="file">File</param>
+        /// <param name="fileDetails">List file details</param>
+        /// <param name="callbackLog">Log message callback</param>
+        private static void ListDuplicates(IPhotoFileInfoWithDuplicates file, bool fileDetails, Action<string> callbackLog)
+        {
+            // List original file
+            ListFile(file, fileDetails, callbackLog);
+
+            callbackLog($"   Duplicates: ");
+
+            // List duplicate files
+            foreach (FileInfo duplicate in file.Duplicates)
+            {
+                callbackLog($"      -> {duplicate.FullName}");
+
+                // List file details
+                if (fileDetails)
+                {
+                    callbackLog($"         Size    : {duplicate.Length} bytes");
+                    callbackLog($"         Created : {duplicate.CreationTimeUtc:u}");
+                    callbackLog($"         Modified: {duplicate.LastWriteTimeUtc:u}");
+                    callbackLog($"         Accessed: {duplicate.LastAccessTimeUtc:u}");
+                    callbackLog(string.Empty);
+                }
+            }
+
+            callbackLog(string.Empty);
         }
 
         /// <summary>
@@ -162,10 +224,10 @@ namespace Simphosort.Core.Services
         /// <param name="files">Files found in folder and sub folders</param>
         /// <param name="cancellationToken">A <see cref="CancellationToken"/></param>
         /// <returns><see cref="ErrorLevel"/>, <paramref name="parentFiles"/> abd <paramref name="subFiles"/></returns>
-        private ErrorLevel Prepare(string folder, IEnumerable<string> searchPatterns, Action<string> callbackLog, Action<string> callbackError, out IEnumerable<FileInfo> files, CancellationToken cancellationToken)
+        private ErrorLevel Prepare(string folder, IEnumerable<string> searchPatterns, Action<string> callbackLog, Action<string> callbackError, out IEnumerable<IPhotoFileInfo> files, CancellationToken cancellationToken)
         {
             // Always initialize out parameters
-            files = new List<FileInfo>();
+            files = new List<IPhotoFileInfo>();
 
             // Check folder name for validity
             if (!FolderService.IsValid(folder, callbackError))

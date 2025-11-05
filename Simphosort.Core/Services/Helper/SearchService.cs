@@ -4,6 +4,7 @@
 // </copyright>
 
 using Simphosort.Core.Services.Comparer;
+using Simphosort.Core.Values;
 
 namespace Simphosort.Core.Services.Helper
 {
@@ -15,8 +16,8 @@ namespace Simphosort.Core.Services.Helper
         /// <summary>
         /// Initializes a new instance of the <see cref="SearchService"/> class.
         /// </summary>
-        /// <param name="fileInfoComparerFactory">A <see cref="IFileInfoComparerFactory"/></param>
-        public SearchService(IFileInfoComparerFactory fileInfoComparerFactory)
+        /// <param name="fileInfoComparerFactory">A <see cref="IPhotoFileInfoComparerFactory"/></param>
+        public SearchService(IPhotoFileInfoComparerFactory fileInfoComparerFactory)
         {
             FileInfoComparerFactory = fileInfoComparerFactory;
         }
@@ -26,19 +27,19 @@ namespace Simphosort.Core.Services.Helper
         #region Properties
 
         /// <summary>
-        /// Gets the <see cref="IFileInfoComparerFactory"/>
+        /// Gets the <see cref="IPhotoFileInfoComparerFactory"/>
         /// </summary>
-        private IFileInfoComparerFactory FileInfoComparerFactory { get; }
+        private IPhotoFileInfoComparerFactory FileInfoComparerFactory { get; }
 
         #endregion // Properties
 
         #region Methods
 
         /// <inheritdoc/>
-        public bool TrySearchFiles(string folder, IEnumerable<string> searchPatterns, bool subfolders, out IEnumerable<FileInfo> filesFound, CancellationToken cancellationToken)
+        public bool TrySearchFiles(string folder, IEnumerable<string> searchPatterns, bool subfolders, out IEnumerable<IPhotoFileInfo> filesFound, CancellationToken cancellationToken)
         {
             // Always initialize out parameter
-            filesFound = new List<FileInfo>();
+            filesFound = new List<IPhotoFileInfo>();
 
             if (cancellationToken.IsCancellationRequested)
             {
@@ -58,7 +59,7 @@ namespace Simphosort.Core.Services.Helper
                     IEnumerable<FileInfo> foundFiles = directoryInfo.EnumerateFiles(extension, subfolders ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly);
 
                     // Add found files to result list
-                    filesFound = filesFound.Concat(foundFiles);
+                    filesFound = filesFound.Concat(foundFiles.Select(x => new PhotoFileInfoWithDuplicates(x)));
                 }
 
                 return true;
@@ -71,16 +72,16 @@ namespace Simphosort.Core.Services.Helper
         }
 
         /// <inheritdoc/>
-        public List<FileInfo> ReduceFiles(IEnumerable<FileInfo> workFiles, IEnumerable<FileInfo> reduceFiles, CancellationToken cancellationToken)
+        public List<IPhotoFileInfo> ReduceFiles(IEnumerable<IPhotoFileInfo> workFiles, IEnumerable<IPhotoFileInfo> reduceFiles, CancellationToken cancellationToken)
         {
             if (cancellationToken.IsCancellationRequested)
             {
                 // Return directly if cancelled
-                return new List<FileInfo>();
+                return new List<IPhotoFileInfo>();
             }
 
             // Create comparer with desired configuration
-            FileInfoComparerConfig fileInfoComparerConfig = new()
+            PhotoFileInfoComparerConfig fileInfoComparerConfig = new()
             {
                 // Do not force case insensitive file name comparison by default
                 CompareFileNameCaseInSensitive = false,
@@ -89,63 +90,61 @@ namespace Simphosort.Core.Services.Helper
                 CompareFileSize = true,
             };
 
-            IFileInfoComparer fileInfoComparer = FileInfoComparerFactory.Create(fileInfoComparerConfig);
+            IPhotoFileInfoComparer fileInfoComparer = FileInfoComparerFactory.Create(fileInfoComparerConfig);
 
-            List<FileInfo> reducedFiles = new();
-            reducedFiles.AddRange(workFiles.Where(w => !reduceFiles.TakeWhile(s => !cancellationToken.IsCancellationRequested).Contains(w, fileInfoComparer)));
-            return reducedFiles;
+            List<IPhotoFileInfo> resultFiles = new();
+            resultFiles.AddRange(workFiles.Where(w => !reduceFiles.TakeWhile(s => !cancellationToken.IsCancellationRequested).Contains(w, fileInfoComparer)));
+            return resultFiles;
         }
 
         /// <inheritdoc/>
-        public Dictionary<FileInfo, IEnumerable<FileInfo>> FindDuplicateFiles(IEnumerable<FileInfo> files, IFileInfoComparer fileInfoComparer, CancellationToken cancellationToken)
+        public List<IPhotoFileInfoWithDuplicates> FindDuplicateFiles(IEnumerable<IPhotoFileInfo> files, IPhotoFileInfoComparer fileInfoComparer, CancellationToken cancellationToken)
         {
             if (cancellationToken.IsCancellationRequested)
             {
                 // Return directly if cancelled
-                return new Dictionary<FileInfo, IEnumerable<FileInfo>>();
+                return new List<IPhotoFileInfoWithDuplicates>();
             }
 
             // Dictionary to hold duplicates
-            Dictionary<FileInfo, IEnumerable<FileInfo>> duplicates = new();
+            Dictionary<string, IPhotoFileInfoWithDuplicates> duplicates = new();
 
-            foreach (FileInfo file in files.TakeWhile(s => !cancellationToken.IsCancellationRequested))
+            // Get each file to prevent multiple enumerations
+            List<IPhotoFileInfo> allFiles = files.TakeWhile(s => !cancellationToken.IsCancellationRequested).ToList();
+
+            int x = 0;
+
+            foreach (IPhotoFileInfo file in allFiles.TakeWhile(s => !cancellationToken.IsCancellationRequested))
             {
-                uint appearanceCount = 0;
-                List<FileInfo> equalFiles = new();
+                // TODO: Debug log - remove later
+                x++;
+                Console.WriteLine($"Checking file {x} - {file.FileInfo.FullName} for duplicates...");
 
                 // Exclude files in the same directory and the file itself
-                List<FileInfo> testFiles = files.Where(
-                    f => !string.IsNullOrWhiteSpace(f.DirectoryName)
-                    && !f.DirectoryName.Equals(file.DirectoryName)
-                    && !f.FullName.Equals(file.FullName)).ToList();
+                List<IPhotoFileInfo> testFiles = allFiles.Where(
+                    f => !string.IsNullOrWhiteSpace(f.FileInfo.DirectoryName)
+                    && !f.FileInfo.DirectoryName.Equals(file.FileInfo.DirectoryName)
+                    && !f.FileInfo.FullName.Equals(file.FileInfo.FullName)).ToList();
 
                 // Check test files for equalness
-                foreach (var testFile in testFiles.TakeWhile(t => !cancellationToken.IsCancellationRequested).Where(testFile => fileInfoComparer.Equals(file, testFile)))
+                foreach (FileInfo testFileFileInfo in testFiles.TakeWhile(t => !cancellationToken.IsCancellationRequested).Where(testFile => fileInfoComparer.Equals(file, testFile)).Select(x => x.FileInfo))
                 {
-                    // Count appearances and collect equal files
-                    appearanceCount++;
-
-                    // Add to dictionary, when first duplicate found, including the original file
-                    if (appearanceCount == 1)
+                    if (duplicates.TryGetValue(file.FileInfo.Name, out IPhotoFileInfoWithDuplicates? existingDuplicate))
                     {
-                        equalFiles.Add(file);
-
-                        // Check if already in dictionary (only exact file name match)
-                        if (duplicates.Any(d => d.Key.Name.Equals(file.Name)))
-                        {
-                            // Already in dictionary, skip adding
-                            continue;
-                        }
-
-                        duplicates.Add(file, equalFiles);
+                        // Already in dictionary, add duplicate file
+                        existingDuplicate.Duplicates.Add(testFileFileInfo);
+                        continue;
                     }
-
-                    // Add duplicate file to list
-                    equalFiles.Add(testFile);
+                    else
+                    {
+                        // Not in dictionary, create new entry
+                        new PhotoFileInfoWithDuplicates(file.FileInfo).Duplicates.Add(testFileFileInfo);
+                        duplicates.Add(file.FileInfo.Name, new PhotoFileInfoWithDuplicates(file.FileInfo));
+                    }
                 }
             }
 
-            return duplicates;
+            return duplicates.Values.ToList();
         }
 
         #endregion // Methods

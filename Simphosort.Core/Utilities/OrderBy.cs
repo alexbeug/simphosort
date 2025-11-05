@@ -4,6 +4,7 @@
 // </copyright>
 
 using Simphosort.Core.Enums;
+using Simphosort.Core.Values;
 
 namespace Simphosort.Core.Utilities
 {
@@ -13,54 +14,58 @@ namespace Simphosort.Core.Utilities
     internal static class OrderBy
     {
         /// <summary>
-        /// Append OrderBy to an IEnumerable of <see cref="FileInfo"/>
+        /// Append OrderBy to an IEnumerable of <see cref="IPhotoFileInfo"/>
         /// </summary>
-        /// <param name="fileInfos">An IEnumerable of FileInfo</param>
+        /// <typeparam name="T">A <see cref="IPhotoFileInfo"/> type</typeparam>
+        /// <param name="photoFileInfos">An IEnumerable of <see cref="IPhotoFileInfo"/></param>
         /// <param name="fileOrder">FileOrder to append</param>
         /// <param name="cancellationToken">A <see cref="CancellationToken"/></param>
         /// <returns>Ordered IEnumerable</returns>
-        public static IEnumerable<FileInfo> AppendOrderBy(IEnumerable<FileInfo> fileInfos, FileOrder fileOrder, CancellationToken cancellationToken)
+        public static IEnumerable<T> AppendOrderBy<T>(IEnumerable<T> photoFileInfos, FileOrder fileOrder, CancellationToken cancellationToken)
+            where T : IPhotoFileInfo
         {
             return fileOrder switch
             {
-                FileOrder.FullFileName => fileInfos.TakeWhile(c => !cancellationToken.IsCancellationRequested).OrderBy(f => f.FullName, StringComparer.InvariantCulture),
-                FileOrder.FullFileNameDesc => fileInfos.TakeWhile(c => !cancellationToken.IsCancellationRequested).OrderByDescending(f => f.FullName, StringComparer.InvariantCulture),
-                FileOrder.FullFileNameLowerInvariant => fileInfos.TakeWhile(c => !cancellationToken.IsCancellationRequested).OrderBy(f => f.FullName.ToLowerInvariant(), StringComparer.InvariantCulture),
-                FileOrder.FullFileNameLowerInvariantDesc => fileInfos.TakeWhile(c => !cancellationToken.IsCancellationRequested).OrderByDescending(f => f.FullName.ToLowerInvariant(), StringComparer.InvariantCulture),
-                FileOrder.Size => fileInfos.TakeWhile(c => !cancellationToken.IsCancellationRequested).OrderBy(f => f.Length),
-                FileOrder.SizeDesc => fileInfos.TakeWhile(c => !cancellationToken.IsCancellationRequested).OrderByDescending(f => f.Length),
-                FileOrder.Created => fileInfos.TakeWhile(c => !cancellationToken.IsCancellationRequested).OrderBy(f => f.CreationTimeUtc),
-                FileOrder.CreatedDesc => fileInfos.TakeWhile(c => !cancellationToken.IsCancellationRequested).OrderByDescending(f => f.CreationTimeUtc),
-                FileOrder.Modified => fileInfos.TakeWhile(c => !cancellationToken.IsCancellationRequested).OrderBy(f => f.LastWriteTimeUtc),
-                FileOrder.ModifiedDesc => fileInfos.TakeWhile(c => !cancellationToken.IsCancellationRequested).OrderByDescending(f => f.LastWriteTimeUtc),
-                FileOrder.Accessed => fileInfos.TakeWhile(c => !cancellationToken.IsCancellationRequested).OrderBy(f => f.LastAccessTimeUtc),
-                FileOrder.AccessedDesc => fileInfos.TakeWhile(c => !cancellationToken.IsCancellationRequested).OrderByDescending(f => f.LastAccessTimeUtc),
-                _ => fileInfos,
+                FileOrder.FullFileName => photoFileInfos.TakeWhile(c => !cancellationToken.IsCancellationRequested).OrderBy(f => f.FileInfo.FullName, StringComparer.InvariantCulture),
+                FileOrder.FullFileNameDesc => photoFileInfos.TakeWhile(c => !cancellationToken.IsCancellationRequested).OrderByDescending(f => f.FileInfo.FullName, StringComparer.InvariantCulture),
+                FileOrder.FullFileNameLowerInvariant => photoFileInfos.TakeWhile(c => !cancellationToken.IsCancellationRequested).OrderBy(f => f.FileInfo.FullName.ToLowerInvariant(), StringComparer.InvariantCulture),
+                FileOrder.FullFileNameLowerInvariantDesc => photoFileInfos.TakeWhile(c => !cancellationToken.IsCancellationRequested).OrderByDescending(f => f.FileInfo.FullName.ToLowerInvariant(), StringComparer.InvariantCulture),
+                FileOrder.Size => photoFileInfos.TakeWhile(c => !cancellationToken.IsCancellationRequested).OrderBy(f => f.FileInfo.Length),
+                FileOrder.SizeDesc => photoFileInfos.TakeWhile(c => !cancellationToken.IsCancellationRequested).OrderByDescending(f => f.FileInfo.Length),
+                FileOrder.Created => photoFileInfos.TakeWhile(c => !cancellationToken.IsCancellationRequested).OrderBy(f => f.FileInfo.CreationTimeUtc),
+                FileOrder.CreatedDesc => photoFileInfos.TakeWhile(c => !cancellationToken.IsCancellationRequested).OrderByDescending(f => f.FileInfo.CreationTimeUtc),
+                FileOrder.Modified => photoFileInfos.TakeWhile(c => !cancellationToken.IsCancellationRequested).OrderBy(f => f.FileInfo.LastWriteTimeUtc),
+                FileOrder.ModifiedDesc => photoFileInfos.TakeWhile(c => !cancellationToken.IsCancellationRequested).OrderByDescending(f => f.FileInfo.LastWriteTimeUtc),
+                FileOrder.Accessed => photoFileInfos.TakeWhile(c => !cancellationToken.IsCancellationRequested).OrderBy(f => f.FileInfo.LastAccessTimeUtc),
+                FileOrder.AccessedDesc => photoFileInfos.TakeWhile(c => !cancellationToken.IsCancellationRequested).OrderByDescending(f => f.FileInfo.LastAccessTimeUtc),
+                _ => photoFileInfos,
             };
         }
 
         /// <summary>
-        /// Append ThenBy to an IOrderedEnumerable of <see cref="FileInfo"/>
+        /// Append ThenBy to an IOrderedEnumerable of <see cref="IPhotoFileInfo"/>
         /// </summary>
-        /// <param name="fileInfos">An IOrderedEnumerable of FileInfo</param>
+        /// <typeparam name="T">A <see cref="IPhotoFileInfo"/> type</typeparam>
+        /// <param name="fileInfos">An IOrderedEnumerable of <see cref="IPhotoFileInfo"/></param>
         /// <param name="fileOrder">FileOrder to append</param>
         /// <returns>Ordered IEnumerable</returns>
-        public static IEnumerable<FileInfo> AppendThenBy(IOrderedEnumerable<FileInfo> fileInfos, FileOrder fileOrder)
+        public static IEnumerable<T> AppendThenBy<T>(IOrderedEnumerable<T> fileInfos, FileOrder fileOrder)
+            where T : IPhotoFileInfo
         {
             return fileOrder switch
             {
-                FileOrder.FullFileName => fileInfos.ThenBy(f => f.FullName, StringComparer.InvariantCulture),
-                FileOrder.FullFileNameDesc => fileInfos.ThenByDescending(f => f.FullName, StringComparer.InvariantCulture),
-                FileOrder.FullFileNameLowerInvariant => fileInfos.ThenBy(f => f.FullName.ToLowerInvariant(), StringComparer.InvariantCulture),
-                FileOrder.FullFileNameLowerInvariantDesc => fileInfos.ThenByDescending(f => f.FullName.ToLowerInvariant(), StringComparer.InvariantCulture),
-                FileOrder.Size => fileInfos.ThenBy(f => f.Length),
-                FileOrder.SizeDesc => fileInfos.ThenByDescending(f => f.Length),
-                FileOrder.Created => fileInfos.ThenBy(f => f.CreationTimeUtc),
-                FileOrder.CreatedDesc => fileInfos.ThenByDescending(f => f.CreationTimeUtc),
-                FileOrder.Modified => fileInfos.ThenBy(f => f.LastWriteTimeUtc),
-                FileOrder.ModifiedDesc => fileInfos.ThenByDescending(f => f.LastWriteTimeUtc),
-                FileOrder.Accessed => fileInfos.ThenBy(f => f.LastAccessTimeUtc),
-                FileOrder.AccessedDesc => fileInfos.ThenByDescending(f => f.LastAccessTimeUtc),
+                FileOrder.FullFileName => fileInfos.ThenBy(f => f.FileInfo.FullName, StringComparer.InvariantCulture),
+                FileOrder.FullFileNameDesc => fileInfos.ThenByDescending(f => f.FileInfo.FullName, StringComparer.InvariantCulture),
+                FileOrder.FullFileNameLowerInvariant => fileInfos.ThenBy(f => f.FileInfo.FullName.ToLowerInvariant(), StringComparer.InvariantCulture),
+                FileOrder.FullFileNameLowerInvariantDesc => fileInfos.ThenByDescending(f => f.FileInfo.FullName.ToLowerInvariant(), StringComparer.InvariantCulture),
+                FileOrder.Size => fileInfos.ThenBy(f => f.FileInfo.Length),
+                FileOrder.SizeDesc => fileInfos.ThenByDescending(f => f.FileInfo.Length),
+                FileOrder.Created => fileInfos.ThenBy(f => f.FileInfo.CreationTimeUtc),
+                FileOrder.CreatedDesc => fileInfos.ThenByDescending(f => f.FileInfo.CreationTimeUtc),
+                FileOrder.Modified => fileInfos.ThenBy(f => f.FileInfo.LastWriteTimeUtc),
+                FileOrder.ModifiedDesc => fileInfos.ThenByDescending(f => f.FileInfo.LastWriteTimeUtc),
+                FileOrder.Accessed => fileInfos.ThenBy(f => f.FileInfo.LastAccessTimeUtc),
+                FileOrder.AccessedDesc => fileInfos.ThenByDescending(f => f.FileInfo.LastAccessTimeUtc),
                 _ => fileInfos,
             };
         }

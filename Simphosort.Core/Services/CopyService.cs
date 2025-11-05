@@ -5,6 +5,7 @@
 
 using Simphosort.Core.Services.Helper;
 using Simphosort.Core.Utilities;
+using Simphosort.Core.Values;
 
 namespace Simphosort.Core.Services
 {
@@ -106,7 +107,7 @@ namespace Simphosort.Core.Services
 
             // Find files in source folder (non-recursive)
             callbackLog($"Searching files in source folder...");
-            if (SearchService.TrySearchFiles(sourceFolder, searchPatterns, false, out IEnumerable<FileInfo> sourceFiles, cancellationToken))
+            if (SearchService.TrySearchFiles(sourceFolder, searchPatterns, false, out IEnumerable<IPhotoFileInfo> sourceFiles, cancellationToken))
             {
                 // Break operation if cancellation requested
                 if (cancellationToken.IsCancellationRequested)
@@ -125,16 +126,16 @@ namespace Simphosort.Core.Services
             }
 
             // Prepare list for files to copy
-            IEnumerable<FileInfo> copyFiles;
+            IEnumerable<IPhotoFileInfo> copyFiles;
 
             if (checkFolders != null && checkFolders.Any())
             {
                 // Find files in check folders (recursive)
                 callbackLog($"Searching files in check folders...");
-                List<FileInfo> checkFiles = new();
+                List<IPhotoFileInfo> checkFiles = new();
                 foreach (string folder in checkFolders.TakeWhile(c => !cancellationToken.IsCancellationRequested))
                 {
-                    if (SearchService.TrySearchFiles(folder, searchPatterns, true, out IEnumerable<FileInfo> foundFiles, cancellationToken))
+                    if (SearchService.TrySearchFiles(folder, searchPatterns, true, out IEnumerable<IPhotoFileInfo> foundFiles, cancellationToken))
                     {
                         checkFiles.AddRange(foundFiles.TakeWhile(s => !cancellationToken.IsCancellationRequested));
                     }
