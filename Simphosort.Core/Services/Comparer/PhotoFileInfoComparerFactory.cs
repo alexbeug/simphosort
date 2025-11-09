@@ -40,6 +40,9 @@ namespace Simphosort.Core.Services.Comparer
             }
 
             /// <inheritdoc/>
+            public bool IsCompareFileSizeConfigured => _config.CompareFileSize;
+
+            /// <inheritdoc/>
             public bool Equals(IPhotoFileInfo? x, IPhotoFileInfo? y)
             {
                 // Check for null and compare file length

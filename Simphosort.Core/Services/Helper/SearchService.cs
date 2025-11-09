@@ -112,6 +112,16 @@ namespace Simphosort.Core.Services.Helper
             // Get each file to prevent multiple enumerations
             List<IPhotoFileInfo> allFiles = files.TakeWhile(s => !cancellationToken.IsCancellationRequested).ToList();
 
+            // Get file lengths for optimization, if compare by size is configured
+            if (fileInfoComparer.IsCompareFileSizeConfigured)
+            {
+                // Group files by length
+                Dictionary<long, List<IPhotoFileInfo>> filesByLength = allFiles.GroupBy(f => f.FileInfo.Length).ToDictionary(g => g.Key, g => g.ToList());
+
+                // Only keep file groups with more than one file and flatten to single list
+                allFiles = filesByLength.Values.Where(v => v.Count > 1).SelectMany(l => l).ToList();
+            }
+
             foreach (IPhotoFileInfo file in allFiles.TakeWhile(s => !cancellationToken.IsCancellationRequested))
             {
                 // Exclude files in the same directory and the file itself
