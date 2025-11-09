@@ -112,14 +112,8 @@ namespace Simphosort.Core.Services.Helper
             // Get each file to prevent multiple enumerations
             List<IPhotoFileInfo> allFiles = files.TakeWhile(s => !cancellationToken.IsCancellationRequested).ToList();
 
-            int x = 0;
-
             foreach (IPhotoFileInfo file in allFiles.TakeWhile(s => !cancellationToken.IsCancellationRequested))
             {
-                // TODO: Debug log - remove later
-                x++;
-                Console.WriteLine($"Checking file {x} - {file.FileInfo.FullName} for duplicates...");
-
                 // Exclude files in the same directory and the file itself
                 List<IPhotoFileInfo> testFiles = allFiles.Where(
                     f => !string.IsNullOrWhiteSpace(f.FileInfo.DirectoryName)
@@ -129,7 +123,7 @@ namespace Simphosort.Core.Services.Helper
                 // Check test files for equalness
                 foreach (FileInfo testFileFileInfo in testFiles.TakeWhile(t => !cancellationToken.IsCancellationRequested).Where(testFile => fileInfoComparer.Equals(file, testFile)).Select(x => x.FileInfo))
                 {
-                    if (duplicates.TryGetValue(file.FileInfo.Name, out IPhotoFileInfoWithDuplicates? existingDuplicate))
+                    if (duplicates.TryGetValue(file.FileInfo.FullName, out IPhotoFileInfoWithDuplicates? existingDuplicate))
                     {
                         // Already in dictionary, add duplicate file
                         existingDuplicate.Duplicates.Add(testFileFileInfo);
@@ -138,8 +132,9 @@ namespace Simphosort.Core.Services.Helper
                     else
                     {
                         // Not in dictionary, create new entry
-                        new PhotoFileInfoWithDuplicates(file.FileInfo).Duplicates.Add(testFileFileInfo);
-                        duplicates.Add(file.FileInfo.Name, new PhotoFileInfoWithDuplicates(file.FileInfo));
+                        PhotoFileInfoWithDuplicates newDuplicate = new(file.FileInfo);
+                        newDuplicate.Duplicates.Add(testFileFileInfo);
+                        duplicates.Add(file.FileInfo.FullName, newDuplicate);
                     }
                 }
             }

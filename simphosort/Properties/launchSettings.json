@@ -22,6 +22,10 @@
     "TestListLib": {
       "commandName": "Project",
       "commandLineArgs": "list m:\\Fotos -f -d -s *.jpg -s *.jpeg -o SizeDesc -o FullFileName"
+    },
+    "TestListMotoDup": {
+      "commandName": "Project",
+      "commandLineArgs": "list i:\\DCIM\\Sort -f -d -s *.jpg -s *.jpeg -o SizeDesc -o FullFileName"
     }
   }
 }
