@@ -5,6 +5,7 @@
 
 using System.Diagnostics.CodeAnalysis;
 
+using Simphosort.Core.Enums;
 using Simphosort.Core.Values;
 
 namespace Simphosort.Core.Services.Comparer
@@ -15,9 +16,15 @@ namespace Simphosort.Core.Services.Comparer
         #region Methods
 
         /// <inheritdoc/>
-        public IPhotoFileInfoComparer Create(PhotoFileInfoComparerConfig config)
+        public IPhotoFileInfoEqualityComparer CreateEqualityComparer(PhotoFileInfoEqualityComparerConfig config)
         {
-            return new PhotoFileInfoComparer(config);
+            return new PhotoFileInfoEqualityComparer(config);
+        }
+
+        /// <inheritdoc/>
+        public IPhotoFileInfoFileOrderComparer CreateFileOrderComparer(PhotoFileInfoFileOrderComparerConfig config)
+        {
+            return new PhotoFileInfoFileOrderComparer(config);
         }
 
         #endregion // Methods
@@ -25,16 +32,16 @@ namespace Simphosort.Core.Services.Comparer
         #region Nested Types
 
         /// <inheritdoc/>
-        private sealed class PhotoFileInfoComparer : IPhotoFileInfoComparer
+        private sealed class PhotoFileInfoEqualityComparer : IPhotoFileInfoEqualityComparer
         {
-            private readonly PhotoFileInfoComparerConfig _config;
+            private readonly PhotoFileInfoEqualityComparerConfig _config;
 
             /// <summary>
-            /// Initializes a new instance of the <see cref="PhotoFileInfoComparer"/> class.
+            /// Initializes a new instance of the <see cref="PhotoFileInfoEqualityComparer"/> class.
             /// </summary>
-            /// <param name="config">A <see cref="PhotoFileInfoComparerConfig"/></param>
+            /// <param name="config">A <see cref="PhotoFileInfoEqualityComparerConfig"/></param>
             /// <remarks>Internal constructor in a private sealed class to make this object only created by it's factory</remarks>
-            internal PhotoFileInfoComparer(PhotoFileInfoComparerConfig config)
+            internal PhotoFileInfoEqualityComparer(PhotoFileInfoEqualityComparerConfig config)
             {
                 _config = config;
             }
@@ -65,19 +72,26 @@ namespace Simphosort.Core.Services.Comparer
                     return false;
                 }
 
-                if (_config.CompareFileNameCaseInSensitive)
+                // Compare file names if configured to do so
+                if (_config.CompareFileName)
                 {
-                    // Compare file names in a case insensitive way. This can be forced on case sensitive file systems to
-                    // avoid unwanted dulicates because of casing differences in files that are identical from size and content.
-                    return x.FileInfo.Name.Equals(y.FileInfo.Name, StringComparison.OrdinalIgnoreCase);
+                    // TODO: Configure file name comparison
+                    if (_config.CompareFileNameCaseInSensitive)
+                    {
+                        // Compare file names in a case insensitive way. This can be forced on case sensitive file systems to
+                        // avoid unwanted dulicates because of casing differences in files that are identical from size and content.
+                        return x.FileInfo.Name.Equals(y.FileInfo.Name, StringComparison.OrdinalIgnoreCase);
+                    }
+                    else
+                    {
+                        // Check if both files exist in each other's directory. This is done to avoid case sensitivity issues and
+                        // letting File.Exists handle the case sensitivity based on the underlying file system or operating system.
+                        return File.Exists(Path.Combine(y.FileInfo.DirectoryName ?? string.Empty, x.FileInfo.Name))
+                            && File.Exists(Path.Combine(x.FileInfo.DirectoryName ?? string.Empty, y.FileInfo.Name));
+                    }
                 }
-                else
-                {
-                    // Check if both files exist in each other's directory. This is done to avoid case sensitivity issues and
-                    // letting File.Exists handle the case sensitivity based on the underlying file system or operating system.
-                    return File.Exists(Path.Combine(y.FileInfo.DirectoryName ?? string.Empty, x.FileInfo.Name))
-                        && File.Exists(Path.Combine(x.FileInfo.DirectoryName ?? string.Empty, y.FileInfo.Name));
-                }
+
+                return true;
             }
 
             /// <inheritdoc/>
@@ -86,6 +100,57 @@ namespace Simphosort.Core.Services.Comparer
                 // Throw exception because GetHashCode is not supported for FileInfoComparer (supports only Equals method). A hash code
                 // based comparison is not feasible for FileInfo objects as it would break the case sensitivity handling with File.Exists.
                 throw new NotSupportedException("GetHashCode is not supported for PhotoFileInfoComparer!");
+            }
+        }
+
+        /// <inheritdoc/>
+        private sealed class PhotoFileInfoFileOrderComparer : IPhotoFileInfoFileOrderComparer
+        {
+            private readonly PhotoFileInfoFileOrderComparerConfig _config;
+
+            /// <summary>
+            /// Initializes a new instance of the <see cref="PhotoFileInfoFileOrderComparer"/> class.
+            /// </summary>
+            /// <param name="config">A <see cref="PhotoFileInfoFileOrderComparerConfig"/></param>
+            /// <remarks>Internal constructor in a private sealed class to make this object only created by it's factory</remarks>
+            internal PhotoFileInfoFileOrderComparer(PhotoFileInfoFileOrderComparerConfig config)
+            {
+                _config = config;
+            }
+
+            /// <inheritdoc/>
+            public int Compare(IPhotoFileInfo? x, IPhotoFileInfo? y)
+            {
+                foreach (FileOrder fileOrder in _config.CompareFileOrder)
+                {
+                    int comparisonResult = 0;
+
+                    comparisonResult = fileOrder switch
+                    {
+                        FileOrder.FullFileName => string.Compare(x?.FileInfo.FullName, y?.FileInfo.FullName, StringComparison.Ordinal),
+                        FileOrder.FullFileNameDesc => string.Compare(x?.FileInfo.FullName, y?.FileInfo.FullName, StringComparison.Ordinal) * -1,
+                        FileOrder.FullFileNameLowerInvariant => string.Compare(x?.FileInfo.FullName, y?.FileInfo.FullName, StringComparison.InvariantCultureIgnoreCase),
+                        FileOrder.FullFileNameLowerInvariantDesc => string.Compare(x?.FileInfo.FullName, y?.FileInfo.FullName, StringComparison.InvariantCultureIgnoreCase) * -1,
+                        FileOrder.Size => x?.FileInfo.Length.CompareTo(y?.FileInfo.Length) ?? 0,
+                        FileOrder.SizeDesc => (x?.FileInfo.Length.CompareTo(y?.FileInfo.Length) ?? 0) * -1,
+                        FileOrder.Created => x?.FileInfo.CreationTimeUtc.CompareTo(y?.FileInfo.CreationTimeUtc) ?? 0,
+                        FileOrder.CreatedDesc => (x?.FileInfo.CreationTimeUtc.CompareTo(y?.FileInfo.CreationTimeUtc) ?? 0) * -1,
+                        FileOrder.Modified => x?.FileInfo.CreationTimeUtc.CompareTo(y?.FileInfo.LastWriteTimeUtc) ?? 0,
+                        FileOrder.ModifiedDesc => (x?.FileInfo.CreationTimeUtc.CompareTo(y?.FileInfo.LastWriteTimeUtc) ?? 0) * -1,
+                        FileOrder.Accessed => x?.FileInfo.CreationTimeUtc.CompareTo(y?.FileInfo.LastAccessTimeUtc) ?? 0,
+                        FileOrder.AccessedDesc => (x?.FileInfo.CreationTimeUtc.CompareTo(y?.FileInfo.LastAccessTimeUtc) ?? 0) * -1,
+                        _ => throw new NotImplementedException($"Value {fileOrder} for {nameof(fileOrder)} not handled!"),
+                    };
+
+                    // Return the first non-equal comparison result
+                    if (comparisonResult != 0)
+                    {
+                        return comparisonResult;
+                    }
+                }
+
+                // All comparison criteria resulted in equality or none configured
+                return 0;
             }
         }
 

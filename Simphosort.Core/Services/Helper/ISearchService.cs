@@ -34,12 +34,12 @@ namespace Simphosort.Core.Services.Helper
         List<IPhotoFileInfo> ReduceFiles(IEnumerable<IPhotoFileInfo> workFiles, IEnumerable<IPhotoFileInfo> reduceFiles, CancellationToken cancellationToken);
 
         /// <summary>
-        /// Find duplicate files by using <see cref="IPhotoFileInfoComparer.Equals"/>
+        /// Find duplicate files by using <see cref="IPhotoFileInfoEqualityComparer.Equals"/>
         /// </summary>
         /// <param name="files">Files to check for equals</param>
-        /// <param name="fileInfoComparer"><see cref="IPhotoFileInfoComparer"/> to use</param>
+        /// <param name="fileInfoEqualityComparer"><see cref="IPhotoFileInfoEqualityComparer"/> to use</param>
         /// <param name="cancellationToken">Cancellation token</param>
         /// <returns>A dictionary with duplicates files</returns>
-        List<IPhotoFileInfoWithDuplicates> FindDuplicateFiles(IEnumerable<IPhotoFileInfo> files, IPhotoFileInfoComparer fileInfoComparer, CancellationToken cancellationToken);
+        List<IPhotoFileInfoWithDuplicates> FindDuplicateFiles(IEnumerable<IPhotoFileInfo> files, IPhotoFileInfoEqualityComparer fileInfoEqualityComparer, CancellationToken cancellationToken);
     }
 }

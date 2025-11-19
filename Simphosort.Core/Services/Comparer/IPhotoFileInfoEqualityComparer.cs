@@ -1,4 +1,4 @@
-﻿// <copyright file="IPhotoFileInfoComparer.cs" company="Alexander Beug">
+﻿// <copyright file="IPhotoFileInfoEqualityComparer.cs" company="Alexander Beug">
 // Copyright (c) Alexander Beug. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 // </copyright>
@@ -10,7 +10,7 @@ namespace Simphosort.Core.Services.Comparer
     /// <summary>
     /// Special comparer for <see cref="FileInfo"/> with custom comparison options.
     /// </summary>
-    public interface IPhotoFileInfoComparer : IEqualityComparer<IPhotoFileInfo>
+    public interface IPhotoFileInfoEqualityComparer : IEqualityComparer<IPhotoFileInfo>
     {
         /// <summary>
         /// Gets a value indicating whether checks if file size comparison is configured

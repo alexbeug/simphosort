@@ -6,15 +6,22 @@
 namespace Simphosort.Core.Services.Comparer
 {
     /// <summary>
-    /// Factory for <see cref="IPhotoFileInfoComparer"/>.
+    /// Factory for <see cref="IPhotoFileInfoEqualityComparer"/> and <see cref="IPhotoFileInfoFileOrderComparer"/>.
     /// </summary>
     internal interface IPhotoFileInfoComparerFactory
     {
         /// <summary>
-        /// Creates a new instance of <see cref="IPhotoFileInfoComparer"/> based on the given config.
+        /// Creates a new instance of <see cref="IPhotoFileInfoEqualityComparer"/> based on the given config.
         /// </summary>
         /// <param name="config">Config</param>
-        /// <returns>A IFileInfoComparer instance</returns>
-        IPhotoFileInfoComparer Create(PhotoFileInfoComparerConfig config);
+        /// <returns>A <see cref="IPhotoFileInfoEqualityComparer"/> instance</returns>
+        IPhotoFileInfoEqualityComparer CreateEqualityComparer(PhotoFileInfoEqualityComparerConfig config);
+
+        /// <summary>
+        /// Creates a new instance of <see cref="IPhotoFileInfoFileOrderComparer"/> based on the given config.
+        /// </summary>
+        /// <param name="config">Config</param>
+        /// <returns>A <see cref="IPhotoFileInfoFileOrderComparer"/> instance</returns>
+        IPhotoFileInfoFileOrderComparer CreateFileOrderComparer(PhotoFileInfoFileOrderComparerConfig config);
     }
 }

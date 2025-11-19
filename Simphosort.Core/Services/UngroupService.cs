@@ -199,8 +199,11 @@ namespace Simphosort.Core.Services
         private ErrorLevel CheckDuplicates(IEnumerable<IPhotoFileInfo> files, Action<string> callbackError)
         {
             // Create comparer with desired configuration
-            PhotoFileInfoComparerConfig fileInfoComparerConfig = new()
+            PhotoFileInfoEqualityComparerConfig fileInfoEqualityComparerConfig = new()
             {
+                // Compare file names by default
+                CompareFileName = true,
+
                 // Do not force case insensitive file name comparison by default
                 CompareFileNameCaseInSensitive = false,
 
@@ -208,10 +211,10 @@ namespace Simphosort.Core.Services
                 CompareFileSize = false,
             };
 
-            IPhotoFileInfoComparer fileInfoComparer = FileInfoComparerFactory.Create(fileInfoComparerConfig);
+            IPhotoFileInfoEqualityComparer fileInfoEqualityComparer = FileInfoComparerFactory.CreateEqualityComparer(fileInfoEqualityComparerConfig);
 
             // Check for duplicate file names in sub folders and parent folder with comparer from factory
-            List<IPhotoFileInfoWithDuplicates> duplicates = SearchService.FindDuplicateFiles(files, fileInfoComparer, CancellationToken.None);
+            List<IPhotoFileInfoWithDuplicates> duplicates = SearchService.FindDuplicateFiles(files, fileInfoEqualityComparer, CancellationToken.None);
 
             if (duplicates.Count > 0)
             {

@@ -73,41 +73,13 @@ namespace Simphosort.Core.Services
 
             if (onlyDuplicates)
             {
-                PhotoFileInfoComparerConfig fileInfoComparerConfig = new()
-                {
-                    // Do not force case insensitive file name comparison by default
-                    CompareFileNameCaseInSensitive = false,
-
-                    // Find real duplicate files by comparing file size as well
-                    CompareFileSize = true,
-                };
-
-                // Create comparer with desired configuration
-                IPhotoFileInfoComparer duplicateComparer = FileInfoComparerFactory.Create(fileInfoComparerConfig);
-
-                // Find duplicate files
-                callbackLog($"   -> Testing for duplicate files...");
-                IEnumerable<IPhotoFileInfoWithDuplicates> duplicates = SearchService.FindDuplicateFiles(files, duplicateComparer, cancellationToken);
-
-                duplicates = AppendOrderBy(duplicates, fileOrder, callbackLog, cancellationToken);
-
-                foreach (IPhotoFileInfoWithDuplicates duplicate in duplicates.TakeWhile(c => !cancellationToken.IsCancellationRequested))
-                {
-                    ListDuplicates(duplicate, fileDetails, callbackLog);
-                    total++;
-                }
+                // List only duplicate files
+                total = ListAllDuplicates(files, fileDetails, fileOrder, callbackLog, cancellationToken);
             }
             else
             {
-                // Append order by criterias
-                files = AppendOrderBy(files, fileOrder, callbackLog, cancellationToken);
-
-                // List files
-                foreach (IPhotoFileInfo file in files.TakeWhile(c => !cancellationToken.IsCancellationRequested))
-                {
-                    ListFile(file, fileDetails, callbackLog);
-                    total++;
-                }
+                // List all files
+                total = ListAllFiles(files, fileDetails, fileOrder, callbackLog, cancellationToken);
             }
 
             // Break operation if cancellation requested
@@ -125,41 +97,9 @@ namespace Simphosort.Core.Services
             return ErrorLevel.Ok;
         }
 
-        /// <summary>
-        /// Append order criterias
-        /// </summary>
-        /// <typeparam name="T">A <see cref="IPhotoFileInfo"/> type</typeparam>
-        /// <param name="files">IEnumerable of <see cref="IPhotoFileInfo"/></param>
-        /// <param name="fileOrder"><see cref="FileOrder"/></param>
-        /// <param name="callbackLog">Log message callback</param>
-        /// <param name="cancellationToken">A <see cref="CancellationToken"/></param>
-        /// <returns>Ordered IEnumerable</returns>
-        private static IEnumerable<T> AppendOrderBy<T>(IEnumerable<T> files, IEnumerable<FileOrder> fileOrder, Action<string> callbackLog, CancellationToken cancellationToken)
-            where T : IPhotoFileInfo
-        {
-            if (fileOrder != null && fileOrder.Any() && !fileOrder.All(a => a == FileOrder.None))
-            {
-                // Log total files found
-                callbackLog($"   -> Appending order criterias...\n");
+        #endregion // Methods
 
-                bool firstOrder = true;
-
-                foreach (FileOrder order in fileOrder)
-                {
-                    if (firstOrder)
-                    {
-                        files = OrderBy.AppendOrderBy(files, order, cancellationToken);
-                        firstOrder = false;
-                    }
-                    else
-                    {
-                        files = OrderBy.AppendThenBy((IOrderedEnumerable<T>)files, order);
-                    }
-                }
-            }
-
-            return files;
-        }
+        #region Private methods
 
         /// <summary>
         /// List file information
@@ -167,7 +107,7 @@ namespace Simphosort.Core.Services
         /// <param name="file">File</param>
         /// <param name="fileDetails">List file details</param>
         /// <param name="callbackLog">Log message callback</param>
-        private static void ListFile(IPhotoFileInfo file, bool fileDetails, Action<string> callbackLog)
+        private static void ListSingleFile(IPhotoFileInfo file, bool fileDetails, Action<string> callbackLog)
         {
             callbackLog($"{file.FileInfo.FullName}");
 
@@ -188,10 +128,10 @@ namespace Simphosort.Core.Services
         /// <param name="file">File</param>
         /// <param name="fileDetails">List file details</param>
         /// <param name="callbackLog">Log message callback</param>
-        private static void ListDuplicates(IPhotoFileInfoWithDuplicates file, bool fileDetails, Action<string> callbackLog)
+        private static void ListSingleDuplicates(IPhotoFileInfoWithDuplicates file, bool fileDetails, Action<string> callbackLog)
         {
             // List original file
-            ListFile(file, fileDetails, callbackLog);
+            ListSingleFile(file, fileDetails, callbackLog);
 
             callbackLog($"   Duplicates: ");
 
@@ -212,6 +152,111 @@ namespace Simphosort.Core.Services
             }
 
             callbackLog(string.Empty);
+        }
+
+        /// <summary>
+        /// List all files with duplicates only
+        /// </summary>
+        /// <param name="files">Files to list</param>
+        /// <param name="fileDetails">File details</param>
+        /// <param name="fileOrder">File sorting order</param>
+        /// <param name="callbackLog">Log message callback</param>
+        /// <param name="cancellationToken">A <see cref="CancellationToken"/></param>
+        /// <returns>Total files listed</returns>
+        private int ListAllDuplicates(IEnumerable<IPhotoFileInfo> files, bool fileDetails, IEnumerable<FileOrder> fileOrder, Action<string> callbackLog, CancellationToken cancellationToken)
+        {
+            // Total duplicate files listed
+            int total = 0;
+
+            PhotoFileInfoEqualityComparerConfig fileInfoComparerConfig = new()
+            {
+                // Compare file names by default
+                CompareFileName = true,
+
+                // Do not force case insensitive file name comparison by default
+                CompareFileNameCaseInSensitive = false,
+
+                // Find real duplicate files by comparing file size as well
+                CompareFileSize = true,
+            };
+
+            // Create comparer with desired configuration
+            IPhotoFileInfoEqualityComparer duplicateComparer = FileInfoComparerFactory.CreateEqualityComparer(fileInfoComparerConfig);
+
+            // Find duplicate files
+            callbackLog($"   -> Testing for duplicate files...");
+            IEnumerable<IPhotoFileInfoWithDuplicates> duplicates = SearchService.FindDuplicateFiles(files, duplicateComparer, cancellationToken);
+
+            if (fileOrder.Any(o => o != FileOrder.None))
+            {
+                // Create comparer config
+                PhotoFileInfoFileOrderComparerConfig fileOrderComparerConfig = new()
+                {
+                    // Order by given file order criterias
+                    CompareFileOrder = fileOrder,
+                };
+
+                // Create comparer with desired configuration
+                IPhotoFileInfoFileOrderComparer orderComparer = FileInfoComparerFactory.CreateFileOrderComparer(fileOrderComparerConfig);
+
+                // Order duplicates by given order criterias
+                duplicates = duplicates.TakeWhile(c => !cancellationToken.IsCancellationRequested).OrderBy(k => k, orderComparer);
+            }
+
+            foreach (IPhotoFileInfoWithDuplicates duplicate in duplicates.TakeWhile(c => !cancellationToken.IsCancellationRequested))
+            {
+                ListSingleDuplicates(duplicate, fileDetails, callbackLog);
+                total++;
+            }
+
+            return total;
+        }
+
+        /// <summary>
+        /// List all files without filtering duplicates
+        /// </summary>
+        /// <param name="files">Files to list</param>
+        /// <param name="fileDetails">File details</param>
+        /// <param name="fileOrder">File sorting order</param>
+        /// <param name="callbackLog">Log message callback</param>
+        /// <param name="cancellationToken">A <see cref="CancellationToken"/></param>
+        /// <returns>Total files listed</returns>
+        private int ListAllFiles(IEnumerable<IPhotoFileInfo> files, bool fileDetails, IEnumerable<FileOrder> fileOrder, Action<string> callbackLog, CancellationToken cancellationToken)
+        {
+            // Total files listed
+            int total = 0;
+
+            // Append file order criterias
+            if (fileOrder.Any(o => o != FileOrder.None))
+            {
+                // Create comparer config
+                PhotoFileInfoFileOrderComparerConfig fileInfoComparerConfig = new()
+                {
+                    // Order by given file order criterias
+                    CompareFileOrder = fileOrder,
+                };
+
+                // Create comparer with desired configuration
+                IPhotoFileInfoFileOrderComparer orderComparer = FileInfoComparerFactory.CreateFileOrderComparer(fileInfoComparerConfig);
+
+                // List files without specific order
+                foreach (IPhotoFileInfo file in files.TakeWhile(c => !cancellationToken.IsCancellationRequested).OrderBy(k => k, orderComparer))
+                {
+                    ListSingleFile(file, fileDetails, callbackLog);
+                    total++;
+                }
+            }
+            else
+            {
+                // List files without specific order
+                foreach (IPhotoFileInfo file in files.TakeWhile(c => !cancellationToken.IsCancellationRequested))
+                {
+                    ListSingleFile(file, fileDetails, callbackLog);
+                    total++;
+                }
+            }
+
+            return total;
         }
 
         /// <summary>
@@ -268,6 +313,6 @@ namespace Simphosort.Core.Services
             return ErrorLevel.Ok;
         }
 
-        #endregion // Methods
+        #endregion // Private methods
     }
 }

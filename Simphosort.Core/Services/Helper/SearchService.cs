@@ -81,8 +81,11 @@ namespace Simphosort.Core.Services.Helper
             }
 
             // Create comparer with desired configuration
-            PhotoFileInfoComparerConfig fileInfoComparerConfig = new()
+            PhotoFileInfoEqualityComparerConfig fileInfoEqualityComparerConfig = new()
             {
+                // Compare by file name by default
+                CompareFileName = true,
+
                 // Do not force case insensitive file name comparison by default
                 CompareFileNameCaseInSensitive = false,
 
@@ -90,15 +93,15 @@ namespace Simphosort.Core.Services.Helper
                 CompareFileSize = true,
             };
 
-            IPhotoFileInfoComparer fileInfoComparer = FileInfoComparerFactory.Create(fileInfoComparerConfig);
+            IPhotoFileInfoEqualityComparer fileInfoEqualityComparer = FileInfoComparerFactory.CreateEqualityComparer(fileInfoEqualityComparerConfig);
 
             List<IPhotoFileInfo> resultFiles = new();
-            resultFiles.AddRange(workFiles.Where(w => !reduceFiles.TakeWhile(s => !cancellationToken.IsCancellationRequested).Contains(w, fileInfoComparer)));
+            resultFiles.AddRange(workFiles.Where(w => !reduceFiles.TakeWhile(s => !cancellationToken.IsCancellationRequested).Contains(w, fileInfoEqualityComparer)));
             return resultFiles;
         }
 
         /// <inheritdoc/>
-        public List<IPhotoFileInfoWithDuplicates> FindDuplicateFiles(IEnumerable<IPhotoFileInfo> files, IPhotoFileInfoComparer fileInfoComparer, CancellationToken cancellationToken)
+        public List<IPhotoFileInfoWithDuplicates> FindDuplicateFiles(IEnumerable<IPhotoFileInfo> files, IPhotoFileInfoEqualityComparer fileInfoEqualityComparer, CancellationToken cancellationToken)
         {
             if (cancellationToken.IsCancellationRequested)
             {
@@ -113,7 +116,7 @@ namespace Simphosort.Core.Services.Helper
             List<IPhotoFileInfo> allFiles = files.TakeWhile(s => !cancellationToken.IsCancellationRequested).ToList();
 
             // Get file lengths for optimization, if compare by size is configured
-            if (fileInfoComparer.IsCompareFileSizeConfigured)
+            if (fileInfoEqualityComparer.IsCompareFileSizeConfigured)
             {
                 // Group files by length
                 Dictionary<long, List<IPhotoFileInfo>> filesByLength = allFiles.GroupBy(f => f.FileInfo.Length).ToDictionary(g => g.Key, g => g.ToList());
@@ -131,7 +134,7 @@ namespace Simphosort.Core.Services.Helper
                     && !f.FileInfo.FullName.Equals(file.FileInfo.FullName)).ToList();
 
                 // Check test files for equalness
-                foreach (FileInfo testFileFileInfo in testFiles.TakeWhile(t => !cancellationToken.IsCancellationRequested).Where(testFile => fileInfoComparer.Equals(file, testFile)).Select(x => x.FileInfo))
+                foreach (FileInfo testFileFileInfo in testFiles.TakeWhile(t => !cancellationToken.IsCancellationRequested).Where(testFile => fileInfoEqualityComparer.Equals(file, testFile)).Select(x => x.FileInfo))
                 {
                     if (duplicates.TryGetValue(file.FileInfo.FullName, out IPhotoFileInfoWithDuplicates? existingDuplicate))
                     {
