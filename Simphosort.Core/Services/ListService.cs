@@ -97,10 +97,6 @@ namespace Simphosort.Core.Services
             return ErrorLevel.Ok;
         }
 
-        #endregion // Methods
-
-        #region Private methods
-
         /// <summary>
         /// List file information
         /// </summary>
@@ -313,6 +309,6 @@ namespace Simphosort.Core.Services
             return ErrorLevel.Ok;
         }
 
-        #endregion // Private methods
+        #endregion // Methods
     }
 }
