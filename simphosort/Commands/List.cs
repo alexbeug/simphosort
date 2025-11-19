@@ -3,8 +3,12 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 // </copyright>
 
+using System.Diagnostics.CodeAnalysis;
+
 using CommandDotNet;
+
 using JetBrains.Annotations;
+
 using Simphosort.Core.Enums;
 using Simphosort.Core.Services;
 using Simphosort.Core.Utilities;

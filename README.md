@@ -80,6 +80,34 @@ Options:
   Specify custom search pattern using wildcards (e.g. *.jpg or IMG_*.nef)
 ```
 
+### list
+List photo files (default *.jpg and *.jpeg) in a folder with optional details, duplicate filter and ordering.
+
+```
+Usage: simphosort list [options] <folder>
+
+Arguments:
+
+  folder  <PATH>
+  Folder containing the photo files to list
+
+Options:
+
+  -f | --file-details
+  List file details
+
+  -d | --duplicates
+  List only files with duplicates
+
+  -o | --order (Multiple)   <FILEORDER>
+  Order files by
+  Allowed values: None, FullFileName, FullFileNameDesc, FullFileNameLowerInvariant, FullFileNameLowerInvariantDesc, 
+                  Size, SizeDesc, Created, CreatedDesc, Modified, ModifiedDesc, Accessed, AccessedDesc
+
+  -s | --search (Multiple)  <TEXT>
+  Specify custom search pattern using wildcards (e.g. *.jpg or IMG_*.nef)
+```
+
 ### ungroup
 Move files (default *.jpg and *.jpeg) from sub folders back to the parent folder. Checks for duplicates before moving. Optionally delete empty sub folders after moving files back to parent folder.
 This command is intended to undo a previous grouping step.
