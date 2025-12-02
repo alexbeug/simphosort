@@ -89,7 +89,7 @@ namespace Simphosort.Core.Services.Helper
                 // Do not force case insensitive file name comparison by default
                 CompareFileNameCaseInSensitive = false,
 
-                // Always compare file size to indentify identical files
+                // Always compare file size to identify identical files
                 CompareFileSize = true,
             };
 

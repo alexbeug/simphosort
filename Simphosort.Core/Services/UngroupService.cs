@@ -71,7 +71,7 @@ namespace Simphosort.Core.Services
             }
 
             // Check for duplicate file names in sub folders and parent folder
-            errorLevel = CheckDuplicates(files, callbackError);
+            errorLevel = CheckDuplicateNames(files, callbackError);
             if (errorLevel != ErrorLevel.Ok)
             {
                 return errorLevel;
@@ -196,7 +196,7 @@ namespace Simphosort.Core.Services
         /// <param name="files">Files to check</param>
         /// <param name="callbackError">Error message callback</param>
         /// <returns>An <see cref="ErrorLevel"/></returns>
-        private ErrorLevel CheckDuplicates(IEnumerable<IPhotoFileInfo> files, Action<string> callbackError)
+        private ErrorLevel CheckDuplicateNames(IEnumerable<IPhotoFileInfo> files, Action<string> callbackError)
         {
             // Create comparer with desired configuration
             PhotoFileInfoEqualityComparerConfig fileInfoEqualityComparerConfig = new()
