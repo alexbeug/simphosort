@@ -3,6 +3,8 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 // </copyright>
 
+using Simphosort.Core.Values;
+
 namespace Simphosort.Core.Services.Helper
 {
     /// <summary>
@@ -19,7 +21,7 @@ namespace Simphosort.Core.Services.Helper
         /// <param name="callbackError">Error callback function</param>
         /// <param name="cancellationToken">A <see cref="CancellationToken"/></param>
         /// <returns>Files copied</returns>
-        int CopyFiles(IEnumerable<FileInfo> files, string targetFolder, Action<string> callbackLog, Action<string> callbackError, CancellationToken cancellationToken);
+        int CopyFiles(IEnumerable<IPhotoFileInfo> files, string targetFolder, Action<string> callbackLog, Action<string> callbackError, CancellationToken cancellationToken);
 
         /// <summary>
         /// Move grouped files to sub folders
@@ -30,7 +32,7 @@ namespace Simphosort.Core.Services.Helper
         /// <param name="callbackError">Error callback function</param>
         /// <param name="cancellationToken">A <see cref="CancellationToken"/></param>
         /// <returns>Files moved</returns>
-        int MoveGroupedFilesToSubFolders(Dictionary<string, IEnumerable<FileInfo>> groupedFiles, string folder, Action<string> callbackLog, Action<string> callbackError, CancellationToken cancellationToken);
+        int MoveGroupedFilesToSubFolders(Dictionary<string, IEnumerable<IPhotoFileInfo>> groupedFiles, string folder, Action<string> callbackLog, Action<string> callbackError, CancellationToken cancellationToken);
 
         /// <summary>
         /// Move files from sub folders to folder
@@ -41,7 +43,7 @@ namespace Simphosort.Core.Services.Helper
         /// <param name="callbackError">Error callback function</param>
         /// <param name="cancellationToken">A <see cref="CancellationToken"/></param>
         /// <returns>Files moved</returns>
-        int MoveFilesFromSubFoldersToFolder(IEnumerable<FileInfo> files, string folder, Action<string> callbackLog, Action<string> callbackError, CancellationToken cancellationToken);
+        int MoveFilesFromSubFoldersToFolder(IEnumerable<IPhotoFileInfo> files, string folder, Action<string> callbackLog, Action<string> callbackError, CancellationToken cancellationToken);
 
         /// <summary>
         /// Delete folders (recursive)

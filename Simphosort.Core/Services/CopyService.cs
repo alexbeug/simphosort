@@ -5,6 +5,7 @@
 
 using Simphosort.Core.Services.Helper;
 using Simphosort.Core.Utilities;
+using Simphosort.Core.Values;
 
 namespace Simphosort.Core.Services
 {
@@ -57,99 +58,30 @@ namespace Simphosort.Core.Services
             // Start time
             DateTime start = DateTime.UtcNow;
 
-            // Put the mandatory folders into a list
-            List<string> folders = new()
+            // Check folders
+            ErrorLevel errorLevel = Check(sourceFolder, targetFolder, checkFolders, callbackLog, callbackError, cancellationToken);
+            if (errorLevel != ErrorLevel.Ok)
             {
-                sourceFolder, targetFolder,
-            };
-
-            // Add optional check folders when given
-            if (checkFolders != null)
-            {
-                folders.AddRange(checkFolders.Where(x => !string.IsNullOrEmpty(x)));
+                return errorLevel;
             }
 
-            // Check folder names for validity
-            if (!folders.All(x => FolderService.IsValid(x, callbackError)))
+            // Prepare operation and search source files
+            errorLevel = SearchSource(sourceFolder, searchPatterns, callbackLog, callbackError, out IEnumerable<IPhotoFileInfo> sourceFiles, cancellationToken);
+            if (errorLevel != ErrorLevel.Ok)
             {
-                 // Stop if a folder name is not valid
-                return ErrorLevel.FolderNotValid;
-            }
-
-            // Check folders for existence
-            if (!folders.All(x => FolderService.Exists(x, callbackError)))
-            {
-                 // Stop if a folder does not exist
-                return ErrorLevel.FolderDoesNotExist;
-            }
-
-            // Target folder has to be empty
-            if (!FolderService.IsEmpty(targetFolder, callbackError))
-            {
-                // Stop if target folder is not empty
-                return ErrorLevel.FolderNotEmpty;
-            }
-
-            // Check folders in list for uniqueness
-            if (!FolderService.IsUnique(folders, callbackError))
-            {
-                // Stop if folders are not unique
-                return ErrorLevel.FolderNamesNotUnique;
-            }
-
-            // Break operation if cancellation requested
-            if (cancellationToken.IsCancellationRequested)
-            {
-                callbackLog($"Copy canceled before copying files\n");
-                return ErrorLevel.Canceled;
-            }
-
-            // Find files in source folder (non-recursive)
-            callbackLog($"Searching files in source folder...");
-            if (SearchService.TrySearchFiles(sourceFolder, searchPatterns, false, out IEnumerable<FileInfo> sourceFiles, cancellationToken))
-            {
-                // Break operation if cancellation requested
-                if (cancellationToken.IsCancellationRequested)
-                {
-                    callbackLog($"Copy canceled before copying files\n");
-                    return ErrorLevel.Canceled;
-                }
-
-                // Log number of files found
-                callbackLog($"   -> {sourceFiles.Count()} files found in source folder\n");
-            }
-            else
-            {
-                callbackError($"ERROR: Searching files failed!");
-                return ErrorLevel.SearchFailed;
+                return errorLevel;
             }
 
             // Prepare list for files to copy
-            IEnumerable<FileInfo> copyFiles;
+            IEnumerable<IPhotoFileInfo> copyFiles;
 
             if (checkFolders != null && checkFolders.Any())
             {
                 // Find files in check folders (recursive)
-                callbackLog($"Searching files in check folders...");
-                List<FileInfo> checkFiles = new();
-                foreach (string folder in checkFolders.TakeWhile(c => !cancellationToken.IsCancellationRequested))
+                errorLevel = SearchCheck(checkFolders, searchPatterns, callbackLog, callbackError, out List<IPhotoFileInfo> checkFiles, cancellationToken);
+                if (errorLevel != ErrorLevel.Ok)
                 {
-                    if (SearchService.TrySearchFiles(folder, searchPatterns, true, out IEnumerable<FileInfo> foundFiles, cancellationToken))
-                    {
-                        checkFiles.AddRange(foundFiles.TakeWhile(s => !cancellationToken.IsCancellationRequested));
-                    }
-                    else
-                    {
-                        callbackError($"ERROR: Searching files in check folder {folder} failed!");
-                        return ErrorLevel.SearchFailed;
-                    }
-                }
-
-                // Break operation if cancellation requested
-                if (cancellationToken.IsCancellationRequested)
-                {
-                    callbackLog($"Copy canceled before copying files\n");
-                    return ErrorLevel.Canceled;
+                    return errorLevel;
                 }
 
                 // Log number of files found
@@ -204,6 +136,140 @@ namespace Simphosort.Core.Services
                 callbackError($"Copy completed with errors (Duration: {Duration.Calculate(start):g})\n");
                 return ErrorLevel.CopyFailed;
             }
+        }
+
+        /// <summary>
+        /// Check folders for validity, existence, emptiness and uniqueness
+        /// </summary>
+        /// <param name="sourceFolder">Source folder</param>
+        /// <param name="targetFolder">Target folder</param>
+        /// <param name="checkFolders">Check folders for duplicates</param>
+        /// <param name="callbackLog">Log message callback</param>
+        /// <param name="callbackError">Error message callback</param>
+        /// <param name="cancellationToken">A <see cref="CancellationToken"/></param>
+        /// <returns><see cref="ErrorLevel"/> and <paramref name="files"/></returns>
+        private ErrorLevel Check(string sourceFolder, string targetFolder, IEnumerable<string>? checkFolders, Action<string> callbackLog, Action<string> callbackError, CancellationToken cancellationToken)
+        {
+            // Put the mandatory folders into a list
+            List<string> folders = new()
+            {
+                sourceFolder, targetFolder,
+            };
+
+            // Add optional check folders when given
+            if (checkFolders != null)
+            {
+                folders.AddRange(checkFolders.Where(x => !string.IsNullOrEmpty(x)));
+            }
+
+            // Check folder names for validity
+            if (!folders.All(x => FolderService.IsValid(x, callbackError)))
+            {
+                // Stop if a folder name is not valid
+                return ErrorLevel.FolderNotValid;
+            }
+
+            // Check folders for existence
+            if (!folders.All(x => FolderService.Exists(x, callbackError)))
+            {
+                // Stop if a folder does not exist
+                return ErrorLevel.FolderDoesNotExist;
+            }
+
+            // Target folder has to be empty
+            if (!FolderService.IsEmpty(targetFolder, callbackError))
+            {
+                // Stop if target folder is not empty
+                return ErrorLevel.FolderNotEmpty;
+            }
+
+            // Check folders in list for uniqueness
+            if (!FolderService.IsUnique(folders, callbackError))
+            {
+                // Stop if folders are not unique
+                return ErrorLevel.FolderNamesNotUnique;
+            }
+
+            // Break operation if cancellation requested
+            if (cancellationToken.IsCancellationRequested)
+            {
+                callbackLog($"Copy canceled before copying files\n");
+                return ErrorLevel.Canceled;
+            }
+
+            return ErrorLevel.Ok;
+        }
+
+        /// <summary>
+        /// Search source folder for files to copy
+        /// </summary>
+        /// <param name="sourceFolder">Source folder</param>
+        /// <param name="searchPatterns">Search pattern</param>
+        /// <param name="callbackLog">Log message callback</param>
+        /// <param name="callbackError">Error message callback</param>
+        /// <param name="files">returns found source files to copy</param>
+        /// <param name="cancellationToken">A <see cref="CancellationToken"/></param>
+        /// <returns><see cref="ErrorLevel"/> and <paramref name="files"/></returns>
+        private ErrorLevel SearchSource(string sourceFolder, IEnumerable<string> searchPatterns, Action<string> callbackLog, Action<string> callbackError, out IEnumerable<IPhotoFileInfo> files, CancellationToken cancellationToken)
+        {
+            // Find files in source folder (non-recursive)
+            callbackLog($"Searching files in source folder...");
+            if (SearchService.TrySearchFiles(sourceFolder, searchPatterns, false, out files, cancellationToken))
+            {
+                // Break operation if cancellation requested
+                if (cancellationToken.IsCancellationRequested)
+                {
+                    callbackLog($"Copy canceled before copying files\n");
+                    return ErrorLevel.Canceled;
+                }
+
+                // Log number of files found
+                callbackLog($"   -> {files.Count()} files found in source folder\n");
+            }
+            else
+            {
+                callbackError($"ERROR: Searching files failed!");
+                return ErrorLevel.SearchFailed;
+            }
+
+            return ErrorLevel.Ok;
+        }
+
+        /// <summary>
+        /// Check for existing files in check folders
+        /// </summary>
+        /// <param name="checkFolders">Check folders</param>
+        /// <param name="searchPatterns">Search pattern</param>
+        /// <param name="callbackLog">Log message callback</param>
+        /// <param name="callbackError">Error message callback</param>
+        /// <param name="checkFiles">returns found check files to exclude</param>
+        /// <param name="cancellationToken">A <see cref="CancellationToken"/></param>
+        /// <returns><see cref="ErrorLevel"/> and <paramref name="checkFiles"/></returns>
+        private ErrorLevel SearchCheck(IEnumerable<string> checkFolders, IEnumerable<string> searchPatterns, Action<string> callbackLog, Action<string> callbackError, out List<IPhotoFileInfo> checkFiles, CancellationToken cancellationToken)
+        {
+            callbackLog($"Searching files in check folders...");
+            checkFiles = new();
+            foreach (string folder in checkFolders.TakeWhile(c => !cancellationToken.IsCancellationRequested))
+            {
+                if (SearchService.TrySearchFiles(folder, searchPatterns, true, out IEnumerable<IPhotoFileInfo> foundFiles, cancellationToken))
+                {
+                    checkFiles.AddRange(foundFiles.TakeWhile(s => !cancellationToken.IsCancellationRequested));
+                }
+                else
+                {
+                    callbackError($"ERROR: Searching files in check folder {folder} failed!");
+                    return ErrorLevel.SearchFailed;
+                }
+            }
+
+            // Break operation if cancellation requested
+            if (cancellationToken.IsCancellationRequested)
+            {
+                callbackLog($"Copy canceled before copying files\n");
+                return ErrorLevel.Canceled;
+            }
+
+            return ErrorLevel.Ok;
         }
 
         #endregion // Methods

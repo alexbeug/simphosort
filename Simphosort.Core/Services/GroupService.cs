@@ -5,6 +5,7 @@
 
 using Simphosort.Core.Services.Helper;
 using Simphosort.Core.Utilities;
+using Simphosort.Core.Values;
 
 namespace Simphosort.Core.Services
 {
@@ -56,15 +57,22 @@ namespace Simphosort.Core.Services
             // Start time
             DateTime start = DateTime.UtcNow;
 
-            // Prepare grouping and get files in folder
-            ErrorLevel errorLevel = Prepare(folder, formatString, searchPatterns, callbackLog, callbackError, out IEnumerable<FileInfo> files, cancellationToken);
+            // Check before grouping
+            ErrorLevel errorLevel = Check(folder, formatString, callbackLog, callbackError, cancellationToken);
+            if (errorLevel != ErrorLevel.Ok)
+            {
+                return errorLevel;
+            }
+
+            // Search files in folder
+            errorLevel = SearchFolder(folder, searchPatterns, callbackLog, callbackError, out IEnumerable<IPhotoFileInfo> files, cancellationToken);
             if (errorLevel != ErrorLevel.Ok)
             {
                 return errorLevel;
             }
 
             // Group files by fixed formatted date
-            errorLevel = GroupFilesFixed(formatString, callbackLog, callbackError, files, out Dictionary<string, IEnumerable<FileInfo>> groupedFiles, cancellationToken);
+            errorLevel = GroupFilesFixed(formatString, callbackLog, callbackError, files, out Dictionary<string, IEnumerable<IPhotoFileInfo>> groupedFiles, cancellationToken);
             if (errorLevel != ErrorLevel.Ok)
             {
                 return errorLevel;
@@ -91,37 +99,37 @@ namespace Simphosort.Core.Services
         /// <param name="groupedFiles">Grouped files</param>
         /// <param name="cancellationToken">A <see cref="CancellationToken"/></param>
         /// <returns><see cref="ErrorLevel"/> and <paramref name="groupedFiles"/></returns>
-        private static ErrorLevel GroupFilesFixed(string formatString, Action<string> callbackLog, Action<string> callbackError, IEnumerable<FileInfo> files, out Dictionary<string, IEnumerable<FileInfo>> groupedFiles, CancellationToken cancellationToken)
+        private static ErrorLevel GroupFilesFixed(string formatString, Action<string> callbackLog, Action<string> callbackError, IEnumerable<IPhotoFileInfo> files, out Dictionary<string, IEnumerable<IPhotoFileInfo>> groupedFiles, CancellationToken cancellationToken)
         {
             // Create Dictionary for grouped files
             groupedFiles = new();
 
-            foreach (FileInfo file in files.TakeWhile(c => !cancellationToken.IsCancellationRequested))
+            foreach (IPhotoFileInfo file in files.TakeWhile(c => !cancellationToken.IsCancellationRequested))
             {
                 string dateString = string.Empty;
                 try
                 {
                     // Get formatted date string
-                    dateString = file.LastWriteTime.ToString(formatString);
+                    dateString = file.FileInfo.LastWriteTime.ToString(formatString);
                 }
                 catch (FormatException)
                 {
                     // Return when format string is not valid for a file (should not happen because of previous check)
-                    callbackError($"ERROR: Format string {formatString} is not valid for file {file.Name}!");
+                    callbackError($"ERROR: Format string {formatString} is not valid for file {file.FileInfo.Name}!");
                     return ErrorLevel.FormatStringNotValid;
                 }
 
                 // Get or create list for date string
-                if (!groupedFiles.TryGetValue(dateString, out IEnumerable<FileInfo>? group))
+                if (!groupedFiles.TryGetValue(dateString, out IEnumerable<IPhotoFileInfo>? group))
                 {
-                    group = new List<FileInfo>();
+                    group = new List<IPhotoFileInfo>();
                     groupedFiles.Add(dateString, group);
                     callbackLog($"{dateString} added as new group");
                 }
 
                 // Add file to list
-                ((List<FileInfo>)group).Add(file);
-                callbackLog($"   -> {file.Name} added to group {dateString}");
+                ((List<IPhotoFileInfo>)group).Add(file);
+                callbackLog($"   -> {file.FileInfo.Name} added to group {dateString}");
             }
 
             // Break operation if cancellation requested
@@ -168,21 +176,16 @@ namespace Simphosort.Core.Services
         }
 
         /// <summary>
-        /// Prepare grouping operation
+        /// Check grouping operation
         /// </summary>
         /// <param name="folder">Folder containing the files to group</param>
         /// <param name="formatString">Format string</param>
-        /// <param name="searchPatterns">Search patterns</param>
         /// <param name="callbackLog">Log message callback</param>
         /// <param name="callbackError">Error message callback</param>
-        /// <param name="files">Ungrouped files in folder</param>
         /// <param name="cancellationToken">A <see cref="CancellationToken"/></param>
         /// <returns><see cref="ErrorLevel"/> and <paramref name="files"/></returns>
-        private ErrorLevel Prepare(string folder, string formatString, IEnumerable<string> searchPatterns, Action<string> callbackLog, Action<string> callbackError, out IEnumerable<FileInfo> files, CancellationToken cancellationToken)
+        private ErrorLevel Check(string folder, string formatString, Action<string> callbackLog, Action<string> callbackError, CancellationToken cancellationToken)
         {
-            // Prepare empty file list
-            files = new List<FileInfo>();
-
             // Check folder name for validity
             if (!FolderService.IsValid(folder, callbackError))
             {
@@ -229,6 +232,21 @@ namespace Simphosort.Core.Services
                 return ErrorLevel.Canceled;
             }
 
+            return ErrorLevel.Ok;
+        }
+
+        /// <summary>
+        /// Search files in folder
+        /// </summary>
+        /// <param name="folder">Folder containing the files to group</param>
+        /// <param name="searchPatterns">Search patterns</param>
+        /// <param name="callbackLog">Log message callback</param>
+        /// <param name="callbackError">Error message callback</param>
+        /// <param name="files">Ungrouped files in folder</param>
+        /// <param name="cancellationToken">A <see cref="CancellationToken"/></param>
+        /// <returns><see cref="ErrorLevel"/> and <paramref name="files"/></returns>
+        private ErrorLevel SearchFolder(string folder, IEnumerable<string> searchPatterns, Action<string> callbackLog, Action<string> callbackError, out IEnumerable<IPhotoFileInfo> files, CancellationToken cancellationToken)
+        {
             // Find files in folder (non-recursive)
             callbackLog($"Searching files in folder...");
             if (SearchService.TrySearchFiles(folder, searchPatterns, false, out files, cancellationToken))
