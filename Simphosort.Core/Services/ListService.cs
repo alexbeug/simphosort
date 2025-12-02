@@ -61,8 +61,15 @@ namespace Simphosort.Core.Services
             // Start time
             DateTime start = DateTime.UtcNow;
 
+            // Check folder for listing files
+            ErrorLevel errorLevel = Check(folder, callbackLog, callbackError, cancellationToken);
+            if (errorLevel != ErrorLevel.Ok)
+            {
+                return errorLevel;
+            }
+
             // Prepare ungrouping and get files in parent folder and sub folders
-            ErrorLevel errorLevel = Prepare(folder, searchPatterns, callbackLog, callbackError, out IEnumerable<IPhotoFileInfo> files, cancellationToken);
+            errorLevel = SearchFolder(folder, searchPatterns, callbackLog, callbackError, out IEnumerable<IPhotoFileInfo> files, cancellationToken);
             if (errorLevel != ErrorLevel.Ok)
             {
                 return errorLevel;
@@ -256,20 +263,15 @@ namespace Simphosort.Core.Services
         }
 
         /// <summary>
-        /// Prepare listing by validating folder and getting files in folder and sub folders.
+        /// Check folder for listing files
         /// </summary>
         /// <param name="folder">Folder</param>
-        /// <param name="searchPatterns">Search patterns</param>
         /// <param name="callbackLog">Log message callback</param>
         /// <param name="callbackError">Error message callback</param>
-        /// <param name="files">Files found in folder and sub folders</param>
         /// <param name="cancellationToken">A <see cref="CancellationToken"/></param>
         /// <returns><see cref="ErrorLevel"/>, <paramref name="parentFiles"/> abd <paramref name="subFiles"/></returns>
-        private ErrorLevel Prepare(string folder, IEnumerable<string> searchPatterns, Action<string> callbackLog, Action<string> callbackError, out IEnumerable<IPhotoFileInfo> files, CancellationToken cancellationToken)
+        private ErrorLevel Check(string folder, Action<string> callbackLog, Action<string> callbackError, CancellationToken cancellationToken)
         {
-            // Always initialize out parameters
-            files = new List<IPhotoFileInfo>();
-
             // Check folder name for validity
             if (!FolderService.IsValid(folder, callbackError))
             {
@@ -291,6 +293,21 @@ namespace Simphosort.Core.Services
                 return ErrorLevel.Canceled;
             }
 
+            return ErrorLevel.Ok;
+        }
+
+        /// <summary>
+        /// Search files in folder and sub folders.
+        /// </summary>
+        /// <param name="folder">Folder</param>
+        /// <param name="searchPatterns">Search patterns</param>
+        /// <param name="callbackLog">Log message callback</param>
+        /// <param name="callbackError">Error message callback</param>
+        /// <param name="files">Files found in folder and sub folders</param>
+        /// <param name="cancellationToken">A <see cref="CancellationToken"/></param>
+        /// <returns><see cref="ErrorLevel"/>, <paramref name="parentFiles"/> abd <paramref name="subFiles"/></returns>
+        private ErrorLevel SearchFolder(string folder, IEnumerable<string> searchPatterns, Action<string> callbackLog, Action<string> callbackError, out IEnumerable<IPhotoFileInfo> files, CancellationToken cancellationToken)
+        {
             // Get all files in folder and sub folders (recursive)
             callbackLog($"Searching files in folder and sub folders...");
             if (!SearchService.TrySearchFiles(folder, searchPatterns, true, out files, cancellationToken))

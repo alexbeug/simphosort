@@ -58,8 +58,15 @@ namespace Simphosort.Core.Services
             // Start time
             DateTime start = DateTime.UtcNow;
 
+            // Check folders
+            ErrorLevel errorLevel = Check(sourceFolder, targetFolder, checkFolders, callbackLog, callbackError, cancellationToken);
+            if (errorLevel != ErrorLevel.Ok)
+            {
+                return errorLevel;
+            }
+
             // Prepare operation and search source files
-            ErrorLevel errorLevel = Prepare(sourceFolder, targetFolder, checkFolders, searchPatterns, callbackLog, callbackError, out IEnumerable<IPhotoFileInfo> sourceFiles, cancellationToken);
+            errorLevel = SearchSource(sourceFolder, searchPatterns, callbackLog, callbackError, out IEnumerable<IPhotoFileInfo> sourceFiles, cancellationToken);
             if (errorLevel != ErrorLevel.Ok)
             {
                 return errorLevel;
@@ -71,7 +78,7 @@ namespace Simphosort.Core.Services
             if (checkFolders != null && checkFolders.Any())
             {
                 // Find files in check folders (recursive)
-                errorLevel = Check(checkFolders, searchPatterns, callbackLog, callbackError, out List<IPhotoFileInfo> checkFiles, cancellationToken);
+                errorLevel = SearchCheck(checkFolders, searchPatterns, callbackLog, callbackError, out List<IPhotoFileInfo> checkFiles, cancellationToken);
                 if (errorLevel != ErrorLevel.Ok)
                 {
                     return errorLevel;
@@ -132,22 +139,17 @@ namespace Simphosort.Core.Services
         }
 
         /// <summary>
-        /// Prepare copy operation
+        /// Check folders for validity, existence, emptiness and uniqueness
         /// </summary>
         /// <param name="sourceFolder">Source folder</param>
         /// <param name="targetFolder">Target folder</param>
         /// <param name="checkFolders">Check folders for duplicates</param>
-        /// <param name="searchPatterns">Search pattern</param>
         /// <param name="callbackLog">Log message callback</param>
         /// <param name="callbackError">Error message callback</param>
-        /// <param name="files">returns found source files to copy</param>
         /// <param name="cancellationToken">A <see cref="CancellationToken"/></param>
         /// <returns><see cref="ErrorLevel"/> and <paramref name="files"/></returns>
-        private ErrorLevel Prepare(string sourceFolder, string targetFolder, IEnumerable<string>? checkFolders, IEnumerable<string> searchPatterns, Action<string> callbackLog, Action<string> callbackError, out IEnumerable<IPhotoFileInfo> files, CancellationToken cancellationToken)
+        private ErrorLevel Check(string sourceFolder, string targetFolder, IEnumerable<string>? checkFolders, Action<string> callbackLog, Action<string> callbackError, CancellationToken cancellationToken)
         {
-            // Initialize out parameter
-            files = [];
-
             // Put the mandatory folders into a list
             List<string> folders = new()
             {
@@ -195,6 +197,21 @@ namespace Simphosort.Core.Services
                 return ErrorLevel.Canceled;
             }
 
+            return ErrorLevel.Ok;
+        }
+
+        /// <summary>
+        /// Search source folder for files to copy
+        /// </summary>
+        /// <param name="sourceFolder">Source folder</param>
+        /// <param name="searchPatterns">Search pattern</param>
+        /// <param name="callbackLog">Log message callback</param>
+        /// <param name="callbackError">Error message callback</param>
+        /// <param name="files">returns found source files to copy</param>
+        /// <param name="cancellationToken">A <see cref="CancellationToken"/></param>
+        /// <returns><see cref="ErrorLevel"/> and <paramref name="files"/></returns>
+        private ErrorLevel SearchSource(string sourceFolder, IEnumerable<string> searchPatterns, Action<string> callbackLog, Action<string> callbackError, out IEnumerable<IPhotoFileInfo> files, CancellationToken cancellationToken)
+        {
             // Find files in source folder (non-recursive)
             callbackLog($"Searching files in source folder...");
             if (SearchService.TrySearchFiles(sourceFolder, searchPatterns, false, out files, cancellationToken))
@@ -228,7 +245,7 @@ namespace Simphosort.Core.Services
         /// <param name="checkFiles">returns found check files to exclude</param>
         /// <param name="cancellationToken">A <see cref="CancellationToken"/></param>
         /// <returns><see cref="ErrorLevel"/> and <paramref name="checkFiles"/></returns>
-        private ErrorLevel Check(IEnumerable<string> checkFolders, IEnumerable<string> searchPatterns, Action<string> callbackLog, Action<string> callbackError, out List<IPhotoFileInfo> checkFiles, CancellationToken cancellationToken)
+        private ErrorLevel SearchCheck(IEnumerable<string> checkFolders, IEnumerable<string> searchPatterns, Action<string> callbackLog, Action<string> callbackError, out List<IPhotoFileInfo> checkFiles, CancellationToken cancellationToken)
         {
             callbackLog($"Searching files in check folders...");
             checkFiles = new();

@@ -63,8 +63,15 @@ namespace Simphosort.Core.Services
             // Start time
             DateTime start = DateTime.UtcNow;
 
-            // Prepare ungrouping and get files in parent folder and sub folders
-            ErrorLevel errorLevel = Prepare(parent, searchPatterns, callbackLog, callbackError, out IEnumerable<IPhotoFileInfo> files, out List<IPhotoFileInfo> subFiles, cancellationToken);
+            // Check ungrouping operation
+            ErrorLevel errorLevel = Check(parent, callbackLog, callbackError, cancellationToken);
+            if (errorLevel != ErrorLevel.Ok)
+            {
+                return errorLevel;
+            }
+
+            // Get files in parent folder and sub folders
+            errorLevel = SearchParent(parent, searchPatterns, callbackLog, callbackError, out IEnumerable<IPhotoFileInfo> files, out List<IPhotoFileInfo> subFiles, cancellationToken);
             if (errorLevel != ErrorLevel.Ok)
             {
                 return errorLevel;
@@ -117,22 +124,15 @@ namespace Simphosort.Core.Services
         }
 
         /// <summary>
-        /// Prepare ungrouping by validating folder and getting files in parent folder and sub folders.
+        /// Check ungrouping operation
         /// </summary>
         /// <param name="parent">Parent folder</param>
-        /// <param name="searchPatterns">Search patterns</param>
         /// <param name="callbackLog">Log message callback</param>
         /// <param name="callbackError">Error message callback</param>
-        /// <param name="files">Files found in parent and sub folders</param>
-        /// <param name="subFiles">Files found in sub folders</param>
         /// <param name="cancellationToken">A <see cref="CancellationToken"/></param>
         /// <returns><see cref="ErrorLevel"/>, <paramref name="parentFiles"/> abd <paramref name="subFiles"/></returns>
-        private ErrorLevel Prepare(string parent, IEnumerable<string> searchPatterns, Action<string> callbackLog, Action<string> callbackError, out IEnumerable<IPhotoFileInfo> files, out List<IPhotoFileInfo> subFiles, CancellationToken cancellationToken)
+        private ErrorLevel Check(string parent, Action<string> callbackLog, Action<string> callbackError, CancellationToken cancellationToken)
         {
-            // Always initialize out parameters
-            files = new List<IPhotoFileInfo>();
-            subFiles = new List<IPhotoFileInfo>();
-
             // Check folder name for validity
             if (!FolderService.IsValid(parent, callbackError))
             {
@@ -160,6 +160,26 @@ namespace Simphosort.Core.Services
                 callbackLog($"Ungroup canceled before ungrouping files\n");
                 return ErrorLevel.Canceled;
             }
+
+            return ErrorLevel.Ok;
+        }
+
+        /// <summary>
+        /// Search files in parent folder and sub folders.
+        /// </summary>
+        /// <param name="parent">Parent folder</param>
+        /// <param name="searchPatterns">Search patterns</param>
+        /// <param name="callbackLog">Log message callback</param>
+        /// <param name="callbackError">Error message callback</param>
+        /// <param name="files">Files found in parent and sub folders</param>
+        /// <param name="subFiles">Files found in sub folders</param>
+        /// <param name="cancellationToken">A <see cref="CancellationToken"/></param>
+        /// <returns><see cref="ErrorLevel"/>, <paramref name="parentFiles"/> abd <paramref name="subFiles"/></returns>
+        private ErrorLevel SearchParent(string parent, IEnumerable<string> searchPatterns, Action<string> callbackLog, Action<string> callbackError, out IEnumerable<IPhotoFileInfo> files, out List<IPhotoFileInfo> subFiles, CancellationToken cancellationToken)
+        {
+            // Always initialize out parameters
+            files = new List<IPhotoFileInfo>();
+            subFiles = new List<IPhotoFileInfo>();
 
             // Get all files in sub folders (recursive) and parent folder
             callbackLog($"Searching files in parent folder and sub folders...");
