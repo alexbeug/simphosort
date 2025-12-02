@@ -13,7 +13,7 @@ namespace Simphosort.Core.Services.Comparer
     public interface IPhotoFileInfoEqualityComparer : IEqualityComparer<IPhotoFileInfo>
     {
         /// <summary>
-        /// Gets a value indicating whether checks if file size comparison is configured
+        /// Gets a value indicating whether file size comparison is configured
         /// </summary>
         bool IsCompareFileSizeConfigured { get; }
     }

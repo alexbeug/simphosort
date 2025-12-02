@@ -16,10 +16,10 @@ namespace Simphosort.Core.Services.Helper
         /// <summary>
         /// Initializes a new instance of the <see cref="SearchService"/> class.
         /// </summary>
-        /// <param name="fileInfoComparerFactory">A <see cref="IPhotoFileInfoComparerFactory"/></param>
-        public SearchService(IPhotoFileInfoComparerFactory fileInfoComparerFactory)
+        /// <param name="photoFileInfoComparerFactory">A <see cref="IPhotoFileInfoComparerFactory"/></param>
+        public SearchService(IPhotoFileInfoComparerFactory photoFileInfoComparerFactory)
         {
-            FileInfoComparerFactory = fileInfoComparerFactory;
+            PhotoFileInfoComparerFactory = photoFileInfoComparerFactory;
         }
 
         #endregion // Constructor
@@ -29,7 +29,7 @@ namespace Simphosort.Core.Services.Helper
         /// <summary>
         /// Gets the <see cref="IPhotoFileInfoComparerFactory"/>
         /// </summary>
-        private IPhotoFileInfoComparerFactory FileInfoComparerFactory { get; }
+        private IPhotoFileInfoComparerFactory PhotoFileInfoComparerFactory { get; }
 
         #endregion // Properties
 
@@ -93,7 +93,7 @@ namespace Simphosort.Core.Services.Helper
                 CompareFileSize = true,
             };
 
-            IPhotoFileInfoEqualityComparer fileInfoEqualityComparer = FileInfoComparerFactory.CreateEqualityComparer(fileInfoEqualityComparerConfig);
+            IPhotoFileInfoEqualityComparer fileInfoEqualityComparer = PhotoFileInfoComparerFactory.CreateEqualityComparer(fileInfoEqualityComparerConfig);
 
             List<IPhotoFileInfo> resultFiles = new();
             resultFiles.AddRange(workFiles.Where(w => !reduceFiles.TakeWhile(s => !cancellationToken.IsCancellationRequested).Contains(w, fileInfoEqualityComparer)));

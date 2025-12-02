@@ -21,13 +21,13 @@ namespace Simphosort.Core.Services
         /// <param name="folderService">A <see cref="IFolderService"/>.</param>
         /// <param name="searchService">A <see cref="ISearchService"/>.</param>
         /// <param name="fileService">A <see cref="IFileService"/>.</param>
-        /// <param name="fileInfoComparerFactory">A <see cref="IPhotoFileInfoComparerFactory"/>.</param>
-        public UngroupService(IFolderService folderService, ISearchService searchService, IFileService fileService, IPhotoFileInfoComparerFactory fileInfoComparerFactory)
+        /// <param name="photoFileInfoComparerFactory">A <see cref="IPhotoFileInfoComparerFactory"/>.</param>
+        public UngroupService(IFolderService folderService, ISearchService searchService, IFileService fileService, IPhotoFileInfoComparerFactory photoFileInfoComparerFactory)
         {
             FolderService = folderService;
             SearchService = searchService;
             FileService = fileService;
-            FileInfoComparerFactory = fileInfoComparerFactory;
+            PhotoFileInfoComparerFactory = photoFileInfoComparerFactory;
         }
 
         #endregion // Constructor
@@ -44,7 +44,7 @@ namespace Simphosort.Core.Services
         private IFileService FileService { get; }
 
         /// <inheritdoc cref="IPhotoFileInfoComparerFactory"/>
-        private IPhotoFileInfoComparerFactory FileInfoComparerFactory { get; }
+        private IPhotoFileInfoComparerFactory PhotoFileInfoComparerFactory { get; }
 
         #endregion // Properties
 
@@ -211,7 +211,7 @@ namespace Simphosort.Core.Services
                 CompareFileSize = false,
             };
 
-            IPhotoFileInfoEqualityComparer fileInfoEqualityComparer = FileInfoComparerFactory.CreateEqualityComparer(fileInfoEqualityComparerConfig);
+            IPhotoFileInfoEqualityComparer fileInfoEqualityComparer = PhotoFileInfoComparerFactory.CreateEqualityComparer(fileInfoEqualityComparerConfig);
 
             // Check for duplicate file names in sub folders and parent folder with comparer from factory
             List<IPhotoFileInfoWithDuplicates> duplicates = SearchService.FindDuplicateFiles(files, fileInfoEqualityComparer, CancellationToken.None);

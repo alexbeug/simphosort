@@ -21,12 +21,12 @@ namespace Simphosort.Core.Services
         /// </summary>
         /// <param name="folderService">A <see cref="IFolderService"/>.</param>
         /// <param name="searchService">A <see cref="ISearchService"/>.</param>
-        /// <param name="fileInfoComparerFactory">A <see cref="IPhotoFileInfoComparerFactory"/>.</param>
-        public ListService(IFolderService folderService, ISearchService searchService, IPhotoFileInfoComparerFactory fileInfoComparerFactory)
+        /// <param name="photoFileInfoComparerFactory">A <see cref="IPhotoFileInfoComparerFactory"/>.</param>
+        public ListService(IFolderService folderService, ISearchService searchService, IPhotoFileInfoComparerFactory photoFileInfoComparerFactory)
         {
             FolderService = folderService;
             SearchService = searchService;
-            FileInfoComparerFactory = fileInfoComparerFactory;
+            PhotoFileInfoComparerFactory = photoFileInfoComparerFactory;
         }
 
         #endregion // Constructor
@@ -40,7 +40,7 @@ namespace Simphosort.Core.Services
         private ISearchService SearchService { get; }
 
         /// <inheritdoc cref="IPhotoFileInfoComparerFactory"/>
-        private IPhotoFileInfoComparerFactory FileInfoComparerFactory { get; }
+        private IPhotoFileInfoComparerFactory PhotoFileInfoComparerFactory { get; }
 
         #endregion // Properties
 
@@ -177,7 +177,7 @@ namespace Simphosort.Core.Services
             };
 
             // Create comparer with desired configuration
-            IPhotoFileInfoEqualityComparer duplicateComparer = FileInfoComparerFactory.CreateEqualityComparer(fileInfoComparerConfig);
+            IPhotoFileInfoEqualityComparer duplicateComparer = PhotoFileInfoComparerFactory.CreateEqualityComparer(fileInfoComparerConfig);
 
             // Find duplicate files
             callbackLog($"   -> Testing for duplicate files...");
@@ -193,7 +193,7 @@ namespace Simphosort.Core.Services
                 };
 
                 // Create comparer with desired configuration
-                IPhotoFileInfoFileOrderComparer orderComparer = FileInfoComparerFactory.CreateFileOrderComparer(fileOrderComparerConfig);
+                IPhotoFileInfoFileOrderComparer orderComparer = PhotoFileInfoComparerFactory.CreateFileOrderComparer(fileOrderComparerConfig);
 
                 // Order duplicates by given order criterias
                 duplicates = duplicates.TakeWhile(c => !cancellationToken.IsCancellationRequested).OrderBy(k => k, orderComparer);
@@ -233,7 +233,7 @@ namespace Simphosort.Core.Services
                 };
 
                 // Create comparer with desired configuration
-                IPhotoFileInfoFileOrderComparer orderComparer = FileInfoComparerFactory.CreateFileOrderComparer(fileInfoComparerConfig);
+                IPhotoFileInfoFileOrderComparer orderComparer = PhotoFileInfoComparerFactory.CreateFileOrderComparer(fileInfoComparerConfig);
 
                 // List files without specific order
                 foreach (IPhotoFileInfo file in files.TakeWhile(c => !cancellationToken.IsCancellationRequested).OrderBy(k => k, orderComparer))
