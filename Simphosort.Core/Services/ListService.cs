@@ -222,7 +222,7 @@ namespace Simphosort.Core.Services
             // Total files listed
             int total = 0;
 
-            // Append file order criterias
+            // Order by comparer if any order specified
             if (fileOrder.Any(o => o != FileOrder.None))
             {
                 // Create comparer config

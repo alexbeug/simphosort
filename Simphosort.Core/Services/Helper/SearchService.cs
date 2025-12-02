@@ -93,10 +93,10 @@ namespace Simphosort.Core.Services.Helper
                 CompareFileSize = true,
             };
 
-            IPhotoFileInfoEqualityComparer fileInfoEqualityComparer = PhotoFileInfoComparerFactory.CreateEqualityComparer(fileInfoEqualityComparerConfig);
+            IPhotoFileInfoEqualityComparer photoFileInfoEqualityComparer = PhotoFileInfoComparerFactory.CreateEqualityComparer(fileInfoEqualityComparerConfig);
 
             List<IPhotoFileInfo> resultFiles = new();
-            resultFiles.AddRange(workFiles.Where(w => !reduceFiles.TakeWhile(s => !cancellationToken.IsCancellationRequested).Contains(w, fileInfoEqualityComparer)));
+            resultFiles.AddRange(workFiles.Where(w => !reduceFiles.TakeWhile(s => !cancellationToken.IsCancellationRequested).Contains(w, photoFileInfoEqualityComparer)));
             return resultFiles;
         }
 
@@ -128,6 +128,7 @@ namespace Simphosort.Core.Services.Helper
             foreach (IPhotoFileInfo file in allFiles.TakeWhile(s => !cancellationToken.IsCancellationRequested))
             {
                 // Exclude files in the same directory and the file itself
+                // TODO: Check same folder exclusion based on configured options for finding duplicates in same folder
                 List<IPhotoFileInfo> testFiles = allFiles.Where(
                     f => !string.IsNullOrWhiteSpace(f.FileInfo.DirectoryName)
                     && !f.FileInfo.DirectoryName.Equals(file.FileInfo.DirectoryName)
