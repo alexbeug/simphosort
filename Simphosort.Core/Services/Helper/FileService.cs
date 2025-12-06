@@ -67,6 +67,7 @@ namespace Simphosort.Core.Services.Helper
                 catch
                 {
                     callbackError($"ERROR: Could not create folder {subFolder}!");
+
                     continue;
                 }
 
@@ -74,6 +75,7 @@ namespace Simphosort.Core.Services.Helper
                 foreach (FileInfo file in group.Value.TakeWhile(f => !cancellationToken.IsCancellationRequested).Select(x => x.FileInfo))
                 {
                     callbackLog($"Moving {file.FullName} to {subFolder}");
+
                     try
                     {
                         File.Move(file.FullName, Path.Combine(subFolder, file.Name));
@@ -106,6 +108,7 @@ namespace Simphosort.Core.Services.Helper
             foreach (FileInfo file in files.TakeWhile(f => !cancellationToken.IsCancellationRequested).Select(x => x.FileInfo))
             {
                 callbackLog($"Moving {file.FullName} to {folder}");
+
                 try
                 {
                     File.Move(file.FullName, Path.Combine(folder, file.Name));

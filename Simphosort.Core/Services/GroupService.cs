@@ -12,6 +12,19 @@ namespace Simphosort.Core.Services
     /// <inheritdoc/>
     internal class GroupService : IGroupService
     {
+        #region Fields
+
+        /// <inheritdoc cref="IFolderService"/>
+        private readonly IFolderService _folderService;
+
+        /// <inheritdoc cref="ISearchService"/>
+        private readonly ISearchService _searchService;
+
+        /// <inheritdoc cref="IFileService"/>
+        private readonly IFileService _fileService;
+
+        #endregion // Fields
+
         #region Constructor
 
         /// <summary>
@@ -22,25 +35,12 @@ namespace Simphosort.Core.Services
         /// <param name="fileService">A <see cref="IFileService"/>.</param>
         public GroupService(IFolderService folderService, ISearchService searchService, IFileService fileService)
         {
-            FolderService = folderService;
-            SearchService = searchService;
-            FileService = fileService;
+            _folderService = folderService;
+            _searchService = searchService;
+            _fileService = fileService;
         }
 
         #endregion // Constructor
-
-        #region Properties
-
-        /// <inheritdoc cref="IFolderService"/>
-        private IFolderService FolderService { get; }
-
-        /// <inheritdoc cref="ISearchService"/>
-        private ISearchService SearchService { get; }
-
-        /// <inheritdoc cref="IFileService"/>
-        private IFileService FileService { get; }
-
-        #endregion // Properties
 
         #region Methods
 
@@ -59,6 +59,7 @@ namespace Simphosort.Core.Services
 
             // Check before grouping
             ErrorLevel errorLevel = Check(folder, formatString, callbackLog, callbackError, cancellationToken);
+
             if (errorLevel != ErrorLevel.Ok)
             {
                 return errorLevel;
@@ -66,6 +67,7 @@ namespace Simphosort.Core.Services
 
             // Search files in folder
             errorLevel = SearchFolder(folder, searchPatterns, callbackLog, callbackError, out IEnumerable<IPhotoFileInfo> files, cancellationToken);
+
             if (errorLevel != ErrorLevel.Ok)
             {
                 return errorLevel;
@@ -73,6 +75,7 @@ namespace Simphosort.Core.Services
 
             // Group files by fixed formatted date
             errorLevel = GroupFilesFixed(formatString, callbackLog, callbackError, files, out Dictionary<string, IEnumerable<IPhotoFileInfo>> groupedFiles, cancellationToken);
+
             if (errorLevel != ErrorLevel.Ok)
             {
                 return errorLevel;
@@ -82,7 +85,7 @@ namespace Simphosort.Core.Services
             int total = files.Count();
 
             // Move files to sub folders
-            int moved = FileService.MoveGroupedFilesToSubFolders(groupedFiles, folder, callbackLog, callbackError, cancellationToken);
+            int moved = _fileService.MoveGroupedFilesToSubFolders(groupedFiles, folder, callbackLog, callbackError, cancellationToken);
             callbackLog($"\n{moved} files moved\n");
 
             // Finish grouping operation (print result and return error level)
@@ -107,6 +110,7 @@ namespace Simphosort.Core.Services
             foreach (IPhotoFileInfo file in files.TakeWhile(c => !cancellationToken.IsCancellationRequested))
             {
                 string dateString = string.Empty;
+
                 try
                 {
                     // Get formatted date string
@@ -187,21 +191,21 @@ namespace Simphosort.Core.Services
         private ErrorLevel Check(string folder, string formatString, Action<string> callbackLog, Action<string> callbackError, CancellationToken cancellationToken)
         {
             // Check folder name for validity
-            if (!FolderService.IsValid(folder, callbackError))
+            if (!_folderService.IsValid(folder, callbackError))
             {
                 // Stop if folder name is not valid
                 return ErrorLevel.FolderNotValid;
             }
 
             // Check folders for existence
-            if (!FolderService.Exists(folder, callbackError))
+            if (!_folderService.Exists(folder, callbackError))
             {
                 // Stop if folder does not exist
                 return ErrorLevel.FolderDoesNotExist;
             }
 
             // Folder must not have sub folders
-            if (!FolderService.HasNoSubFolders(folder, callbackError))
+            if (!_folderService.HasNoSubFolders(folder, callbackError))
             {
                 // Stop if sub folders present
                 return ErrorLevel.FoldersPresent;
@@ -249,7 +253,8 @@ namespace Simphosort.Core.Services
         {
             // Find files in folder (non-recursive)
             callbackLog($"Searching files in folder...");
-            if (SearchService.TrySearchFiles(folder, searchPatterns, false, out files, cancellationToken))
+
+            if (_searchService.TrySearchFiles(folder, searchPatterns, false, out files, cancellationToken))
             {
                 // Break operation if cancellation requested
                 if (cancellationToken.IsCancellationRequested)

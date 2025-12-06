@@ -13,6 +13,22 @@ namespace Simphosort.Core.Services
     /// <inheritdoc/>
     internal class UngroupService : IUngroupService
     {
+        #region Fields
+
+        /// <inheritdoc cref="IFolderService"/>
+        private readonly IFolderService _folderService;
+
+        /// <inheritdoc cref="ISearchService"/>
+        private readonly ISearchService _searchService;
+
+        /// <inheritdoc cref="IFileService"/>
+        private readonly IFileService _fileService;
+
+        /// <inheritdoc cref="IPhotoFileInfoComparerFactory"/>
+        private readonly IPhotoFileInfoComparerFactory _photoFileInfoComparerFactory;
+
+        #endregion // Fields
+
         #region Constructor
 
         /// <summary>
@@ -24,29 +40,13 @@ namespace Simphosort.Core.Services
         /// <param name="photoFileInfoComparerFactory">A <see cref="IPhotoFileInfoComparerFactory"/>.</param>
         public UngroupService(IFolderService folderService, ISearchService searchService, IFileService fileService, IPhotoFileInfoComparerFactory photoFileInfoComparerFactory)
         {
-            FolderService = folderService;
-            SearchService = searchService;
-            FileService = fileService;
-            PhotoFileInfoComparerFactory = photoFileInfoComparerFactory;
+            _folderService = folderService;
+            _searchService = searchService;
+            _fileService = fileService;
+            _photoFileInfoComparerFactory = photoFileInfoComparerFactory;
         }
 
         #endregion // Constructor
-
-        #region Properties
-
-        /// <inheritdoc cref="IFolderService"/>
-        private IFolderService FolderService { get; }
-
-        /// <inheritdoc cref="ISearchService"/>
-        private ISearchService SearchService { get; }
-
-        /// <inheritdoc cref="IFileService"/>
-        private IFileService FileService { get; }
-
-        /// <inheritdoc cref="IPhotoFileInfoComparerFactory"/>
-        private IPhotoFileInfoComparerFactory PhotoFileInfoComparerFactory { get; }
-
-        #endregion // Properties
 
         #region Methods
 
@@ -65,6 +65,7 @@ namespace Simphosort.Core.Services
 
             // Check ungrouping operation
             ErrorLevel errorLevel = Check(parent, callbackLog, callbackError, cancellationToken);
+
             if (errorLevel != ErrorLevel.Ok)
             {
                 return errorLevel;
@@ -72,6 +73,7 @@ namespace Simphosort.Core.Services
 
             // Get files in parent folder and sub folders
             errorLevel = SearchParent(parent, searchPatterns, callbackLog, callbackError, out IEnumerable<IPhotoFileInfo> files, out List<IPhotoFileInfo> subFiles, cancellationToken);
+
             if (errorLevel != ErrorLevel.Ok)
             {
                 return errorLevel;
@@ -79,13 +81,14 @@ namespace Simphosort.Core.Services
 
             // Check for duplicate file names in sub folders and parent folder
             errorLevel = CheckDuplicateNames(files, callbackError);
+
             if (errorLevel != ErrorLevel.Ok)
             {
                 return errorLevel;
             }
 
             // Move files from sub folders to parent folder
-            int moved = FileService.MoveFilesFromSubFoldersToFolder(subFiles, parent, callbackLog, callbackError, cancellationToken);
+            int moved = _fileService.MoveFilesFromSubFoldersToFolder(subFiles, parent, callbackLog, callbackError, cancellationToken);
             callbackLog($"\n{moved} files moved\n");
 
             // Break operation if cancellation requested
@@ -105,6 +108,7 @@ namespace Simphosort.Core.Services
 
                     // Clean up empty sub folders
                     errorLevel = CleanUp(start, paths, callbackLog, callbackError, cancellationToken);
+
                     if (errorLevel != ErrorLevel.Ok)
                     {
                         return errorLevel;
@@ -134,21 +138,21 @@ namespace Simphosort.Core.Services
         private ErrorLevel Check(string parent, Action<string> callbackLog, Action<string> callbackError, CancellationToken cancellationToken)
         {
             // Check folder name for validity
-            if (!FolderService.IsValid(parent, callbackError))
+            if (!_folderService.IsValid(parent, callbackError))
             {
                 // Stop if folder name is not valid
                 return ErrorLevel.FolderNotValid;
             }
 
             // Check folder for existence
-            if (!FolderService.Exists(parent, callbackError))
+            if (!_folderService.Exists(parent, callbackError))
             {
                 // Stop if folder does not exist
                 return ErrorLevel.FolderDoesNotExist;
             }
 
             // Parent folder must have sub folders
-            if (!FolderService.HasSubFolders(parent, callbackError))
+            if (!_folderService.HasSubFolders(parent, callbackError))
             {
                 // Stop if no sub folders are present
                 return ErrorLevel.NoSubFolders;
@@ -183,7 +187,8 @@ namespace Simphosort.Core.Services
 
             // Get all files in sub folders (recursive) and parent folder
             callbackLog($"Searching files in parent folder and sub folders...");
-            if (!SearchService.TrySearchFiles(parent, searchPatterns, true, out files, cancellationToken))
+
+            if (!_searchService.TrySearchFiles(parent, searchPatterns, true, out files, cancellationToken))
             {
                 callbackError("ERROR: Searching files failed!");
                 return ErrorLevel.SearchFailed;
@@ -231,10 +236,10 @@ namespace Simphosort.Core.Services
                 CompareFileSize = false,
             };
 
-            IPhotoFileInfoEqualityComparer fileInfoEqualityComparer = PhotoFileInfoComparerFactory.CreateEqualityComparer(fileInfoEqualityComparerConfig);
+            IPhotoFileInfoEqualityComparer fileInfoEqualityComparer = _photoFileInfoComparerFactory.CreateEqualityComparer(fileInfoEqualityComparerConfig);
 
             // Check for duplicate file names in sub folders and parent folder with comparer from factory
-            List<IPhotoFileInfoWithDuplicates> duplicates = SearchService.FindDuplicateFiles(files, fileInfoEqualityComparer, CancellationToken.None);
+            List<IPhotoFileInfoWithDuplicates> duplicates = _searchService.FindDuplicateFiles(files, fileInfoEqualityComparer, CancellationToken.None);
 
             if (duplicates.Count > 0)
             {
@@ -244,6 +249,7 @@ namespace Simphosort.Core.Services
                 foreach (IPhotoFileInfoWithDuplicates duplicate in duplicates)
                 {
                     callbackError($"\nDuplicate {duplicate.FileInfo.Name} :");
+
                     foreach (FileInfo file in duplicate.Duplicates)
                     {
                         callbackError($"   -> found in {file.DirectoryName}");
@@ -282,7 +288,7 @@ namespace Simphosort.Core.Services
 
             foreach (string path in paths.TakeWhile(c => !cancellationToken.IsCancellationRequested))
             {
-                if (SearchService.TrySearchFiles(path, Constants.AllFilesExtension, true, out IEnumerable<IPhotoFileInfo> found, cancellationToken))
+                if (_searchService.TrySearchFiles(path, Constants.AllFilesExtension, true, out IEnumerable<IPhotoFileInfo> found, cancellationToken))
                 {
                     if (!found.Any())
                     {
@@ -307,7 +313,7 @@ namespace Simphosort.Core.Services
             callbackLog($"{emptyPaths.Count} out of {paths.Count} sub folders found empty\n");
 
             // Delete empty sub folders
-            int deleted = FileService.DeleteFolders(emptyPaths.ToArray(), callbackLog, callbackError, cancellationToken);
+            int deleted = _fileService.DeleteFolders(emptyPaths.ToArray(), callbackLog, callbackError, cancellationToken);
             callbackLog($"\n{deleted} empty sub folders deleted\n");
 
             // Check if all empty sub folders were deleted

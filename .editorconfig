@@ -6,6 +6,10 @@ dotnet_diagnostic.SA1124.severity = none
 # SA1101: Prefix local calls with this
 dotnet_diagnostic.SA1101.severity = none
 
+# Reihitsu disable not operator checking (RH0001) and empty lines before continue/return
+dotnet_diagnostic.RH0001.severity = none
+dotnet_diagnostic.RH0310.severity = none
+dotnet_diagnostic.RH0314.severity = none
 
 [*.cs]
 #### Benennungsstile ####
@@ -107,6 +111,7 @@ csharp_style_prefer_unbound_generic_type_in_nameof = true:suggestion
 csharp_style_prefer_primary_constructors = false:suggestion
 csharp_prefer_system_threading_lock = true:suggestion
 csharp_prefer_static_anonymous_function = true:suggestion
+csharp_style_prefer_implicitly_typed_lambda_expression = true:suggestion
 
 [*.vb]
 #### Benennungsstile ####
