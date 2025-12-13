@@ -12,6 +12,19 @@ namespace Simphosort.Core.Services
     /// <inheritdoc/>
     internal class CopyService : ICopyService
     {
+        #region Fields
+
+        /// <inheritdoc cref="IFolderService"/>
+        private readonly IFolderService _folderService;
+
+        /// <inheritdoc cref="ISearchService"/>
+        private readonly ISearchService _searchService;
+
+        /// <inheritdoc cref="IFileService"/>
+        private readonly IFileService _fileService;
+
+        #endregion // Fields
+
         #region Constructor
 
         /// <summary>
@@ -22,25 +35,12 @@ namespace Simphosort.Core.Services
         /// <param name="fileService">A <see cref="IFileService"/>.</param>
         public CopyService(IFolderService folderService, ISearchService searchService, IFileService fileService)
         {
-            FolderService = folderService;
-            SearchService = searchService;
-            FileService = fileService;
+            _folderService = folderService;
+            _searchService = searchService;
+            _fileService = fileService;
         }
 
         #endregion // Constructor
-
-        #region Properties
-
-        /// <inheritdoc cref="IFolderService"/>
-        private IFolderService FolderService { get; }
-
-        /// <inheritdoc cref="ISearchService"/>
-        private ISearchService SearchService { get; }
-
-        /// <inheritdoc cref="IFileService"/>
-        private IFileService FileService { get; }
-
-        #endregion // Properties
 
         #region Methods
 
@@ -60,6 +60,7 @@ namespace Simphosort.Core.Services
 
             // Check folders
             ErrorLevel errorLevel = Check(sourceFolder, targetFolder, checkFolders, callbackLog, callbackError, cancellationToken);
+
             if (errorLevel != ErrorLevel.Ok)
             {
                 return errorLevel;
@@ -67,6 +68,7 @@ namespace Simphosort.Core.Services
 
             // Prepare operation and search source files
             errorLevel = SearchSource(sourceFolder, searchPatterns, callbackLog, callbackError, out IEnumerable<IPhotoFileInfo> sourceFiles, cancellationToken);
+
             if (errorLevel != ErrorLevel.Ok)
             {
                 return errorLevel;
@@ -79,6 +81,7 @@ namespace Simphosort.Core.Services
             {
                 // Find files in check folders (recursive)
                 errorLevel = SearchCheck(checkFolders, searchPatterns, callbackLog, callbackError, out List<IPhotoFileInfo> checkFiles, cancellationToken);
+
                 if (errorLevel != ErrorLevel.Ok)
                 {
                     return errorLevel;
@@ -89,7 +92,7 @@ namespace Simphosort.Core.Services
 
                 // Compare sourceFiles with existing ones in checkFolders and give a list of files to copy
                 callbackLog($"Comparing files in source and check folders...");
-                copyFiles = SearchService.ReduceFiles(sourceFiles, checkFiles, cancellationToken);
+                copyFiles = _searchService.ReduceFiles(sourceFiles, checkFiles, cancellationToken);
 
                 // Break operation if cancellation requested
                 if (cancellationToken.IsCancellationRequested)
@@ -116,7 +119,7 @@ namespace Simphosort.Core.Services
             }
 
             // Copy files to target folder
-            int copied = FileService.CopyFiles(copyFiles, targetFolder, callbackLog, callbackError, cancellationToken);
+            int copied = _fileService.CopyFiles(copyFiles, targetFolder, callbackLog, callbackError, cancellationToken);
             callbackLog($"\n{copied} of {copyFiles.Count()} files copied\n");
 
             // Break operation if cancellation requested
@@ -163,28 +166,28 @@ namespace Simphosort.Core.Services
             }
 
             // Check folder names for validity
-            if (!folders.All(x => FolderService.IsValid(x, callbackError)))
+            if (!folders.All(x => _folderService.IsValid(x, callbackError)))
             {
                 // Stop if a folder name is not valid
                 return ErrorLevel.FolderNotValid;
             }
 
             // Check folders for existence
-            if (!folders.All(x => FolderService.Exists(x, callbackError)))
+            if (!folders.All(x => _folderService.Exists(x, callbackError)))
             {
                 // Stop if a folder does not exist
                 return ErrorLevel.FolderDoesNotExist;
             }
 
             // Target folder has to be empty
-            if (!FolderService.IsEmpty(targetFolder, callbackError))
+            if (!_folderService.IsEmpty(targetFolder, callbackError))
             {
                 // Stop if target folder is not empty
                 return ErrorLevel.FolderNotEmpty;
             }
 
             // Check folders in list for uniqueness
-            if (!FolderService.IsUnique(folders, callbackError))
+            if (!_folderService.IsUnique(folders, callbackError))
             {
                 // Stop if folders are not unique
                 return ErrorLevel.FolderNamesNotUnique;
@@ -214,7 +217,8 @@ namespace Simphosort.Core.Services
         {
             // Find files in source folder (non-recursive)
             callbackLog($"Searching files in source folder...");
-            if (SearchService.TrySearchFiles(sourceFolder, searchPatterns, false, out files, cancellationToken))
+
+            if (_searchService.TrySearchFiles(sourceFolder, searchPatterns, false, out files, cancellationToken))
             {
                 // Break operation if cancellation requested
                 if (cancellationToken.IsCancellationRequested)
@@ -249,9 +253,10 @@ namespace Simphosort.Core.Services
         {
             callbackLog($"Searching files in check folders...");
             checkFiles = new();
+
             foreach (string folder in checkFolders.TakeWhile(c => !cancellationToken.IsCancellationRequested))
             {
-                if (SearchService.TrySearchFiles(folder, searchPatterns, true, out IEnumerable<IPhotoFileInfo> foundFiles, cancellationToken))
+                if (_searchService.TrySearchFiles(folder, searchPatterns, true, out IEnumerable<IPhotoFileInfo> foundFiles, cancellationToken))
                 {
                     checkFiles.AddRange(foundFiles.TakeWhile(s => !cancellationToken.IsCancellationRequested));
                 }
