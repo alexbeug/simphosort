@@ -14,6 +14,19 @@ namespace Simphosort.Core.Services
     /// <inheritdoc/>
     internal class ListService : IListService
     {
+        #region Fields
+
+        /// <inheritdoc cref="IFolderService"/>
+        private readonly IFolderService _folderService;
+
+        /// <inheritdoc cref="ISearchService"/>
+        private readonly ISearchService _searchService;
+
+        /// <inheritdoc cref="IPhotoFileInfoComparerFactory"/>
+        private readonly IPhotoFileInfoComparerFactory _photoFileInfoComparerFactory;
+
+        #endregion // Fields
+
         #region Constructor
 
         /// <summary>
@@ -24,25 +37,12 @@ namespace Simphosort.Core.Services
         /// <param name="photoFileInfoComparerFactory">A <see cref="IPhotoFileInfoComparerFactory"/>.</param>
         public ListService(IFolderService folderService, ISearchService searchService, IPhotoFileInfoComparerFactory photoFileInfoComparerFactory)
         {
-            FolderService = folderService;
-            SearchService = searchService;
-            PhotoFileInfoComparerFactory = photoFileInfoComparerFactory;
+            _folderService = folderService;
+            _searchService = searchService;
+            _photoFileInfoComparerFactory = photoFileInfoComparerFactory;
         }
 
         #endregion // Constructor
-
-        #region Properties
-
-        /// <inheritdoc cref="IFolderService"/>
-        private IFolderService FolderService { get; }
-
-        /// <inheritdoc cref="ISearchService"/>
-        private ISearchService SearchService { get; }
-
-        /// <inheritdoc cref="IPhotoFileInfoComparerFactory"/>
-        private IPhotoFileInfoComparerFactory PhotoFileInfoComparerFactory { get; }
-
-        #endregion // Properties
 
         #region Methods
 
@@ -63,6 +63,7 @@ namespace Simphosort.Core.Services
 
             // Check folder for listing files
             ErrorLevel errorLevel = Check(folder, callbackLog, callbackError, cancellationToken);
+
             if (errorLevel != ErrorLevel.Ok)
             {
                 return errorLevel;
@@ -70,6 +71,7 @@ namespace Simphosort.Core.Services
 
             // Prepare ungrouping and get files in parent folder and sub folders
             errorLevel = SearchFolder(folder, searchPatterns, callbackLog, callbackError, out IEnumerable<IPhotoFileInfo> files, cancellationToken);
+
             if (errorLevel != ErrorLevel.Ok)
             {
                 return errorLevel;
@@ -184,11 +186,11 @@ namespace Simphosort.Core.Services
             };
 
             // Create comparer with desired configuration
-            IPhotoFileInfoEqualityComparer duplicateComparer = PhotoFileInfoComparerFactory.CreateEqualityComparer(fileInfoComparerConfig);
+            IPhotoFileInfoEqualityComparer duplicateComparer = _photoFileInfoComparerFactory.CreateEqualityComparer(fileInfoComparerConfig);
 
             // Find duplicate files
             callbackLog($"   -> Testing for duplicate files...");
-            IEnumerable<IPhotoFileInfoWithDuplicates> duplicates = SearchService.FindDuplicateFiles(files, duplicateComparer, cancellationToken);
+            IEnumerable<IPhotoFileInfoWithDuplicates> duplicates = _searchService.FindDuplicateFiles(files, duplicateComparer, cancellationToken);
 
             if (fileOrder.Any(o => o != FileOrder.None))
             {
@@ -200,7 +202,7 @@ namespace Simphosort.Core.Services
                 };
 
                 // Create comparer with desired configuration
-                IPhotoFileInfoFileOrderComparer orderComparer = PhotoFileInfoComparerFactory.CreateFileOrderComparer(fileOrderComparerConfig);
+                IPhotoFileInfoFileOrderComparer orderComparer = _photoFileInfoComparerFactory.CreateFileOrderComparer(fileOrderComparerConfig);
 
                 // Order duplicates by given order criterias
                 duplicates = duplicates.TakeWhile(c => !cancellationToken.IsCancellationRequested).OrderBy(k => k, orderComparer);
@@ -240,7 +242,7 @@ namespace Simphosort.Core.Services
                 };
 
                 // Create comparer with desired configuration
-                IPhotoFileInfoFileOrderComparer orderComparer = PhotoFileInfoComparerFactory.CreateFileOrderComparer(fileInfoComparerConfig);
+                IPhotoFileInfoFileOrderComparer orderComparer = _photoFileInfoComparerFactory.CreateFileOrderComparer(fileInfoComparerConfig);
 
                 // List files without specific order
                 foreach (IPhotoFileInfo file in files.TakeWhile(c => !cancellationToken.IsCancellationRequested).OrderBy(k => k, orderComparer))
@@ -273,14 +275,14 @@ namespace Simphosort.Core.Services
         private ErrorLevel Check(string folder, Action<string> callbackLog, Action<string> callbackError, CancellationToken cancellationToken)
         {
             // Check folder name for validity
-            if (!FolderService.IsValid(folder, callbackError))
+            if (!_folderService.IsValid(folder, callbackError))
             {
                 // Stop if folder name is not valid
                 return ErrorLevel.FolderNotValid;
             }
 
             // Check folder for existence
-            if (!FolderService.Exists(folder, callbackError))
+            if (!_folderService.Exists(folder, callbackError))
             {
                 // Stop if folder does not exist
                 return ErrorLevel.FolderDoesNotExist;
@@ -310,7 +312,8 @@ namespace Simphosort.Core.Services
         {
             // Get all files in folder and sub folders (recursive)
             callbackLog($"Searching files in folder and sub folders...");
-            if (!SearchService.TrySearchFiles(folder, searchPatterns, true, out files, cancellationToken))
+
+            if (!_searchService.TrySearchFiles(folder, searchPatterns, true, out files, cancellationToken))
             {
                 callbackError("ERROR: Searching files failed!");
                 return ErrorLevel.SearchFailed;
