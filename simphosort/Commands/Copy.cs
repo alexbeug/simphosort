@@ -38,6 +38,8 @@ namespace Simphosort.Commands
             IConsole console,
             ICopyService copyService,
             CancellationToken ct)
-            => copyService.Copy(sourceFolder.FullName, targetFolder.FullName, checkFolders?.Select(c => c.FullName), searchPatterns ?? Constants.CommonJpegExtensions, console.WriteLine, console.WriteLine, ct).ToInt();
+        {
+            return copyService.Copy(sourceFolder.FullName, targetFolder.FullName, checkFolders?.Select(c => c.FullName), searchPatterns ?? Constants.CommonJpegExtensions, console.WriteLine, console.WriteLine, ct).ToInt();
+        }
     }
 }

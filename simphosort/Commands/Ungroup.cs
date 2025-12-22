@@ -36,6 +36,8 @@ namespace Simphosort.Commands
             IConsole console,
             IUngroupService ungroupService,
             CancellationToken ct)
-            => ungroupService.Ungroup(parent.FullName, deleteEmpty ?? false, searchPatterns ?? Constants.CommonJpegExtensions, console.WriteLine, console.WriteLine, ct).ToInt();
+        {
+            return ungroupService.Ungroup(parent.FullName, deleteEmpty ?? false, searchPatterns ?? Constants.CommonJpegExtensions, console.WriteLine, console.WriteLine, ct).ToInt();
+        }
     }
 }
