@@ -18,7 +18,7 @@
     <PackageReference Include="CommandDotNet" Version="8.1.1" />
     <PackageReference Include="CommandDotNet.IoC.MicrosoftDependencyInjection" Version="7.1.0" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.8" />
-    <PackageReference Include="Reihitsu.Analyzer" Version="0.7.2">
+    <PackageReference Include="Reihitsu.Analyzer" Version="0.9.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
