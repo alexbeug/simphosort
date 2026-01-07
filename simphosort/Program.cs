@@ -16,7 +16,7 @@ namespace Simphosort
     /// <summary>
     /// Program class
     /// </summary>
-    [Command(Description = $"simphosort - Simple Photo Sorter - Copyright (c) 2025 Alexander Beug - https://www.alexpage.de", Usage = "simphosort [command] [options]")]
+    [Command(Description = $"simphosort - Simple Photo Sorter - Copyright (c) 2025 Alexander Beug - https://www.alexpage.de")]
     internal class Program
     {
         /// <summary>
@@ -62,6 +62,7 @@ namespace Simphosort
 
             // Configure the app runner
             AppRunner appRunner = new AppRunner<Program>()
+                .Configure(c => c.AppSettings.Help.UsageAppName = "simphosort")
                 .UseVersionMiddleware() // Adds a version option and command
                 .UseTypoSuggestions() // Suggests correct command names if user makes a typo
                 .UseCancellationHandlers() // Enables Ctrl+C cancellation
