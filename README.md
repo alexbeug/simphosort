@@ -1,8 +1,10 @@
+# Moved to Codeberg
+https://codeberg.org/alexbeug/simphosort
+
+Simphosort moved to codeberg. Please find the latest version of simphosort at the link above. This repository is no longer maintained and archive only.
+
 # simphosort
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/alexbeug/simphosort/blob/main/LICENSE)
-[![.NET](https://github.com/alexbeug/simphosort/actions/workflows/dotnet.yml/badge.svg)](https://github.com/alexbeug/simphosort/actions/workflows/dotnet.yml)
-
-[comment]: # (https://img.shields.io/github/license/alexbeug/simphosort later when repo is public)
 
 simphosort is a tool for copying & sorting photos, intended for periodic backup of folders with large numbers of unsorted images (such as smartphone/camera DCIM folders or messenger image folders).
 
